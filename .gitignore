@@ -1,0 +1,6 @@
+deletethis.py
+runs/*
+playground/runs/*
+ipcontroller.pid
+ipcontroller_config.py
+tasks.db 
