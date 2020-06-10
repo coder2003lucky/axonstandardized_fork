@@ -3,4 +3,5 @@ runs/*
 playground/runs/*
 ipcontroller.pid
 ipcontroller_config.py
-tasks.db 
+tasks.db
+gen_alg_GPU/Data/* 
