@@ -25,7 +25,6 @@ assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'
 
 inputs['params'] = inputs['params'].split(',')
 
-# CHANGED
 #inputs['params'] = [int(p) for p in inputs['params']]
 
 # Set these values accordingly to get the desired number of output rows. outputRows = nSubZones * nPerSubZone
