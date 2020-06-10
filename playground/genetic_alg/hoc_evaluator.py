@@ -11,7 +11,6 @@ import os
 
 
 
-#ZANDER TODO: set these up and then done!
 # do not edit these four lines! they are replaced once they are copied into run specific folder
 model=""
 peeling=""
