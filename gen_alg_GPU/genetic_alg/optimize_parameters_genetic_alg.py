@@ -1,4 +1,5 @@
 import bluepyopt as bpop
+#import neurogpu_multistim_evaluator_SG_Split as hoc_ev
 import hoc_evaluatorGPU as hoc_ev
 import bluepyopt.deapext.algorithms as algo
 import pickle

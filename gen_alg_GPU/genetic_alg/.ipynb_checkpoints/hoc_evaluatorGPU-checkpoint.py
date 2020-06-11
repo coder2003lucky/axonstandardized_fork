@@ -2,6 +2,8 @@ import numpy as np
 import h5py
 from neuron import h
 import bluepyopt as bpop
+import bluepyopt.deapext.algorithms as algo
+
 import nrnUtils
 import score_functions as sf
 import efel
@@ -20,6 +22,8 @@ import bluepyopt as bpop
 import struct
 import time
 import pandas as pd
+from extractModel_mappings_linux import   allparams_from_mapping
+
 
 
 
@@ -29,13 +33,13 @@ date='04_08_2020'
 params_opt_ind=[5,7,12,13,17]
 run_file = './run_model_cori.hoc'
 run_volts_path = '../../../run_volts/run_volts_' + model + "_" + peeling
-paramsCSV = '../../../param_stim_generator/params_reference/params_'+ model + '_' + peeling +'.csv'
-orig_params = h5py.File('../../../params/params_' + model + '_' + peeling + '.hdf5', 'r')['orig_' + peeling][0]
+paramsCSV = '../../playground/param_stim_generator/params_reference/params_'+ model + '_' + peeling +'.csv'
+orig_params = h5py.File('params_' + model + '_' + peeling + '.hdf5', 'r')['orig_' + peeling][0]
 scores_path = '../scores/'
 
 
 
-model_dir = 'pyNeuroGPU_unix'
+model_dir = '../'
 param_file ='./params/gen.csv'               #What is gen.csv? does it matter?
 data_dir = model_dir+'/Data/'
 params_table = data_dir + 'opt_table.csv'    #bbp template ORIG
@@ -75,6 +79,9 @@ ntimestep = 10000
 # Value of dt in miliseconds
 dt = 0.02
 
+old_eval = algo._evaluate_invalid_fitness
+
+
 def run_model(stim_ind, params):
     print("running stim ind" + str(stim_ind))
     volts_fn = vs_fn + str(stim_ind) + '.h5'
@@ -95,6 +102,29 @@ def nrnMreadH5(fileName):
     f = h5py.File(fileName,'r')
     dat = f['Data'][:][0]
     return np.array(dat)
+
+
+def makeallparams():
+    filename = "../Data/AllParams.csv"
+
+
+    #apCsv =  pd.read_csv(filename)
+
+    with open(filename) as f:
+        guts = f.readlines()
+        nSets = int(guts[0])
+        del guts[0]
+        output = [float(s) for line in guts for s in line[:-1].split(',')]
+
+
+
+    output = np.array(output)
+    output = np.reshape(output, (len(output),1))
+    hf = h5py.File('../Data/AllParams.h5', 'w')
+    hf.create_dataset('Data', data=output)
+    hf.create_dataset('nSets', data=nSets)
+
+    hf.close()
 
 
 def evaluate_score_function(stim_name_list, target_volts_list, data_volts_list, weights):
@@ -138,33 +168,66 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         params_ = nrnUtils.readParamsCSV(paramsCSV)
         super(hoc_evaluator, self).__init__()
         self.opt_ind = params_opt_ind
+        #print(self.opt_ind, "OPT IND")
+        #print(np.array(params_).shape, "Imported parameters")
         params_ = [params_[i] for i in self.opt_ind]
         self.orig_params = orig_params
+        print(np.array(self.orig_params), 'orig params shape')
         self.params = [bpop.parameters.Parameter(name, bounds=(minval, maxval)) for name, minval, maxval in params_]
+        #print(np.array(self.params))
+        #print("SELF PARAMS")
         print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
         print("Orig params:", self.orig_params)
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
         self.objectives = [bpop.objectives.Objective('Weighted score functions')]
         print("Init target volts")
-        self.target_volts_list = run_model(orig_params, self.opt_stim_list)
+        ##### TODO: fix this line so that target volts list actually runs neurogpu and get some list of volts for this
+        #self.target_volts_list = run_model(orig_params, self.opt_stim_list)
+        
+        
+    def my_evaluate_invalid_fitness(toolbox, population):
+        '''Evaluate the individuals with an invalid fitness
+
+        Returns the count of individuals with invalid fitness
+        '''
+
+        invalid_ind = [ind for ind in population if not ind.fitness.valid]
+        invalid_ind = [population[0]] + invalid_ind
+        fitnesses = toolbox.evaluate(invalid_ind)
+        for ind, fit in zip(invalid_ind, fitnesses):
+            ind.fitness.values = fit
+        return len(invalid_ind)
 
     def evaluate_with_lists(self, param_values):
         input_values = self.orig_params
-        for i in range(len(param_values)):
-            curr_opt_ind = self.opt_ind[i]
-            input_values[curr_opt_ind] = param_values[i]
+        print(np.array(type(param_values[0][0])), "EVAL LIST param vals shape")
+        allparams = allparams_from_mapping(param_values) #allparams is not finalized
+        # we can still use it to generate generally the same mappings
+        makeallparams() # TODO: this is a short term solution, find a better fix
+#         for i in range(len(param_values)):
+#             curr_opt_ind = self.opt_ind[i]
+#             input_values[curr_opt_ind] = param_values[i]
         p_objects = []
         self.opt_stim_list = self.opt_stim_list * 4 #TODO: remove later when you have actual stims, ask Minjune for them
         
-        data_volts_list = []
-        for i in range(len(self.opt_stim_list)):
-            idx = i % 2
-            if i > 2:
+        data_volts_list = np.array([])
+        
+        nstims = len(self.opt_stim_list)
+        capacity = 2 #set this to 8 later
+        
+
+        for i in range(nstims):
+            idx = i % capacity
+            if i > capacity:
                 p_objects[idx].wait()
-                fn = vs_fn + str(i) + '.h5'
+                fn = vs_fn + str(idx) + '.h5'
                 curr_volts = nrnMreadH5(fn)
-                data_volts_list.append(curr_volts)
+                if i - capacity == 1:
+                    data_volts_list = curr_volts
+                else:
+                    data_volts_list = np.append(data_volts_list, curr_volts, axis = 1)
+                    
                 p_objects[idx] = run_model(idx, [])
             else:
                 p_objects.append(run_model(i, []))
@@ -172,5 +235,14 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         #data_volts_list = run_model(input_values, self.opt_stim_list)
         print("DATA VOLTS LIST CURR SHAPE", np.array(data_volts_list).shape, \
               "DESIRED SHAPE:", (len(self.opt_stim_list),ntimestep))
-        score = evaluate_score_function(self.opt_stim_list, self.target_volts_list, data_volts_list, self.weights)
+        
+        ######################################################
+        #TODO: have to fix Data volts list and target volts  #
+        #list so that evaluate score function will work      #
+        ######################################################
+        
+        score = evaluate_score_function(self.opt_stim_list, target_volts, data_volts_list, self.weights)
         return [score]
+
+    
+algo._evaluate_invalid_fitness =hoc_evaluator.my_evaluate_invalid_fitness
