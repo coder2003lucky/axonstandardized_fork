@@ -459,10 +459,10 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
 	curr_trace_target['stim_start'], curr_trace_data['stim_start'] = [stim_start], [stim_start]
 	curr_trace_target['stim_end'], curr_trace_data['stim_end'] = [stim_end], [stim_end]
 	traces = [curr_trace_target, curr_trace_data]
-	print(np.array(traces[0]['V']).shape, np.array(traces[0]['T']).shape)
+	#print(np.array(traces[0]['V']).shape, np.array(traces[0]['T']).shape)
 	traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
 	diff_feature = diff_lists(traces_results[0][feature_name], traces_results[1][feature_name])
-	return traces_results
+	return diff_feature
  
 
 

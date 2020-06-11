@@ -282,9 +282,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         ''' split version of evaluate w/ lists. Currently runs about 10 seconds faster
         but more work can be done to achieve better GPU CPU concurrency'''
         nindv = len(param_values)
-        print(np.array(param_values).shape, "PARAM VALUES IN LIST EVAL")
-        self.batch_size = int(nindv/10) # fastest for 20 so far
-        leftover = nindv % 10 # if population is 1001 but batch is 100, last batch needs leftovers
+        print(np.array(param_values).shape, "PARAM SHAPE IN NEUROGPU EVAL")
+        self.batch_size = int(nindv/1) # fastest for 20 so far
+        leftover = nindv % 1 # if population is 1001 but batch is 100, last batch needs leftovers
         pool = Pool(nCpus)
         start_time_sim = time.time()
         p_objects = []

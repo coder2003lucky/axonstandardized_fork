@@ -138,7 +138,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 			curr_opt_ind = self.opt_ind[i]
 			input_values[curr_opt_ind] = param_values[i]
 		data_volts_list = run_model(input_values, self.opt_stim_list*5)
-		print(np.array(data_volts_list).shape)        
+		print(np.array(param_values).shape)    
 		score = evaluate_score_function(self.opt_stim_list, self.target_volts_list, data_volts_list, self.weights)
 		print(score)
 		return [score]

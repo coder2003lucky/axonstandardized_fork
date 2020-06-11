@@ -25,8 +25,9 @@ import pandas as pd
 from extractModel_mappings_linux import   allparams_from_mapping
 
 
-#TODO: correct file paths and remove dead weight lines and imports
-
+########################################################################################
+#TODO: clean up dead weight imports and fix file paths                                                         
+########################################################################################
 
 model='bbp'
 peeling='potassium'
@@ -50,6 +51,7 @@ vs_fn = model_dir + '/Data/VHotP'
 times_file_path = model_dir + '/Data/times.csv'
 nstims = 2
 target_volts = np.genfromtxt(orig_volts_fn)
+target_volts = np.append(target_volts,target_volts, axis = 0) #so we can have 16 stims instead of 8
 times =  np.cumsum(np.genfromtxt(times_file_path,delimiter=','))
 #nCpus =  multiprocessing.cpu_count()
 # objectives_file = h5py.File('./objectives/multi_stim_without_sensitivity_' + model +  '_' + peeling \
@@ -78,9 +80,6 @@ ntimestep = 5000
 
 # Value of dt in miliseconds
 dt = 0.02
-
-old_eval = algo._evaluate_invalid_fitness
-
 
 def run_model(stim_ind, params):
     print("running stim ind" + str(stim_ind))
@@ -152,10 +151,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         
         
         ########################################################################################
-        #QUESTION: would target volts be different then normal neuroGPU in this situation?     #
-        # need to find a way to use pipeline to generate a different target volts somehow?     #
-        # code left down here to calculate targ volts on the fly.... we can revist later after #
-        # everything works                                                                     #
+        #TODO: need to find a way to use pipeline to generate a different target volts somehow? 
+        # code left down here to calculate targ volts on the fly.... we can revist later after 
+        # everything works                                                                     
         ########################################################################################
         
 #       print(np.array(self.orig_params).shape)
@@ -170,19 +168,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 
         
         
-    def my_evaluate_invalid_fitness(toolbox, population):
-        '''Evaluate the individuals with an invalid fitness
-
-        Returns the count of individuals with invalid fitness
-        '''
-
-        invalid_ind = [ind for ind in population if not ind.fitness.valid]
-        invalid_ind = [population[0]] + invalid_ind
-        fitnesses = toolbox.evaluate(invalid_ind)
-        for ind, fit in zip(invalid_ind, fitnesses):
-            ind.fitness.values = fit
-        return len(invalid_ind)
-    
     
     def evaluate_score_function(self,stim_name_list, target_volts_list, data_volts_list, weights):
         print("stims", stim_name_list, "targ volt shape:", np.array(target_volts_list).shape, \
@@ -204,12 +189,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             return normalized_single_score
 
         total_score = 0
-        for i in range(len(stim_name_list)): # stim name list len 4
-            curr_data_volt = data_volts_list[i*self.nindv] #for  each stim you have nindv, ie: 8 stims * pop size
+        for i in range(len(stim_name_list)): 
+            curr_data_volt = data_volts_list[i] 
             curr_target_volt = target_volts_list[i]
-            #print("SF ORDERED", len(score_function_ordered_list))
-            #TODO, get right data so score functions isn't                                                                       spoofed  to match a spoofed list of stims
-            #print("STIMname list", len(stim_name_list))
             for j in range(len(score_function_ordered_list)):
                 curr_sf = score_function_ordered_list[j].decode('ascii')
                 curr_weight = weights[len(score_function_ordered_list)*i + j]
@@ -225,7 +207,15 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         return total_score
 
     def evaluate_with_lists(self, param_values):
-        self.nindv = len(param_values)
+        ########################################################################################
+        #TODO: implement correct input values, current setup is only using the five opt_ind                                            params... needs to have all 16
+        ########################################################################################
+        input_values = self.orig_params
+        for i in range(len(param_values)):        
+            curr_opt_ind = self.opt_ind[i]
+            input_values[curr_opt_ind] = param_values[i]
+        print(np.array(param_values))
+        param_values = np.array(param_values).reshape(1,5)
         input_values = self.orig_params
         allparams = allparams_from_mapping(param_values) #allparams is not finalized
         # we can still use it to generate generally the same mappings
@@ -234,22 +224,22 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 #             curr_opt_ind = self.opt_ind[i]
 #             input_values[curr_opt_ind] = param_values[i]
         p_objects = []
-        self.opt_stim_list = self.opt_stim_list * 4
+    
+        self.opt_stim_list2 = self.opt_stim_list * 4
         
-        #TODO: remove later when you have actual stims and weights, ask Minjune for them
-        
+        ########################################################################################
+        #TODO: get correct files configured so I fake these                                                             
+        ########################################################################################
         weights = np.repeat(self.weights,4)
-        
         data_volts_list = np.array([])
-        
-        nstims = len(self.opt_stim_list)
-        capacity = 2 #set this to 8 later
+        nstims = len(self.opt_stim_list2)
+        print(nstims, "NSTIMS")
+        capacity = 4 #set this to 8 later
         
         #TODO clean this
         for i in range(0, capacity):
              p_objects.append(run_model(i, []))
         for i in range(0,nstims):
-            print(i)
             idx = i % capacity
             last_batch = i == (nstims-capacity)
             p_objects[idx].wait()
@@ -258,14 +248,11 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             nindv = len(param_values)
             Nt = int(len(curr_volts)/nindv)
             shaped_volts = np.reshape(curr_volts, [nindv, Nt])
-            print("Shaped volts", shaped_volts.shape)
             p_objects[idx] = run_model(idx, [])
             if i == 0:
-                print(i, "started")
                 data_volts_list = shaped_volts
             else:
-                print(i, "added")
-                print(data_volts_list.shape, shaped_volts.shape)
+                print("DATA VOLTS:",data_volts_list.shape, "SHAPED VOLTS:",shaped_volts.shape)
                 data_volts_list = np.append(data_volts_list, shaped_volts, axis = 0)
             if not last_batch:
                 p_objects[idx] = run_model(idx, [])                
@@ -274,16 +261,14 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 
         #data_volts_list = run_model(input_values, self.opt_stim_list)
         print("DATA VOLTS LIST CURR SHAPE", np.array(data_volts_list).shape, \
-              "DESIRED SHAPE:", (len(self.opt_stim_list),ntimestep))
+              "DESIRED SHAPE:", (len(self.opt_stim_list2),ntimestep))
         
-        ######################################################
-        #TODO: have to fix Data volts list and target volts  #
-        #list so that evaluate score function will work      #
-        ######################################################
-        score = self.evaluate_score_function(self.opt_stim_list, target_volts, data_volts_list, weights)
+        score = self.evaluate_score_function(self.opt_stim_list2, target_volts, data_volts_list, weights)
 
-        #score = self.evaluate_score_function(self.opt_stim_list, target_volts, data_volts_list, self.weights)
-        return np.ones([11,48])
+        #score = self.evaluate_score_function(self.opt_stim_list, target_volts, data_volts_list, self.weights)    
+        ########################################################################################
+        #TODO: nevals is staying constant throughout, that needs to change
+        ########################################################################################
+        return [score]
 
     
-algo._evaluate_invalid_fitness =hoc_evaluator.my_evaluate_invalid_fitness
