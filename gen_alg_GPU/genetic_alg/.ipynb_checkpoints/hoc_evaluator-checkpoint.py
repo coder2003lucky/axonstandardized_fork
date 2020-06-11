@@ -11,18 +11,30 @@ import os
 
 
 
-#ZANDER TODO: set these up and then done!
-# do not edit these four lines! they are replaced once they are copied into run specific folder
 model='bbp'
 peeling='potassium'
 date='04_08_2020'
-params_opt_ind=[5,7,12,13,17] 
+params_opt_ind=[5,7,12,13,17]
 run_file = './run_model_cori.hoc'
 run_volts_path = '../../../run_volts/run_volts_' + model + "_" + peeling
-paramsCSV = '../../../param_stim_generator/params_reference/params_'+ model + '_' + peeling +'.csv'
-orig_params = h5py.File('../../../params/params_' + model + '_' + peeling + '.hdf5', 'r')['orig_' + peeling][0]
+paramsCSV = '../../playground/param_stim_generator/params_reference/params_'+ model + '_' + peeling +'.csv'
+orig_params = h5py.File('params_' + model + '_' + peeling + '.hdf5', 'r')['orig_' + peeling][0]
 scores_path = '../scores/'
 
+
+
+model_dir = '../'
+param_file ='./params/gen.csv'               #What is gen.csv? does it matter?
+data_dir = model_dir+'/Data/'
+params_table = data_dir + 'opt_table.csv'    #bbp template ORIG
+run_dir = '../bin'
+orig_volts_fn = data_dir + 'exp_data.csv' #ORIG volts
+vs_fn = model_dir + '/Data/VHotP'
+times_file_path = model_dir + '/Data/times.csv'
+nstims = 2
+target_volts = np.genfromtxt(orig_volts_fn)
+times =  np.cumsum(np.genfromtxt(times_file_path,delimiter=','))
+#nCpus =  multiprocessing.cpu_count()
 # TO DO: set link to correct objectives_file
 # objectives_file = h5py.File('./objectives/multi_stim_without_sensitivity_' + model +  '_' + peeling \
 # + '_1_0_20_stims_no_v_init.hdf5', 'r')
@@ -32,8 +44,9 @@ objectives_file = h5py.File('./objectives/multi_stim_without_sensitivity_' + mod
 opt_weight_list = objectives_file['opt_weight_list'][:]
 opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
 score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
-stims_path = '../../../stims/stims_full.hdf5'
+stims_path = '../stims/stims_full.hdf5'
 #params_opt_ind = [9, 10, 14, 17, 18, 22]
+
 
 
 custom_score_functions = [
@@ -125,7 +138,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 			curr_opt_ind = self.opt_ind[i]
 			input_values[curr_opt_ind] = param_values[i]
 		data_volts_list = run_model(input_values, self.opt_stim_list*5)
-		print("SHAPE BELOW")
 		print(np.array(data_volts_list).shape)        
 		score = evaluate_score_function(self.opt_stim_list, self.target_volts_list, data_volts_list, self.weights)
 		print(score)

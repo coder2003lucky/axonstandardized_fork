@@ -241,7 +241,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         # curr_volts = nrnMread(fn)
         Nt = int(len(curr_volts)/nindv)
         shaped_volts = np.reshape(curr_volts, [nindv, Nt])
-        #print("TARG VOLTS", target_volts.shape , "SHaped", shaped_volts.shape)
+        print("TARG VOLTS", target_volts.shape , "SHaped", shaped_volts.shape)
         stim_scores = efel_ext.eval([target_volts[idx]], shaped_volts,times)
         return stim_scores
 

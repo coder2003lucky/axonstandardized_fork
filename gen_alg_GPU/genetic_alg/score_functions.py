@@ -11,7 +11,11 @@ traj_score_dict = {}
 threshold = -10
 
 # These constants exist for efel features
-time_stamps = 10000
+
+
+
+#CHANGED TIME STAMPS
+time_stamps = 5000
 starting_time_stamp = 1000
 ending_time_stamp = 7000
 
@@ -455,9 +459,10 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
 	curr_trace_target['stim_start'], curr_trace_data['stim_start'] = [stim_start], [stim_start]
 	curr_trace_target['stim_end'], curr_trace_data['stim_end'] = [stim_end], [stim_end]
 	traces = [curr_trace_target, curr_trace_data]
+	print(np.array(traces[0]['V']).shape, np.array(traces[0]['T']).shape)
 	traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
 	diff_feature = diff_lists(traces_results[0][feature_name], traces_results[1][feature_name])
-	return diff_feature
+	return traces_results
  
 
 
