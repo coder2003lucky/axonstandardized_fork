@@ -167,8 +167,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 
 
         
-        
-    
     def evaluate_score_function(self,stim_name_list, target_volts_list, data_volts_list, weights):
         print("stims", stim_name_list, "targ volt shape:", np.array(target_volts_list).shape, \
               "data volts", np.array(data_volts_list).shape, "WEIGHTS:", np.array(weights).shape)
@@ -225,16 +223,16 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 #             input_values[curr_opt_ind] = param_values[i]
         p_objects = []
     
-        self.opt_stim_list2 = self.opt_stim_list * 4
+        self.opt_stim_list2 = self.opt_stim_list * 16
         
         ########################################################################################
         #TODO: get correct files configured so I fake these                                                             
         ########################################################################################
-        weights = np.repeat(self.weights,4)
+        weights = np.repeat(self.weights,16)
         data_volts_list = np.array([])
         nstims = len(self.opt_stim_list2)
         print(nstims, "NSTIMS")
-        capacity = 4 #set this to 8 later
+        capacity = 8 #set this to GRES GPU
         
         #TODO clean this
         for i in range(0, capacity):
@@ -260,8 +258,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                            
 
         #data_volts_list = run_model(input_values, self.opt_stim_list)
-        print("DATA VOLTS LIST CURR SHAPE", np.array(data_volts_list).shape, \
-              "DESIRED SHAPE:", (len(self.opt_stim_list2),ntimestep))
+#         print("DATA VOLTS LIST CURR SHAPE", np.array(data_volts_list).shape, \
+#               "DESIRED SHAPE:", (len(self.opt_stim_list2),ntimestep))
         
         score = self.evaluate_score_function(self.opt_stim_list2, target_volts, data_volts_list, weights)
 
