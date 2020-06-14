@@ -65,9 +65,12 @@ def eval(target_volts_list, data_volts_list,times):
 #     print('Trace information')
 #     print(np.array(traces).shape)
 #     print(traces[0])
+
+    #print(np.array(traces[0]['V']).shape, np.array(traces[0]['T']).shape)
     with Pool(nCpus) as p:
         traces_results = efel.getFeatureValues(traces, feature_list, p.map, raise_warnings=False)
     print('in efel after getting features')
+    print(len(traces_results))
     if 'chi' in all_feature_list:
         all_chis =  get_chi(target_volts_list[0],data_volts_list,times)
     for i in range(len(data_volts_list)):

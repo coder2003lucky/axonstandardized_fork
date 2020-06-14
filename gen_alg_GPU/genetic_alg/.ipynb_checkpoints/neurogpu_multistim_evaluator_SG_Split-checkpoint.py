@@ -221,30 +221,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         print('parent process:', os.getppid())
         print('process id:', os.getpid())
 
-    def eval_stim_parallel(self,curr_volts,idx):
-        '''Function to be mapped in parallel, prints process ID then does
-        normal prep for shaping volts and then ships it off to be evaled
-        with function call to efel_ext
-        
-        Parameters
-        --------------------
-        curr_volts: raw volts produced by nrnMreadH5 function, output from neuroGPU
-        idx: index of stim being evaluated (1-8)
-        
-        Return
-        --------------------
-        scores with shape (batch size, 7) '''
-        
-        self.info("evaling stim: " + str(idx))
-        nindv = len(self.param_values)
-        # fn = vs_fn + str(idx) + '.dat'
-        # curr_volts = nrnMread(fn)
-        Nt = int(len(curr_volts)/nindv)
-        shaped_volts = np.reshape(curr_volts, [nindv, Nt])
-        print("TARG VOLTS", target_volts.shape , "SHaped", shaped_volts.shape)
-        stim_scores = efel_ext.eval([target_volts[idx]], shaped_volts,times)
-        return stim_scores
-
     def compare_scores_to_SG(self,scores):
         '''element-wise comparison to non-parallel version
         Parameters
@@ -276,6 +252,30 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 if scores2[i][j] != scores[i][j]:
                     equal = False
         return equal
+    
+    def eval_stim_parallel(self,curr_volts,idx):
+        '''Function to be mapped in parallel, prints process ID then does
+        normal prep for shaping volts and then ships it off to be evaled
+        with function call to efel_ext
+        
+        Parameters
+        --------------------
+        curr_volts: raw volts produced by nrnMreadH5 function, output from neuroGPU
+        idx: index of stim being evaluated (1-8)
+        
+        Return
+        --------------------
+        scores with shape (batch size, 7) '''
+        
+        self.info("evaling stim: " + str(idx))
+        nindv = len(self.param_values)
+        # fn = vs_fn + str(idx) + '.dat'
+        # curr_volts = nrnMread(fn)
+        Nt = int(len(curr_volts)/nindv)
+        shaped_volts = np.reshape(curr_volts, [nindv, Nt])
+        #print("TARG VOLTS", target_volts.shape , "SHaped", shaped_volts.shape)
+        stim_scores = efel_ext.eval([target_volts[idx]], shaped_volts,times)
+        return stim_scores
     
     
     def evaluate_with_lists(self,param_values):
