@@ -24,7 +24,6 @@ import time
 import pandas as pd
 from extractModel_mappings_linux import   allparams_from_mapping
 
-
 ########################################################################################
 #TODO: clean up dead weight imports and fix file paths                                                         
 ########################################################################################
@@ -39,6 +38,7 @@ paramsCSV = '../../playground/param_stim_generator/params_reference/params_'+ mo
 orig_params = h5py.File('params_' + model + '_' + peeling + '.hdf5', 'r')['orig_' + peeling][0]
 scores_path = '../scores/'
 
+
 old_eval = algo._evaluate_invalid_fitness
 
 model_dir = '../'
@@ -47,15 +47,16 @@ data_dir = model_dir+'/Data/'
 params_table = data_dir + 'opt_table.csv'    #bbp template ORIG
 run_dir = '../bin'
 orig_volts_fn = data_dir + 'exp_data.csv' #ORIG volts
-vs_fn = model_dir + '/Data/VHotP'
+vs_fn = model_dir + 'Data/VHotP'
 times_file_path = model_dir + '/Data/times.csv'
 nstims = 2
 target_volts = np.genfromtxt(orig_volts_fn)
-target_volts = np.append(target_volts,target_volts, axis = 0) #so we can have 16 stims instead of 8
-target_volts = np.append(target_volts,target_volts, axis = 1) # so we can have 10k
+#target_volts = np.append(target_volts,target_volts,axis=1)
+
 print("TARG VOLTS", target_volts.shape)
 times =  np.cumsum(np.genfromtxt(times_file_path,delimiter=','))
 #nCpus =  multiprocessing.cpu_count()
+nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 # objectives_file = h5py.File('./objectives/multi_stim_without_sensitivity_' + model +  '_' + peeling \
 # + '_1_0_20_stims_no_v_init.hdf5', 'r')
 #objectives_file = h5py.File('./objectives/multi_stim_without_sensitivity_bbp_sodium_1_0_20_stims_no_v_init.hdf5', 'r')
@@ -78,7 +79,7 @@ custom_score_functions = [
                     'KL_divergence']
 
 # Number of timesteps for the output volt.
-ntimestep = 10000
+ntimestep = 5000
 
 # Value of dt in miliseconds
 dt = 0.02
@@ -86,45 +87,35 @@ dt = 0.02
 def run_model(stim_ind, params):
     print("running stim ind" + str(stim_ind))
     volts_fn = vs_fn + str(stim_ind) + '.h5'
-    #volts_fn = vs_fn + str(stim_ind) + '.dat'
     if os.path.exists(volts_fn):
         os.remove(volts_fn)
-        #pass
-    #path = "./sleep.sh"
-    #p_object = subprocess.Popen(path, shell=True)
+    #p_object = subprocess.Popen(['../bin/h5NeuroGPU',str(stim_ind)])
     p_object = subprocess.Popen(['../bin/neuroGPU',str(stim_ind)])
-    print(os.path.exists('../bin/neuroGPU'))
-    #p_object = subprocess.Popen(['../bin/neuroGPU2',str(stim_ind)])
-
     return p_object
-
 
 def nrnMreadH5(fileName):
     f = h5py.File(fileName,'r')
     dat = f['Data'][:][0]
     return np.array(dat)
 
+def nrnMread(fileName):
+    f = open(fileName, "rb")
+    nparam = struct.unpack('i', f.read(4))[0]
+    typeFlg = struct.unpack('i', f.read(4))[0]
+    return np.fromfile(f,np.double)
 
 def makeallparams():
     filename = "../Data/AllParams.csv"
-
-
-    #apCsv =  pd.read_csv(filename)
-
     with open(filename) as f:
         guts = f.readlines()
         nSets = int(guts[0])
         del guts[0]
         output = [float(s) for line in guts for s in line[:-1].split(',')]
-
-
-
     output = np.array(output)
     output = np.reshape(output, (len(output),1))
     hf = h5py.File('../Data/AllParams.h5', 'w')
     hf.create_dataset('Data', data=output)
     hf.create_dataset('nSets', data=nSets)
-
     hf.close()
 
 
@@ -135,12 +126,23 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         """Constructor"""
         params_ = nrnUtils.readParamsCSV(paramsCSV)
         super(hoc_evaluator, self).__init__()
-        self.opt_ind = params_opt_ind
-        #print(np.array(params_).shape, "Imported parameters")
-        params_ = [params_[i] for i in self.opt_ind]
+        
         self.orig_params = orig_params
+        
+        data = np.genfromtxt(params_table,delimiter=',',names=True)
+        print("DAT SHAPE",len(data))
+        self.pmin = data[0]
+        print(self.pmin, "PMIN")
+        self.pmax = data[1]
+        self.ptarget = data[2]
+
+        params = []
+        for i in range(len(self.pmin)):
+            params.append(bpop.parameters.Parameter('p' + str(i), bounds=(self.pmin[i],self.pmax[i])))
+
+        self.params = params
+        
         #print(np.array(self.orig_params), 'orig params shape')
-        self.params = [bpop.parameters.Parameter(name, bounds=(minval, maxval)) for name, minval, maxval in params_]
         #print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
@@ -184,13 +186,19 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
          #     "data volts", np.array(data_volts_list).shape, "WEIGHTS:", np.array(weights).shape)
         def eval_function(target, data, function, dt):
             if function in custom_score_functions:
-                #score = getattr(sf, function)(target, data, dt)   #TODO: fix this later
-                score = np.zeros(self.nindv)
+                ########################################################################################
+                #TODO: fix score function outputs to have all the params                                                   
+                ######################################################################################## 
+                score = [getattr(sf, function)(target, data[i], dt) for indv in data] 
+                #print(np.array(score).shape,"CUSTOM SHape")
             else:
                 score = sf.eval_efel(function, target, data, dt)
-            #print(np.array(score).shape, "SCORELEN")
+                #print(np.array(score).shape,"EFel SHape")
+            score = np.reshape(score, self.nindv)
+            #print(np.array(score).shape, "SCore shape after eval")
+
             return score
-        def normalize_single_score(curr_scores, transformation):
+        def normalize_scores(curr_scores, transformation):
             # transformation contains: [bottomFraction, numStds, newMean, std, newMax, addFactor, divideFactor]
             # indices for reference:   [      0       ,    1   ,    2   ,  3 ,    4  ,     5    ,      6      ]
             for i in range(len(curr_scores)):
@@ -203,9 +211,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 return 1
             return normalized_single_score #want to produce population sized normalized scores
 
-        total_score = 0
+        total_scores = np.array([])
         for i in range(len(stim_name_list)): 
-            curr_data_volt = data_volts_list # CHANGE TO i * nindv later  
+            curr_data_volt = data_volts_list[i,:,:]
             curr_target_volt = target_volts_list[i]
             for j in range(len(score_function_ordered_list)):
                 curr_sf = score_function_ordered_list[j].decode('ascii')
@@ -215,81 +223,69 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                     curr_scores = np.zeros(self.nindv)
                 else:
                     curr_scores = eval_function(curr_target_volt, curr_data_volt, curr_sf, dt)
-                norm_scores = normalize_single_score(curr_scores, transformation)
+                norm_scores = normalize_scores(curr_scores, transformation)
                 for k in range(len(norm_scores)):
                     if np.isnan(norm_scores[k]):
                         norm_scores[k] = 1
-                total_scores = norm_scores * curr_weight
+                if i == 0 and j == 0:
+                    total_scores = np.reshape(norm_scores * curr_weight,(-1,1))
+                else:
+                    #print(total_scores.shape, "TOTAL SCORE SHAPE")
+                    total_scores = np.append(total_scores,np.reshape(norm_scores * curr_weight,(-1,1)),axis=1)
         return total_scores
 
     def evaluate_with_lists(self, param_values):
-        print("RUNNING EVAL")
-        ########################################################################################
-        #TODO: actually allparams from mapping is only using FREEPARMS, just need to make correct
-        # mapping one time and then update free params
-        ########################################################################################
+        #param values passed in with shape (number of individuals, number of parameters)
         nindv = len(param_values)
+        print(np.array(param_values).shape, "Param values")
         self.nindv = nindv
-        #print(np.array(param_values))
-        #param_values = np.array(param_values).reshape(1,5) #first dimension should be nindv 
-        # shape of first dimension here corresponds to shape of output with VHotP
-        # if param vals arg into all_params_from_mapping is (1,5)
-        # neuroGPU will produce VHotP of (1,5000) (x,timesteps)
-        # we want to produce (nstims, timsteps) shaped volts 
-
+        numParams = len(param_values[0])
+        # convert these param values to allParams for neuroGPU
         allparams = allparams_from_mapping(param_values) #allparams is not finalized
-        # we can still use it to generate generally the same mappings
         makeallparams()
-#         for i in range(len(param_values)):
-#             curr_opt_ind = self.opt_ind[i]
-#             input_values[curr_opt_ind] = param_values[i]
         p_objects = []
-    
+            
+        ########################################################################################
+        #TODO: get correct files configured so I dont have to fake these                                               
+        ########################################################################################
         self.opt_stim_list2 = self.opt_stim_list * 2
-        
-        ########################################################################################
-        #TODO: get correct files configured so I fake these                                                             
-        ########################################################################################
         weights = np.repeat(self.weights,2)
         data_volts_list = np.array([])
         nstims = len(self.opt_stim_list2)
-        print(nstims, "NSTIMS")
-        capacity = 2 #set this to GRES GPU
+    
         
-        #TODO clean this
-        for i in range(0, capacity):
-             p_objects.append(run_model(i, []))
+        for i in range(0, nGpus):
+            p_objects.append(run_model(i, []))
         for i in range(0,nstims):
-            idx = i % capacity
-            last_batch = i == (nstims-capacity)
-            p_objects[idx].wait()
-            fn = vs_fn + str(idx) + '.h5'
-            curr_volts = nrnMreadH5(fn)
+            idx = i % (nGpus)
+            p_objects[idx].wait() #wait to get volts output from previous run then read and stack
+            fn = vs_fn + str(idx) +  '.dat'    #'.h5'
+            curr_volts = nrnMread(fn) #nrnMreadH5(fn)
             nindv = len(param_values)
             Nt = int(len(curr_volts)/nindv)
             shaped_volts = np.reshape(curr_volts, [nindv, Nt])
-            p_objects[idx] = run_model(idx, [])
             if i == 0:
-                data_volts_list = shaped_volts
+                data_volts_list = shaped_volts #start stacking volts
             else:
-                print("DATA VOLTS:",data_volts_list.shape, "SHAPED VOLTS:",shaped_volts.shape)
                 data_volts_list = np.append(data_volts_list, shaped_volts, axis = 0)
+            last_batch = i > (nstims-nGpus) #use this so neuroGPU doesn't keep running 
             if not last_batch:
-                p_objects[idx] = run_model(idx, [])                
+                p_objects[idx] = run_model(idx, []) #ship off job to neuroGPU for next iter                
                 
-                           
-
-        #data_volts_list = run_model(input_values, self.opt_stim_list)
-#         print("DATA VOLTS LIST CURR SHAPE", np.array(data_volts_list).shape, \
-#               "DESIRED SHAPE:", (len(self.opt_stim_list2),ntimestep))
+        data_volts_list = np.reshape(data_volts_list, (nstims,nindv,ntimestep)) 
         
-        score = self.evaluate_score_function(self.opt_stim_list2, target_volts, shaped_volts, weights)
+        #print("DATA VOLTS LIST CURR SHAPE", np.array(data_volts_list).shape, \
+        #"DESIRED SHAPE:", (len(self.opt_stim_list2),ntimestep))
+        
+        score = self.evaluate_score_function(self.opt_stim_list2, target_volts, data_volts_list, weights)
 
         #score = self.evaluate_score_function(self.opt_stim_list, target_volts, data_volts_list, self.weights)    
         ########################################################################################
         #TODO: nevals is staying constant throughout, that needs to change
         ########################################################################################
-        return [score]
+        print(np.array(score).shape, "FINAL SHape") #score shape expected to be (nindvs, number of features*nstims)
+        print(score[0])
+        return score
 
     
 algo._evaluate_invalid_fitness =hoc_evaluator.my_evaluate_invalid_fitness

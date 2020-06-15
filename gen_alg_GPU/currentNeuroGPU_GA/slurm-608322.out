@@ -1,0 +1,392 @@
+got stim num 1
+/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python 
+Length: 65
+got stim num 2
+/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python 
+Length: 65
+got stim num 0
+/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python 
+Length: 65
+Start reading file - ReadSimData()
+Start reading file - ReadSimData()
+Start reading file - ReadSimData()
+ReadCSVStim 
+ReadCSVStim 
+ReadCSVStim 
+ ntempnsets241
+got stim num 3
+/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python 
+Length: 65
+Start reading file - ReadSimData()
+ReadCSVStim 
+ ntempnsets241
+ ntempnsets241
+ ntempnsets241
+got stim num 4
+/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python 
+Length: 65
+Start reading file - ReadSimData()
+ReadCSVStim 
+got stim num 5
+/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python 
+Length: 65
+Start reading file - ReadSimData()
+ReadCSVStim 
+got stim num 6
+/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python 
+Length: 65
+Start reading file - ReadSimData()
+ReadCSVStim 
+ ntempnsets241
+ ntempnsets241
+ ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 1
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 3
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 4
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 2
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 5
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 0
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 6
+done initframework dev0 curr Kernel is 1001
+calling kernel dev1
+done initframework dev0 curr Kernel is 1001
+calling kernel dev3
+done initframework dev0 curr Kernel is 1001
+calling kernel dev2
+in mallocing loop
+******
+kernel not ran yet
+in mallocing loop
+******
+kernel ran before memcpyasync currkernel run is 1001
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 1001
+calling kernel dev6
+done initframework dev0 curr Kernel is 1001
+calling kernel dev5
+in mallocing loop
+******
+kernel not ran yet
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 1001
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 1001
+calling kernel dev4
+kernel ran before memcpyasync currkernel run is 1001
+done copying*&*&*&*&*&*&*
+out of the loop
+in mallocing loop
+******
+in mallocing loop
+******
+done initframework dev0 curr Kernel is 1001
+calling kernel dev0
+kernel not ran yet
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 1001
+done copying*&*&*&*&*&*&*
+out of the loop
+kernel ran before memcpyasync currkernel run is 1001
+done copying*&*&*&*&*&*&*
+out of the loop
+in mallocing loop
+******
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 1001
+done copying*&*&*&*&*&*&*
+out of the loop
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 1001
+done copying*&*&*&*&*&*&*
+out of the loop
+done synch3
+done synch1
+it took 8585.499023 ms
+it took 8592.021484 ms
+
+printing ../Data/VHotP3.dat size is 5005000
+
+printing ../Data/VHotP1.dat size is 5005000
+done synch6
+it took 8584.174805 ms
+
+printing ../Data/VHotP6.dat size is 5005000
+done synch0
+done synch2
+it took 8587.067383 ms
+
+printing ../Data/VHotP0.dat size is 5005000
+it took 8610.258789 ms
+
+printing ../Data/VHotP2.dat size is 5005000
+done synch5
+it took 8615.930664 ms
+done synch4
+
+printing ../Data/VHotP5.dat size is 5005000
+it took 8617.666016 ms
+
+printing ../Data/VHotP4.dat size is 5005000
+*****
+Init evaluator
+1001
+running stim #
+running stim ind0
+running stim ind1
+running stim ind2
+running stim ind3
+running stim ind4
+running stim ind5
+running stim ind6
+running stim ind7
+TIME 1:  -11.603334426879883
+evaling stim: 7
+module name: neurogpu_multistim_evaluator_par
+parent process: 4487
+process id: 4550
+evaling stim: 0
+module name: neurogpu_multistim_evaluator_par
+parent process: 4487
+process id: 4543
+in efel before getting features
+in efel after getting features
+['best indvs ', array([  47.05186043, 1000.        ,   46.26530901,  171.        ,
+       1000.        , 1000.        ,   51.16237497])]
+evaling stim: 1
+module name: neurogpu_multistim_evaluator_par
+parent process: 4487
+process id: 4544
+in efel before getting features
+in efel after getting features
+['best indvs ', array([  46.6828371 , 1000.        ,   46.02803258,  223.28860249,
+       1000.        , 1000.        ,   51.06960241])]
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: 
+Voltage never goes below or above threshold in spike detection.
+
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+Feature [peak_voltage] is missing
+AP_amplitude: Error calculating peak_voltage
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature spike_half_width: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AHP_depth: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_values] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: AP_amplitude: Error calculating AP_begin_indicies
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: 
+Voltage never goes below or above threshold in spike detection.
+
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+Feature [peak_voltage] is missing
+AP_amplitude: Error calculating peak_voltage
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature spike_half_width: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AHP_depth: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_values] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: AP_amplitude: Error calculating AP_begin_indicies
+  RuntimeWarning)
+evaling stim: 2
+module name: neurogpu_multistim_evaluator_par
+parent process: 4487
+process id: 4545
+in efel before getting features
+in efel after getting features
+['best indvs ', array([  47.91579376, 1000.        ,   45.75704797,  252.263883  ,
+       1000.        , 1000.        ,   51.13424945])]
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: 
+Voltage never goes below or above threshold in spike detection.
+
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+Feature [peak_voltage] is missing
+AP_amplitude: Error calculating peak_voltage
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature spike_half_width: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AHP_depth: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_values] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: AP_amplitude: Error calculating AP_begin_indicies
+  RuntimeWarning)
+evaling stim: 3
+module name: neurogpu_multistim_evaluator_par
+parent process: 4487
+process id: 4546
+in efel before getting features
+in efel after getting features
+['best indvs ', array([  46.1522771 , 1000.        ,   45.85210092,  267.10552222,
+       1000.        , 1000.        ,   51.44300416])]
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: 
+Voltage never goes below or above threshold in spike detection.
+
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+Feature [peak_voltage] is missing
+AP_amplitude: Error calculating peak_voltage
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature spike_half_width: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AHP_depth: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_values] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: AP_amplitude: Error calculating AP_begin_indicies
+  RuntimeWarning)
+evaling stim: 4
+module name: neurogpu_multistim_evaluator_par
+parent process: 4487
+process id: 4547
+in efel before getting features
+in efel after getting features
+['best indvs ', array([  46.53190376, 1000.        ,   45.7848873 ,  231.74119185,
+       1000.        , 1000.        ,   51.60835773])]
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: 
+Voltage never goes below or above threshold in spike detection.
+
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+Feature [peak_voltage] is missing
+AP_amplitude: Error calculating peak_voltage
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature spike_half_width: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AHP_depth: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_values] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: AP_amplitude: Error calculating AP_begin_indicies
+  RuntimeWarning)
+evaling stim: 5
+module name: neurogpu_multistim_evaluator_par
+parent process: 4487
+process id: 4548
+in efel before getting features
+in efel after getting features
+['best indvs ', array([  46.14654376, 1000.        ,   45.93586408,  258.25288382,
+       1000.        , 1000.        ,   51.7717794 ])]
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: 
+Voltage never goes below or above threshold in spike detection.
+
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+Feature [peak_voltage] is missing
+AP_amplitude: Error calculating peak_voltage
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature spike_half_width: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_indices] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AHP_depth: 
+ At least one spike required for calculation of min_AHP_indices.
+
+Feature [min_AHP_values] is missing
+
+  RuntimeWarning)
+/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/efel/api.py:480: RuntimeWarning: Error while calculating feature AP_amplitude: AP_amplitude: Error calculating AP_begin_indicies
+  RuntimeWarning)
+multiprocessing.pool.RemoteTraceback: 
+"""
+Traceback (most recent call last):
+  File "/usr/common/software/tensorflow/gpu-tensorflow/2.0.0-py37/lib/python3.7/multiprocessing/pool.py", line 121, in worker
+    result = (True, func(*args, **kwds))
+  File "/usr/common/software/tensorflow/gpu-tensorflow/2.0.0-py37/lib/python3.7/multiprocessing/pool.py", line 44, in mapstar
+    return list(map(*args))
+  File "/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python/neurogpu_multistim_evaluator_par.py", line 197, in eval_stim_parallel
+    curr_volts = nrnMread(fn)
+  File "/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python/neurogpu_multistim_evaluator_par.py", line 43, in nrnMread
+    f = open(fileName, "rb")
+FileNotFoundError: [Errno 2] No such file or directory: '../Data/VHotP7.dat'
+"""
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "optimize_parameters_genetic_alg_SG.py", line 74, in <module>
+    main()
+  File "optimize_parameters_genetic_alg_SG.py", line 55, in main
+    pop, hof, log, hst = opt.run(max_ngen=5000, cp_filename='cp.pkl', cp_frequency=1)
+  File "/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/bluepyopt/deapext/optimisations.py", line 291, in run
+    cp_filename=cp_filename)
+  File "/global/homes/r/roybens/.local/cori/gpu-tensorflow2.0.0-py37/lib/python3.7/site-packages/bluepyopt/deapext/algorithms.py", line 119, in eaAlphaMuPlusLambdaCheckpoint
+    invalid_count = _evaluate_invalid_fitness(toolbox, population)
+  File "/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python/neurogpu_multistim_evaluator_par.py", line 162, in my_evaluate_invalid_fitness
+    fitnesses = toolbox.evaluate(invalid_ind)
+  File "/global/cscratch1/sd/roybens/neuroGPU/pyNeuroGPU_unix10000/python/neurogpu_multistim_evaluator_par.py", line 279, in evaluate_with_lists
+    flattened_scores = p.map(self.eval_stim_parallel, np.arange(nstims))
+  File "/usr/common/software/tensorflow/gpu-tensorflow/2.0.0-py37/lib/python3.7/multiprocessing/pool.py", line 268, in map
+    return self._map_async(func, iterable, mapstar, chunksize).get()
+  File "/usr/common/software/tensorflow/gpu-tensorflow/2.0.0-py37/lib/python3.7/multiprocessing/pool.py", line 657, in get
+    raise self._value
+FileNotFoundError: [Errno 2] No such file or directory: '../Data/VHotP7.dat'
+srun: error: cgpu18: task 0: Exited with exit code 1
+srun: Terminating job step 608322.0

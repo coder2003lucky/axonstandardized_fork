@@ -15,9 +15,9 @@ threshold = -10
 
 
 #CHANGED TIME STAMPS
-time_stamps = 10000
-starting_time_stamp = 1000
-ending_time_stamp = 7000
+time_stamps = 5000 #10000
+starting_time_stamp = 100 #1000
+ending_time_stamp = 400 #7000
 
 ########################################################################
 # These functions are util functions.
@@ -471,8 +471,17 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     curr_trace_target['stim_start'] = [stim_start]
     curr_trace_target['stim_end'] = [stim_end]
     traces = [curr_trace_target]
-    #print(np.array(data).shape, "DATA SHAPE")
+    
+    
+    
+    print(np.array(data).shape, "DATA SHAPE")
+    print('data 0')
+    print("nan?:", np.isnan(data[0,:]).any())
+    
+    
+    
     nan_inds_bol = np.isnan(data).any(axis=1)
+    #print(len(nan_inds_bol),"len nan")
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
     data = np.delete(data,nan_inds,axis=0)
     for i in range(len(data)):
@@ -481,7 +490,7 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
         curr_trace_data['stim_start'] = [stim_start]
         curr_trace_data['stim_end'] = [stim_end]
         traces.append(curr_trace_data)
-    #print(len(traces[1]['V']), len(traces[1]['T']))
+    #print(len(traces[0]['V']), len(traces[0]['T']), 'TRACE LEN')
     traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
     #diff_feature = diff_lists(traces_results[0][feature_name], traces_results[1][feature_name])
     #print(diff_feature)
@@ -506,7 +515,9 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     counter = 0
     for ind in nan_inds_bol:
         if ind:
-            res.append(np.zeros(len(curr_feature_list))+100000)
+            print("NEVALS BUG HERE, why is the first individual have nan")
+            #print(1/0)
+            res.append(np.zeros(1)+100000)
         else:
             res.append(curr_feature_list[counter])
             counter +=1

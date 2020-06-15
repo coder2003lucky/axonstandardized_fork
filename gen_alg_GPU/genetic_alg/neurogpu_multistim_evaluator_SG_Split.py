@@ -41,7 +41,7 @@ run_dir = '../bin'
 orig_volts_fn = data_dir + './exp_data.csv' #ORIG volts
 vs_fn = model_dir + 'Data/VHotP'
 times_file_path = model_dir + 'Data/times.csv'
-nstims = 2
+nstims = 3
 target_volts = np.genfromtxt(orig_volts_fn)
 times =  np.cumsum(np.genfromtxt(times_file_path,delimiter=','))
 nCpus =  multiprocessing.cpu_count()
@@ -210,7 +210,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             #pass
         path = "./sleep.sh"
         #p_object = subprocess.Popen(path, shell=True)
-        p_object = subprocess.Popen(['../bin/neuroGPU',str(stim_ind)])
+        p_object = subprocess.Popen(['../bin/h5NeuroGPU',str(stim_ind)])
         #p_object = subprocess.Popen(['../bin/neuroGPU2',str(stim_ind)])
 
         return p_object
@@ -275,6 +275,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         shaped_volts = np.reshape(curr_volts, [nindv, Nt])
         #print("TARG VOLTS", target_volts.shape , "SHaped", shaped_volts.shape)
         stim_scores = efel_ext.eval([target_volts[idx]], shaped_volts,times)
+        print(np.array(stim_scores).shape, "stim scores shape")
         return stim_scores
     
     
@@ -341,7 +342,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         #print ('scoring time took: ', str(time.time()-start_time_scores))
         print ('everything took: ', str(time.time()-start_time_sim))
         #print ( "testing results are the same: ", self.compare_scores_to_SG(scores))
-        print("score shape:", np.array(final_scores).shape)
+        print("score shape:", np.array(final_scores).shape, nstims, ": NSTIM")
 
         return final_scores
 
