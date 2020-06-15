@@ -68,6 +68,7 @@ score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
 stims_path = '../../../stims/stims_full.hdf5'
 #params_opt_ind = [9, 10, 14, 17, 18, 22]
 
+allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
 
 custom_score_functions = [
                     'chi_square_normal',\
@@ -92,6 +93,20 @@ def run_model(stim_ind, params):
     #p_object = subprocess.Popen(['../bin/h5NeuroGPU',str(stim_ind)])
     p_object = subprocess.Popen(['../bin/neuroGPU',str(stim_ind)])
     return p_object
+
+# opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
+# allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
+
+# convert the allen data and save as csv
+def convert_allen_data():
+    for i in range(len(opt_stim_name_list)):
+        stim = opt_stim_name_list[i].decode("utf-8")
+        np.savetxt("../Data/stim_{}.csv".format(i), 
+                   allen_stim_file[stim][:],
+                   delimiter=",")
+        np.savetxt("../Data/dt_{}.csv".format(i), 
+                   allen_stim_file[stim+'_dt'][:],
+                   delimiter=",")
 
 def nrnMreadH5(fileName):
     f = h5py.File(fileName,'r')
