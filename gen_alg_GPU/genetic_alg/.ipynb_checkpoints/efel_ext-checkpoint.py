@@ -99,6 +99,7 @@ def eval(target_volts_list, data_volts_list,times):
     counter = 0
     for ind in nan_inds_bol:
         if ind:
+            print(1/0)
             res.append(np.zeros(len(all_feature_list))+100000)
         else:
             res.append(all_features[counter])

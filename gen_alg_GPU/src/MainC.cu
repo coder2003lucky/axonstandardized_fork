@@ -5,9 +5,9 @@
 #include "CudaStuff.cuh"
 #include "AllModels.cuh"
 
- 
-#include <stdlib.h>  
-#include <stdio.h> 
+
+#include <stdlib.h>
+#include <stdio.h>
 
 #ifdef _WIN32
     #include <direct.h>
@@ -38,15 +38,12 @@ void Init(int argc){
 
 	ReadSimData(Sim_FN,TheMMat.N,sim);
 #ifndef  STIMFROMFILE
-    printf("ReadStimData\n");
 	ReadStimData(Stim_FN, stim,TheMMat.N);
 #endif // !STIMFROMFIL
 #ifndef  STIMFROMCSV
-    printf("ReadStimFromFile \n");
 	ReadStimFromFile(Stim_FN, stim);
 #endif // STIMFROMFILE
 #ifdef  STIMFROMCSV
-     printf("ReadCSVStim \n");
 	ReadCSVStim(stim);
 
 #endif // STIMFROMFILE
@@ -76,7 +73,7 @@ void Init(int argc){
 	//fdebug3 = fopen(Param_DEBUG,"wb");
 	//debugPrintMYFTYPE(ParamsM,tempNsets* TheMMat.NComps * NPARAMS,fdebug3);
 	//fclose(fdebug3);
-	
+
 };
 void freeInit() {
 
@@ -97,19 +94,19 @@ void freeInit() {
 	//CopyVec(V, sim.Vs, TheMMat.N);
 	//CopyVecTwoTypes(VV, sim.Vs, TheMMat.N);
 	free(ParamsMSerial);
-	
+
 	for (int i = 0; i < NSTATES; i++) {
 		free(StatesM[i]);
 	}
 	free(StatesM);
-	
+
 	free(ParamsM);
 }
 
 
 #ifdef RUN_SERIAL
 
-void RunByModelSerial(int argc) {
+void RunByModelSerial() {
 
 	MYDTYPE CompDepth,CompFDepth;
 	//ReadSerialNeuronData(BasicConst_FN, TheMMat);//Since the serial is just for debugging no real reason not to have just the parallel
@@ -341,7 +338,7 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 
 	sprintf(FileName,"%sSegP.csv",FN);
 	//sprintf(FileName,"%s%dSegP.mat",FN,64);
-	//printf("Start reading file - ReadSerialNeuronData() %s\n",FileName);
+	printf("Start reading file - ReadSerialNeuronData() %s\n",FileName);
 	FILE *fl;
 	fl = fopen(FileName, "r");
 	if (!fl)
@@ -349,7 +346,7 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 		printf("Failed to read TreeData.x\n");
 		return;
 	}
-	//printf("*1 mallocing");
+	printf("*1 mallocing");
 	//TheMat.e = (MYSECONDFTYPE*) malloc((TheMat.N+1)*sizeof(MYSECONDFTYPE));
 	//TheMat.f = (MYSECONDFTYPE*) malloc(TheMat.N*sizeof(MYSECONDFTYPE));
 	//TheMat.Ks = (MYDTYPE*) malloc(TheMat.N*sizeof(MYDTYPE));
@@ -358,14 +355,14 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 //	TheMat.Cms = (MYFTYPE*) malloc(TheMat.N*sizeof(MYFTYPE));
 //	TheMat.SonNoVec = (MYDTYPE*) malloc(TheMat.N*sizeof(MYDTYPE));
 //	TheMat.boolModel = (MYDTYPE*) malloc(TheMat.N*TheMat.NModels*sizeof(MYDTYPE));
-	//printf("*3 mallocing");
+	printf("*3 mallocing");
 //	TheMat.RelStarts = (MYDTYPE*) malloc(TheMat.nFathers*sizeof(MYDTYPE));
 //	TheMat.RelEnds = (MYDTYPE*) malloc(TheMat.nFathers*sizeof(MYDTYPE));
 //	TheMat.RelVec = (MYDTYPE*) malloc(TheMat.nCallForFather*sizeof(MYDTYPE));
 //	TheMat.SegStartI = (MYDTYPE*)malloc((TheMat.nCallForFather + 1) * sizeof(MYDTYPE));
 //	TheMat.SegEndI = (MYDTYPE*) malloc((TheMat.nCallForFather+1)*sizeof(MYDTYPE));
 //	TheMat.Fathers= (MYDTYPE*) malloc(TheMat.nFathers*sizeof(MYDTYPE));
-	//printf("*4 done  mallocing");
+	printf("*4 done  mallocing");
 
 
 	char line[409600];
@@ -401,8 +398,8 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 	MYDTYPE* tmpks =  (MYDTYPE*) malloc(TheMat.N*sizeof(MYDTYPE));
 	ReadShortFromCSV(line, tmpks, TheMat.N);
 	TheMat.Ks = tmpks;
-	
-	
+
+
 	fgets(line, sizeof(line), fl);//line 5
 	MYDTYPE* tmpsegtocomp = (MYDTYPE*) malloc(TheMat.N*sizeof(MYDTYPE));
 	ReadShortFromCSV(line, tmpsegtocomp, TheMat.N);
@@ -419,7 +416,7 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 	MYDTYPE* tmpbool = (MYDTYPE*) malloc(TheMat.N*TheMat.NModels*sizeof(MYDTYPE));
 	ReadShortFromCSV(line,tmpbool, TheMat.N*TheMat.NModels);
 	TheMat.boolModel = tmpbool;
-	
+
 	fgets(line, sizeof(line), fl);//line 9
 	//printf("line 9 is \n");
 	//printf(line);
@@ -435,7 +432,7 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 	ReadShortFromCSV(line, &TheMat.nFathers, 1);
 	fgets(line, sizeof(line), fl);//line 13
 	//printf("*** %s",line);
-	
+
 	ReadShortFromCSV(line, &TheMat.nCallForFather, 1);
 	fgets(line, sizeof(line), fl);//line 14
 	//printf("*3.5line 14\n");
@@ -443,39 +440,39 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 	//printf("*4*\n");
 	MYDTYPE* tmprelstarts = (MYDTYPE*) malloc(TheMat.nFathers*sizeof(MYDTYPE));
 	ReadShortFromCSV(line,tmprelstarts, TheMat.nFathers);
-	TheMat.RelStarts = tmprelstarts; 
+	TheMat.RelStarts = tmprelstarts;
 	fgets(line, sizeof(line), fl);//line 15
-	//printf("*5*\n");
+	printf("*5*\n");
 	MYDTYPE* tmprelends = (MYDTYPE*) malloc(TheMat.nFathers*sizeof(MYDTYPE));
 	ReadShortFromCSV(line,tmprelends, TheMat.nFathers);
 	TheMat.RelEnds = tmprelends;
 	fgets(line, sizeof(line), fl);//line 16
-	//printf("*6*\n");
+	printf("*6*\n");
 	MYDTYPE* tmprelvec = (MYDTYPE*) malloc(TheMat.nCallForFather*sizeof(MYDTYPE));
 	ReadShortFromCSV(line,tmprelvec, TheMat.nCallForFather);
 	TheMat.RelVec = tmprelvec;
-	
-	//printf("*7*\n");
+
+	printf("*7*\n");
 	fgets(line, sizeof(line), fl);//line 17
-	//printf("*8*\n");
+	printf("*8*\n");
 	//printf(line);
 	MYDTYPE* tmpsegstarti = (MYDTYPE*)malloc((TheMat.nCallForFather + 1) * sizeof(MYDTYPE));
 	ReadShortFromCSV(line,tmpsegstarti, TheMat.nCallForFather + 1);
 	TheMat.SegStartI = tmpsegstarti;
-	//printf("*8.5*\n");
+	printf("*8.5*\n");
 	//printf(line);
-	//printf("\n");
-	//printf("%d", TheMat.nCallForFather);
+	printf("\n");
+	printf("%d", TheMat.nCallForFather);
 	fgets(line, sizeof(line), fl);//line 18
 	//printf("*9* printing seg end\n");
 	//printf(line);
 	//printf("\n");
-	
-	//printf("*10*\n");
+
+	printf("*10*\n");
 	MYDTYPE* tmpsegendi = (MYDTYPE*) malloc((TheMat.nCallForFather+1)*sizeof(MYDTYPE));
 	ReadShortFromCSV(line,tmpsegendi, TheMat.nCallForFather + 1);
 	TheMat.SegEndI = tmpsegendi;
-	//printf("*11*\n");
+	printf("*11*\n");
 	//printf("%d 12\n",*TheMat.SegEndI);
 	(MYDTYPE*) malloc(TheMat.nFathers*sizeof(MYDTYPE));
 	//printf("aa2\n");
@@ -488,14 +485,14 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 	//printf("\n**\n");
 	//printf(line);
 	#ifdef BKSUB1
-	        //printf("goign to malloc fidxs\n");
+	        printf("goign to malloc fidxs\n");
 		TheMat.FIdxs = (MYDTYPE*) malloc((TheMat.LognDepth)*TheMat.N*sizeof(MYDTYPE));
 		ReadShortFromCSV(line, TheMat.FIdxs, TheMat.LognDepth*TheMat.N);
 	//	printf("*************  %d\n",TheMat.FIdxs[24*512-1]);
 		fgets(line, sizeof(line), fl);//line 21
 	#endif
 	#ifdef BKSUB2
-	  //     printf("2222?\n")
+	       printf("2222?\n")
 		MYDTYPE *Temp = (MYDTYPE*) malloc((TheMat.LognDepth)*TheMat.N*sizeof(MYDTYPE));
 		fread(Temp, (TheMat.LognDepth)*TheMat.N*sizeof(MYDTYPE), 1, fl);
 		free(Temp);
@@ -510,11 +507,11 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 	fgets(line, sizeof(line), fl);
 	TheMat.CompByFLevel32 = (MYDTYPE*) malloc((*CompFDepth)*WARPSIZE*sizeof(MYDTYPE));
 	ReadShortFromCSV(line, TheMat.CompByFLevel32, (*CompFDepth)*WARPSIZE);
-	//printf("*13\n");
+	printf("*13\n");
 	fgets(line, sizeof(line), fl);
 	ReadShortFromCSV(line, &TheMat.nLRel, 1);
 	fgets(line, sizeof(line), fl);
-	//printf("*13.5\n");
+	printf("*13.5\n");
 	TheMat.LRelStarts = (MYDTYPE*) malloc(TheMat.nLRel*sizeof(MYDTYPE));
 	ReadShortFromCSV(line, TheMat.LRelStarts, TheMat.nLRel);
 	fgets(line, sizeof(line), fl);
@@ -530,7 +527,7 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 	ReadShortFromCSV(line, TheMat.FLRelEnds, TheMat.nFLRel);
 	//printf("before if's");
 	#ifdef BKSUB1
-	  //      printf("*15 ifder\n");
+	        printf("*15 ifder\n");
 		MYDTYPE *Temp = (MYDTYPE*) malloc((TheMat.N+1) *sizeof(MYDTYPE));
 		fread(Temp,(TheMat.N+1)*sizeof(MYDTYPE), 1, fl);
 		free(Temp);
@@ -543,14 +540,14 @@ void ReadParallelNeuronData(const char* FN, HMat &TheMat,MYDTYPE *CompDepth,MYDT
 	#endif
 	//printf("failing in closing file\n");
 	//printf(line);
-	//printf("\nfl=%p\n",fl);
+	printf("\nfl=%p\n",fl);
 	//if (fclose(fl)) { printf("error closing file.");  }
 	fclose(fl);
 	//printf("DID NOT CLOSE BASICCONSTSEGP\n");
 	return;
 }
 void FreeReadParallelNeuronData(HMat *TheMat) {
-	
+
 	//free(&TheMat.N);
 	//free(&TheMat.NComps);
 	free(TheMat->SegToComp);
@@ -582,7 +579,7 @@ void FreeReadParallelNeuronData(HMat *TheMat) {
 	free(TheMat->FLRelStarts);
 	free(TheMat->FLRelEnds);
 	free(&TheMat);
-	//printf("done with frees");
+	printf("done with frees");
 	return;
 }
 
@@ -594,7 +591,7 @@ void RunByModelP(int argc) { // YYY add void
 	char* buffer;
     int curr_dev;
     CUDA_RT_CALL(cudaGetDevice(&curr_dev));
-	// Get the current working directory:   
+	// Get the current working directory:
 //	printf("printing pwd");
 	if ((buffer = getcwd(NULL, 0)) == NULL)
 		perror("getcwd error");
@@ -611,7 +608,7 @@ void RunByModelP(int argc) { // YYY add void
 	Init(argc);
     printf("reading file %s\n", BasicConstP_FN);
     if(argc<=1){
-        
+
         p2pCapableGPUs = checkPeerAccess(np2p);
         enablePeerAccess(p2pCapableGPUs,np2p);
     }
@@ -620,10 +617,5 @@ void RunByModelP(int argc) { // YYY add void
     np2p = 0;
     }
 	stEfork2Main(stim,sim, ParamsM,InitStatesM, TheMMat, V,CompDepth,CompFDepth,NSets, p2pCapableGPUs,np2p);
-
-}
-void freeRunByModelP() {
-	//FreeReadParallelNeuronData(&TheMMat);
-	//freeInit();
 
 }

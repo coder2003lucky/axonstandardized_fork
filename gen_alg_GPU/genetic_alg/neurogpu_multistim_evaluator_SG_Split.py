@@ -41,7 +41,7 @@ run_dir = '../bin'
 orig_volts_fn = data_dir + './exp_data.csv' #ORIG volts
 vs_fn = model_dir + 'Data/VHotP'
 times_file_path = model_dir + 'Data/times.csv'
-nstims = 3
+nstims = 2
 target_volts = np.genfromtxt(orig_volts_fn)
 times =  np.cumsum(np.genfromtxt(times_file_path,delimiter=','))
 nCpus =  multiprocessing.cpu_count()
@@ -66,20 +66,16 @@ def makeallparams():
 
 
     #apCsv =  pd.read_csv(filename)
-
-    with open(filename) as f:
-        guts = f.readlines()
-        nSets = int(guts[0])
-        del guts[0]
-        output = [float(s) for line in guts for s in line[:-1].split(',')]
+    output = np.genfromtxt(filename, delimiter=',')
 
 
 
-    output = np.array(output)
-    output = np.reshape(output, (len(output),1))
+
+    #output = np.array(output)
+    #output = np.reshape(output, (len(output),1))
     hf = h5py.File('../Data/AllParams.h5', 'w')
     hf.create_dataset('Data', data=output)
-    hf.create_dataset('nSets', data=nSets)
+    #hf.create_dataset('nSets', data=nSets)
 
     hf.close()
     
@@ -109,9 +105,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             params.append(bpop.parameters.Parameter('p' + str(i), bounds=(self.pmin[i],self.pmax[i])))
 
         self.params = params
-        
-        print(np.array(self.params), "SELF PARAMS")
-
 
         #self.opt_stim_list = read_with_genfromtxt(opt_stim_name_list, str, ' ')
         # ['mean_frequency', 'adaptation_index', 'time_to_first_spike', 'mean_AP_amplitude', 'ISI values', 'spike_half_width']
@@ -210,7 +203,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             #pass
         path = "./sleep.sh"
         #p_object = subprocess.Popen(path, shell=True)
-        p_object = subprocess.Popen(['../bin/h5NeuroGPU',str(stim_ind)])
+        p_object = subprocess.Popen(['../bin/neuroGPU',str(stim_ind)])
         #p_object = subprocess.Popen(['../bin/neuroGPU2',str(stim_ind)])
 
         return p_object
@@ -234,8 +227,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         
         scores2=[]
         for stim_count in range(nstims):
-            fn = vs_fn + str(stim_count) + '.dat'
-            curr_volts = nrnMread(fn)
+            fn = vs_fn + str(stim_count) + '.h5'
+            curr_volts = nrnMreadH5(fn)
             nindv = len(self.param_values)
             Nt = int(len(curr_volts)/nindv)
             shaped_volts = np.reshape(curr_volts, [nindv, Nt])
@@ -297,7 +290,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             
             allparams = allparams_from_mapping(param_values[batch:batch+self.batch_size])
             self.param_values = param_values[batch:batch+self.batch_size]
-            makeallparams() # this is a command to fix allparams shape for batches of different sizes
+            #makeallparams() # this is a command to fix allparams shape for batches of different sizes
             #TODO: it can be improved I think by folding it into allparams file at the end somehow
             
             if lastBatch:
@@ -346,5 +339,5 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 
         return final_scores
 
-algo._evaluate_invalid_fitness =hoc_evaluator.my_evaluate_invalid_fitness
+algo._evaluate_invalid_fitness = hoc_evaluator.my_evaluate_invalid_fitness
 

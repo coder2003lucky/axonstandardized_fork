@@ -51,6 +51,7 @@ def create_optimizer(args):
 		eta=20,
 		mutpb=0.3,
 		cxpb=0.7)
+    
 
 	return opt
 
@@ -109,6 +110,8 @@ def save_logs(fn, best_indvs, population):
 def main():
 	args = get_parser().parse_args()
 	algo._update_history_and_hof = my_update
+	algo._evaluate_invalid_fitness = hoc_ev.hoc_evaluator.my_evaluate_invalid_fitness
+
 	logging.basicConfig(level=(logging.WARNING,
 								logging.INFO,
 								logging.DEBUG)[args.verbose],

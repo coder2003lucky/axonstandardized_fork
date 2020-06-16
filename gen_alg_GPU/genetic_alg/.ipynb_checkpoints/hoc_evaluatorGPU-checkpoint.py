@@ -2,8 +2,6 @@ import numpy as np
 import h5py
 from neuron import h
 import bluepyopt as bpop
-import bluepyopt.deapext.algorithms as algo
-
 import nrnUtils
 import score_functions as sf
 import efel
@@ -23,6 +21,8 @@ import struct
 import time
 import pandas as pd
 from extractModel_mappings_linux import   allparams_from_mapping
+import bluepyopt.deapext.algorithms as algo
+
 
 ########################################################################################
 #TODO: clean up dead weight imports and fix file paths                                                         
@@ -161,7 +161,17 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         #print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
-        self.objectives = [bpop.objectives.Objective('Weighted score functions')]
+        self.objectives = np.repeat(bpop.objectives.Objective('Weighted score functions'),4)
+        print(self.objectives,"OBJS")
+        self.objectives = [bpop.objectives.Objective('voltage_base_1'),\
+                           bpop.objectives.Objective('AP_amplitude_1'),\
+                           bpop.objectives.Objective('voltage_after_stim_1'),\
+                           bpop.objectives.Objective('ISI values_1'),\
+                           bpop.objectives.Objective('spike_half_width_1'),\
+                           bpop.objectives.Objective('AHP_Depth_1'),\
+                           bpop.objectives.Objective('chi_1')]
+        
+                          
         #print("Init target volts")
         
         
@@ -192,6 +202,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         fitnesses = toolbox.evaluate(invalid_ind)
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit
+        
         return len(invalid_ind)
 
 
@@ -201,9 +212,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
          #     "data volts", np.array(data_volts_list).shape, "WEIGHTS:", np.array(weights).shape)
         def eval_function(target, data, function, dt):
             if function in custom_score_functions:
-                ########################################################################################
-                #TODO: fix score function outputs to have all the params                                                   
-                ######################################################################################## 
                 score = [getattr(sf, function)(target, data[i], dt) for indv in data] 
                 #print(np.array(score).shape,"CUSTOM SHape")
             else:
@@ -225,7 +233,11 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 print(1/0)
                 return 1
             return normalized_single_score #want to produce population sized normalized scores
-
+        ########################################################################################
+        #TODO: Change this to work so that output isn't number of score functions * stims but
+        # just number of stims, you can do this by summing over score fucntion ordered list
+        # ask kyung if that is okay
+        ######################################################################################## 
         total_scores = np.array([])
         for i in range(len(stim_name_list)): 
             curr_data_volt = data_volts_list[i,:,:]
@@ -245,7 +257,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 if i == 0 and j == 0:
                     total_scores = np.reshape(norm_scores * curr_weight,(-1,1))
                 else:
-                    #print(total_scores.shape, "TOTAL SCORE SHAPE")
                     total_scores = np.append(total_scores,np.reshape(norm_scores * curr_weight,(-1,1)),axis=1)
         return total_scores
 
@@ -257,7 +268,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         numParams = len(param_values[0])
         # convert these param values to allParams for neuroGPU
         allparams = allparams_from_mapping(param_values) #allparams is not finalized
-        makeallparams()
+        #makeallparams()
+        start_time_sim = time.time()
         p_objects = []
             
         ########################################################################################
@@ -267,15 +279,17 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         weights = np.repeat(self.weights,2)
         data_volts_list = np.array([])
         nstims = len(self.opt_stim_list2)
-    
         
+        start_run_time = time.time()
         for i in range(0, nGpus):
             p_objects.append(run_model(i, []))
         for i in range(0,nstims):
+            if i == 0:
+                    end_run_time = time.time()
             idx = i % (nGpus)
             p_objects[idx].wait() #wait to get volts output from previous run then read and stack
-            fn = vs_fn + str(idx) +  '.dat'    #'.h5'
-            curr_volts = nrnMread(fn) #nrnMreadH5(fn)
+            fn = vs_fn + str(idx) +  '.h5'    #'.h5'
+            curr_volts =  nrnMreadH5(fn)
             nindv = len(param_values)
             Nt = int(len(curr_volts)/nindv)
             shaped_volts = np.reshape(curr_volts, [nindv, Nt])
@@ -295,9 +309,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         score = self.evaluate_score_function(self.opt_stim_list2, target_volts, data_volts_list, weights)
 
         #score = self.evaluate_score_function(self.opt_stim_list, target_volts, data_volts_list, self.weights)    
-        ########################################################################################
-        #TODO: nevals is staying constant throughout, that needs to change
-        ########################################################################################
+        
         print(np.array(score).shape, "FINAL SHape") #score shape expected to be (nindvs, number of features*nstims)
         print(score[0])
         return score

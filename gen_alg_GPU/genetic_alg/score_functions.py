@@ -471,15 +471,6 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     curr_trace_target['stim_start'] = [stim_start]
     curr_trace_target['stim_end'] = [stim_end]
     traces = [curr_trace_target]
-    
-    
-    
-    print(np.array(data).shape, "DATA SHAPE")
-    print('data 0')
-    print("nan?:", np.isnan(data[0,:]).any())
-    
-    
-    
     nan_inds_bol = np.isnan(data).any(axis=1)
     #print(len(nan_inds_bol),"len nan")
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
@@ -515,8 +506,8 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     counter = 0
     for ind in nan_inds_bol:
         if ind:
-            print("NEVALS BUG HERE, why is the first individual have nan")
-            #print(1/0)
+            print("NEVALS BUG HERE, why is there a nan")
+            print(1/0)
             res.append(np.zeros(1)+100000)
         else:
             res.append(curr_feature_list[counter])

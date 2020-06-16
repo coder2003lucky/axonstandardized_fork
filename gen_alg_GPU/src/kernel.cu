@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
         }
     printf("got stim num %d\n", stim_ind);
 	CUDA_RT_CALL(cudaSetDevice(stim_ind));
+
 	RunByModelP(argc);
 	return 0;
 }
-

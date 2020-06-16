@@ -140,19 +140,16 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         #self.toolbox.register("evaluate", self.evaluator.evaluate_with_lists)
     def my_evaluate_invalid_fitness(toolbox, population):
         '''Evaluate the individuals with an invalid fitness
-
         Returns the count of individuals with invalid fitness
         '''
-       
-            
         invalid_ind = [ind for ind in population if not ind.fitness.valid]
         invalid_ind = [population[0]] + invalid_ind 
         print(len(invalid_ind))    
         fitnesses = toolbox.evaluate(invalid_ind)
         for ind, fit in zip(invalid_ind, fitnesses):
             ind.fitness.values = fit
-
         return len(invalid_ind)
+    
     def run_model(self,stim_ind,params):
         print("running stim ind" + str(stim_ind))
         volts_fn = vs_fn + str(stim_ind) + '.dat'
@@ -161,8 +158,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         p_object = subprocess.Popen(['../bin/neuroGPU',str(stim_ind)])
         return p_object
    
-    
-
 
     def evaluate_with_lists(self,param_values):
         nindv = len(param_values)
@@ -193,10 +188,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         print ('simulation time took: ', str(stim_end_time-start_time_sim))
         print ('scoring time took: ', str(time.time()-start_time_scores))
         print ('everything took: ', str(time.time()-start_time_sim))
-        print(scores[0])
+        print(np.array(scores).shape, "SCORES FINAL SHAPE")
         return scores
 
 algo._evaluate_invalid_fitness =hoc_evaluator.my_evaluate_invalid_fitness
-
-
-
