@@ -110,7 +110,6 @@ def save_logs(fn, best_indvs, population):
 def main():
 	args = get_parser().parse_args()
 	algo._update_history_and_hof = my_update
-	algo._evaluate_invalid_fitness = hoc_ev.hoc_evaluator.my_evaluate_invalid_fitness
 
 	logging.basicConfig(level=(logging.WARNING,
 								logging.INFO,
