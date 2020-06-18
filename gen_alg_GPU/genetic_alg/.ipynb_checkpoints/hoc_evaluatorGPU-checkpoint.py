@@ -196,8 +196,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         
         Return
         --------------------
-        List of scores for each parameter set and each respective weighted score function and stim combination
-        ie: if there are 16 stims and 25 objective functions then output will be (nindv, 25*16)
+        List of scores for each parameter set
         '''
         def eval_function(target, data, function, dt):
             '''changed from hoc eval so that it returns eval for list of indvs, not just one'''
@@ -261,8 +260,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         
         Return
         --------------------
-        List of scores for each parameter set and each respective weighted score function and stim combination
-        ie: if there are 16 stims and 25 objective functions then output will be (nindv, 25*16)
+        List of scores for each parameter set (nindv, 1)
         '''
         stim_reset()
         nindv = len(param_values)
