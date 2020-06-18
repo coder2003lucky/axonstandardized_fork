@@ -9,7 +9,7 @@ import pandas as pd
 import os
 import subprocess
 import time
-import shutil
+import shutil, errno
 import struct
 from extractModel_mappings_linux import   allparams_from_mapping
 import bluepyopt.deapext.algorithms as algo
@@ -41,6 +41,7 @@ times_file_path = model_dir + '/Data/times.csv'
 target_volts = np.genfromtxt(orig_volts_fn)
 times =  np.cumsum(np.genfromtxt(times_file_path,delimiter=','))
 #nCpus =  multiprocessing.cpu_count()
+nstims = 4
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 
 objectives_file = h5py.File('./objectives/multi_stim_without_sensitivity_' + model \
@@ -88,6 +89,30 @@ def convert_allen_data():
         np.savetxt("../Data/dt_{}.csv".format(i), 
                    allen_stim_file[stim+'_dt'][:],
                    delimiter=",")
+ 
+    
+
+def stim_swap(idx, i):
+    old_stim = '../Data/Stim_raw' + str(idx) + '.csv'
+    old_time = '../Data/times' + str(idx) + '.csv'
+    if os.path.exists(old_stim):
+        os.remove(old_stim)
+        os.remove(old_time)
+    os.rename(r'../Data/Stim_raw' + str(i) + '.csv', r'../Data/Stim_raw' + str(idx) + '.csv')
+    os.rename(r'../Data/times' + str(i) + '.csv', r'../Data/times' + str(idx) + '.csv')
+
+def stim_reset():
+    shutil.rmtree('../Data')
+    copyanything('../DataFroze', '../Data')
+    
+def copyanything(src, dst):
+    try:
+        shutil.copytree(src, dst)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dst)
+        else: raise
+    
 
 def nrnMreadH5(fileName):
     f = h5py.File(fileName,'r')
@@ -138,27 +163,12 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         #print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
-        self.objectives = np.repeat(bpop.objectives.Objective('Weighted score \
-        functions'),len(score_function_ordered_list)*nstims) #for 16 stims
-        ########################################################################################
-        #TODO: Determine how many objectives it makes sense to have
-        ########################################################################################
-    
-        ########################################################################################
-        #TODO: need to find a way to use pipeline to generate a different target volts somehow? 
-        # code left down here to calculate targ volts on the fly.... we can revist later after 
-        # everything works                                                                     
-        ########################################################################################
         
-        #print(np.array(self.orig_params).shape, "orig params shape")
-#       allparams = allparams_from_mapping(self.orig_params) #allparams is not finalized
-#       # we can still use it to generate generally the same mappings
-#       makeallparams() 
-#       waitfor = run_model(orig_params, self.opt_stim_list)
-#       waitfor.wait()
-#       fn = vs_fn + str(0) + '.h5'
-#       self.target_volts = nrnMreadH5() 
-
+        
+        #self.objectives = [bpop.objectives.Objective('Weighted score functions')]
+        
+        self.objectives = np.repeat(bpop.objectives.Objective('Weighted score \
+        functions'),4) #for 16 stims
 
     def my_evaluate_invalid_fitness(toolbox, population):
         '''Evaluate the individuals with an invalid fitness
@@ -216,6 +226,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         for i in range(len(stim_name_list)): 
             curr_data_volt = data_volts_list[i,:,:]
             curr_target_volt = target_volts_list[i]
+            stim_score = 0
             for j in range(len(score_function_ordered_list)):
                 curr_sf = score_function_ordered_list[j].decode('ascii')
                 curr_weight = weights[len(score_function_ordered_list)*i + j]
@@ -228,10 +239,16 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 for k in range(len(norm_scores)):
                     if np.isnan(norm_scores[k]):
                         norm_scores[k] = 1
-                if i == 0 and j == 0:
-                    total_scores = np.reshape(norm_scores * curr_weight,(-1,1))
+                if j == 0:
+                    stim_score = norm_scores * curr_weight
+                    #stim_score = np.sum(norm_scores * curr_weight)
                 else:
-                    total_scores = np.append(total_scores,np.reshape(norm_scores * curr_weight,(-1,1)),axis=1)
+                    stim_score += norm_scores * curr_weight
+                
+            if i == 0:
+                total_scores = np.reshape(stim_score, (-1,1)) # np.array([stim_score])
+            else:
+                total_scores = np.append(total_scores,np.reshape(stim_score, (-1,1)),axis=1)
         return total_scores
 
     def evaluate_with_lists(self, param_values):
@@ -247,6 +264,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         List of scores for each parameter set and each respective weighted score function and stim combination
         ie: if there are 16 stims and 25 objective functions then output will be (nindv, 25*16)
         '''
+        stim_reset()
         nindv = len(param_values)
         self.nindv = nindv
         numParams = len(param_values[0])
@@ -255,10 +273,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         #makeallparams()
         start_time_sim = time.time()
         p_objects = []
-            
-        ########################################################################################
-        #TODO: get correct files configured so I dont have to fake these                                           
-        ########################################################################################
         self.opt_stim_list2 = self.opt_stim_list * 4
         weights = np.repeat(self.weights,4)
         data_volts_list = np.array([])
@@ -280,16 +294,21 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             Nt = int(len(curr_volts)/nindv)
             shaped_volts = np.reshape(curr_volts, [nindv, Nt])
             if i == 0:
-                data_volts_list = shaped_volts #start stacking volts
+                data_volts_list = np.reshape(shaped_volts, (1,nindv,ntimestep))#start stacking volts
             else:
-                data_volts_list = np.append(data_volts_list, shaped_volts, axis = 0)
+                data_volts_list = np.append(data_volts_list, np.reshape(shaped_volts, (1,nindv,ntimestep)), axis = 0)
             last_batch = i >= (nstims-nGpus) #use this so neuroGPU doesn't keep running 
             if not last_batch:
                 start_times.append(time.time())
-                p_objects[idx] = run_model(idx, []) #ship off job to neuroGPU for next iter                
-                
-        data_volts_list = np.reshape(data_volts_list, (nstims,nindv,ntimestep)) 
+                if idx != i:
+                    stim_swap(idx,i)
+                p_objects[idx] = run_model(idx, []) #ship off job to neuroGPU for next iter
         
+        
+            
+    
+        data_volts_list = np.reshape(data_volts_list, (nstims,nindv,ntimestep))
+        print(data_volts_list[1][0], data_volts_list[3][0])
         eval_start = time.time()
         score = self.evaluate_score_function(self.opt_stim_list2, target_volts, data_volts_list, weights)
         eval_end = time.time()
@@ -298,8 +317,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         print("evaluation took: ", eval_end - eval_start)
         print("everything took: ", eval_end - start_time_sim)
 
-        #score = self.evaluate_score_function(self.opt_stim_list, target_volts, data_volts_list, self.weights)    
-        
+        #score = self.evaluate_score_function(self.opt_stim_list, target_volts, data_volts_list, self.weights)  
+        #score = np.reshape(np.sum(score,axis=1), (-1,1)) # sum over stims, axis =0
+        # gives answer that looks right but it should be axis=1 to sum over stims
+        print(score, "SCORE SHAPE")
         return score
 
     

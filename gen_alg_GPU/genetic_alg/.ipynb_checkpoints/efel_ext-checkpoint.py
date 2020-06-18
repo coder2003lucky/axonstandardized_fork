@@ -71,6 +71,8 @@ def eval(target_volts_list, data_volts_list,times):
         traces_results = efel.getFeatureValues(traces, feature_list, p.map, raise_warnings=False)
     print('in efel after getting features')
     print(len(traces_results))
+    print(np.array(traces_results), "TRACE RES")
+
     if 'chi' in all_feature_list:
         all_chis =  get_chi(target_volts_list[0],data_volts_list,times)
     for i in range(len(data_volts_list)):

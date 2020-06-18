@@ -6,13 +6,14 @@ import bluepyopt as bpop
 import struct
 import time
 import pandas as pd
-import efel_ext
+import efel_ext_old as efel_ext
 import time
 import glob
 import ctypes
 import matplotlib.pyplot as plt
 import bluepyopt.deapext.algorithms as algo
 from extractModel_mappings_linux import   allparams_from_mapping
+import h5py
 
 model_dir = '../'
 param_file ='./params/gen.csv'
@@ -36,8 +37,10 @@ def nrnMread(fileName):
 
 
 
-
-
+def nrnMreadH5(fileName):
+    f = h5py.File(fileName,'r')
+    dat = f['Data'][:][0]
+    return np.array(dat)
 
 
 
@@ -173,12 +176,13 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             p_obj.wait()
             if stim_count == 0:
                 stim_end_time = time.time()
-            fn = vs_fn + str(stim_count) + '.dat'
-            curr_volts = nrnMread(fn)
+            fn = vs_fn + str(stim_count) + '.h5'
+            curr_volts = nrnMreadH5(fn)
             Nt = int(len(curr_volts)/nindv)
             shaped_volts = np.reshape(curr_volts, [nindv, Nt])
             if stim_count == 0:
                 start_time_scores = time.time()
+                print("volts:", shaped_volts[0],"break", shaped_volts[10])
                 scores = efel_ext.eval([target_volts[7]], shaped_volts,times)
             else:
                 stim_scores = efel_ext.eval([target_volts[stim_count]], shaped_volts,times)
@@ -188,7 +192,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         print ('simulation time took: ', str(stim_end_time-start_time_sim))
         print ('scoring time took: ', str(time.time()-start_time_scores))
         print ('everything took: ', str(time.time()-start_time_sim))
-        print(np.array(scores).shape, "SCORES FINAL SHAPE")
+        print(scores[0], scores[4], "SCORES FINAL SHAPE")
         return scores
 
 algo._evaluate_invalid_fitness =hoc_evaluator.my_evaluate_invalid_fitness

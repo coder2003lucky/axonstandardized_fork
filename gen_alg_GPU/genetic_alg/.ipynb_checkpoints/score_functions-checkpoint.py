@@ -15,9 +15,9 @@ threshold = -10
 
 
 #CHANGED TIME STAMPS
-time_stamps = 5000 #10000
-starting_time_stamp = 100 #1000
-ending_time_stamp = 400 #7000
+time_stamps =  10000
+starting_time_stamp = 1000
+ending_time_stamp = 7000
 
 ########################################################################
 # These functions are util functions.
@@ -438,30 +438,19 @@ def DTWDistance(target, data, dt=0.02, stims = None, index = None):
    return DTW[len(target)-1,len(data)-1]/len(target)
 
 def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
-#     def diff_lists(lis1, lis2):
-#         if lis1 is None and lis2 is None:
-#             return 0
-#         if lis1 is None:
-#             lis1 = [0]
-#         if lis2 is None:
-#             lis2 = [0]
-#         len1, len2 = len(lis1), len(lis2)
-#         if len1 > len2:
-#             lis2 = np.concatenate((lis2, np.zeros(len1 - len2)), axis=0)
-#         if len2 > len1:
-#             lis1 = np.concatenate((lis1, np.zeros(len2 - len1)), axis=0)
-#         return np.sqrt(safe_mean((lis1 - lis2)**2))
     def diff_lists(lis1, lis2):
-        if lis1 is None or lis2 is None:
-            return 1000
+        if lis1 is None and lis2 is None:
+            return 0
+        if lis1 is None:
+            lis1 = [0]
+        if lis2 is None:
+            lis2 = [0]
         len1, len2 = len(lis1), len(lis2)
         if len1 > len2:
             lis2 = np.concatenate((lis2, np.zeros(len1 - len2)), axis=0)
         if len2 > len1:
             lis1 = np.concatenate((lis1, np.zeros(len2 - len1)), axis=0)
-        # print(np.sqrt(((lis1 - lis2)**2).mean()))
-        # print('\n')
-        return np.sqrt(((lis1 - lis2)**2).mean())
+        return np.sqrt(safe_mean((lis1 - lis2)**2))
     all_features = []
     time = np.cumsum([dt for i in range(time_stamps)])
     curr_trace_target, curr_trace_data = {}, {}
@@ -476,6 +465,7 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
     data = np.delete(data,nan_inds,axis=0)
     for i in range(len(data)):
+        curr_trace_data = {}
         curr_trace_data['T'] = time
         curr_trace_data['V'] = data[i]
         curr_trace_data['stim_start'] = [stim_start]
@@ -506,8 +496,8 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     counter = 0
     for ind in nan_inds_bol:
         if ind:
-            print("NEVALS BUG HERE, why is there a nan")
-            print(1/0)
+            #print("NEVALS BUG HERE, why is there a nan")
+            #print(1/0)
             res.append(np.zeros(1)+100000)
         else:
             res.append(curr_feature_list[counter])

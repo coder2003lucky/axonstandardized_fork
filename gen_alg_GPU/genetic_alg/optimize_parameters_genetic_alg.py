@@ -1,7 +1,9 @@
 import bluepyopt as bpop
 #import neurogpu_multistim_evaluator_SG_Split as hoc_ev
 #import neurogpu_multistim_evaluator_SG as hoc_ev
-import hoc_evaluatorGPU as hoc_ev
+#import hoc_evaluatorGPU as hoc_ev
+#import hoc_evaluatorGPU_par as hoc_ev
+import hoc_evaluatorGPU_allen as hoc_ev
 #import hoc_evaluator as hoc_ev
 
 import bluepyopt.deapext.algorithms as algo
