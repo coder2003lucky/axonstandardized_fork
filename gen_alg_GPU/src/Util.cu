@@ -359,11 +359,11 @@ void ReadCSVStim(Stim &stim) {
         printf("Failed to read metaStimData1\n");
 
     }
-    char line[160000];
+    char line[900000];
     fgets(line, sizeof(line), fl);
     ReadShortFromCSV(line, &stim.NStimuli, 1);
     fgets(line, sizeof(line), fl);
-    ReadFloatFromCSV(line, &stim.Nt, 1);
+    ReadFloatFromCSV(line, &stim.Nt, 1); 
     fgets(line, sizeof(line), fl);
     ReadShortFromCSV(line, &stim.comp, 1);//this is not currently used.
     fgets(line, sizeof(line), fl);
@@ -398,6 +398,11 @@ void ReadCSVStim(Stim &stim) {
     fgets(line, sizeof(line), f3);
 
     ReadFloatFromCSV(line, stim.durs, stim.Nt);
+    for (int i = 0; i<sizeof(stim.durs)/sizeof(stim.durs[0]); ++i)
+    {
+    std::cout << "DURS:" <<stim.durs[i] << std::endl;
+     }
+
 }
 void FreeStimData(Stim &stim) {
     printf("Still need to implement FreeStimData()\n");

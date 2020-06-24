@@ -164,7 +164,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 
     def evaluate_with_lists(self,param_values):
         nindv = len(param_values)
+        print(param_values[0], "PVAL 0")
         allparams = allparams_from_mapping(param_values)
+        print(1/0)
         scores=[]
         start_time_sim = time.time()
         print('running stim #')
@@ -176,8 +178,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             p_obj.wait()
             if stim_count == 0:
                 stim_end_time = time.time()
-            fn = vs_fn + str(stim_count) + '.h5'
-            curr_volts = nrnMreadH5(fn)
+            fn = vs_fn + str(stim_count) + '.dat'
+            curr_volts = nrnMread(fn)
             Nt = int(len(curr_volts)/nindv)
             shaped_volts = np.reshape(curr_volts, [nindv, Nt])
             if stim_count == 0:

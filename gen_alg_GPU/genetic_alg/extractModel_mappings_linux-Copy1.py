@@ -296,9 +296,9 @@ def allparams_from_mapping(params_input=None):
     param_to_allparam = create_params_to_all_params(psize)
 
     model_mappings = parse_model(model_data)
-    print("Params:", np.array(params).shape)
+
     allparams = my_assemble_allparams(param_to_allparam,f'{data_dir}/AllParams_reference.csv',params,param_mappings)
-    print("ALL P SHAPE:", np.array(allparams).shape)
+    #print("ALL P SHAPE:", np.array(allparams))
 
 
     # collect allparams using function above
