@@ -1,4 +1,21 @@
 #!/bin/bash
+
+
+#!/bin/bash
+
+echo `pwd`
+source ./input.txt
+echo $gaGPU        #test               #test
+echo model
+
+if [ "$gaGPU" = "True" ]
+    then
+       cd gen_alg_GPU/genetic_alg/
+       source ./load_env
+       srun python optimize_parameters_genetic_alg.py --offspring_size $OFFSPRING_SIZE --max_ngen $MAX_NGEN
+       exit 1
+fi
+
 python param_stim_generator/makeParamSet.py
 
 CURRENTDATE=`date +%m_%d_%Y`
@@ -7,7 +24,7 @@ custom=''
 input="input.txt"
 while IFS= read -r line
 do
-    IFS='=' read -ra inputs <<< "$line"
+    IFS="=" read -ra inputs <<< "$line"
     name="${inputs[0]}"
     data="${inputs[1]}"
     printf -v $name "$data"

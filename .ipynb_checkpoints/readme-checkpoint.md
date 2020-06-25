@@ -1,12 +1,16 @@
 # axonstandardized
-Dev and Zander made some standardization updates to the axon research run procedure. Started 10/15/19.
+standardization updates to the axon research run procedure. Started 10/15/19.
 
 To run neurogpu
 ===================================
 1. make sure your account is configured for gpu access
-2. run commands found in tostart_GA_GPU
-3. set capacity variable in hoc_evaluator to number of gpus you allocated
-4. srun
+2. go to playground directory
+3. run command: source load_env
+4. salloc -C gpu -N 1 -t 20 --gres=gpu:8 -c 80  -A m2043 (note: can lower cores or gpus to get node faster)
+5. set GA hyperparams in input.txt
+6. run sh run.sh
+7. find results in cd gen_alg_GPU/genetic_alg/
+
 
 
 

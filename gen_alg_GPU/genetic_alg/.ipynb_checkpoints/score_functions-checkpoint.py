@@ -461,7 +461,6 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     curr_trace_target['stim_end'] = [stim_end]
     traces = [curr_trace_target]
     nan_inds_bol = np.isnan(data).any(axis=1)
-    #print(len(nan_inds_bol),"len nan")
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
     data = np.delete(data,nan_inds,axis=0)
     for i in range(len(data)):

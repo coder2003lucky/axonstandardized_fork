@@ -1,22 +1,6 @@
 #include "Util.h"
 //#include "CudaStuff.cuh"
 #define checkCudaErrors(val)           check ( (val), #val, __FILE__, __LINE__ )
-
-#include <iostream>
-
-#include "H5Cpp.h"
-
-#if defined(unix) || defined(__unix__) || defined(__unix)
-#define UNIX_VERSION true
-#else
-#define UNIX_VERSION false
-#endif
-
-using namespace H5;
-using std::endl;
-using std::cout;
-const H5std_string  datasetname( "Data" ); // dataset key for HDF5
-
 MYFTYPE  maxf(MYFTYPE  a, MYFTYPE  b) {
     if (a>b)
         return a;
@@ -363,7 +347,7 @@ void ReadCSVStim(Stim &stim) {
     fgets(line, sizeof(line), fl);
     ReadShortFromCSV(line, &stim.NStimuli, 1);
     fgets(line, sizeof(line), fl);
-    ReadFloatFromCSV(line, &stim.Nt, 1); 
+    ReadFloatFromCSV(line, &stim.Nt, 1);
     fgets(line, sizeof(line), fl);
     ReadShortFromCSV(line, &stim.comp, 1);//this is not currently used.
     fgets(line, sizeof(line), fl);
@@ -387,21 +371,21 @@ void ReadCSVStim(Stim &stim) {
         ReadFloatFromCSV(line, &stim.amps[i*int(stim.Nt)], stim.Nt);
     }
 
-    sprintf(FileName, "%s%d.csv", Time_steps_prefix,stim_ind);
+    sprintf(FileName, "%s%d.csv", Time_steps_FN,stim_ind);
     //sprintf(FileName,"%s%d.dat",FN,MUL32*32);
     FILE *f3 = fopen(FileName, "r"); // YYY add FILE*
     if (!f3) {
         printf("Failed to read SimData3\n");
+        printf("%s",FileName);
 
     }
+    printf("stim NT:\n");
+    printf("%f\n",stim.Nt);
     stim.durs = (MYFTYPE*)malloc(stim.Nt * sizeof(MYFTYPE));
     fgets(line, sizeof(line), f3);
-
     ReadFloatFromCSV(line, stim.durs, stim.Nt);
-    for (int i = 0; i<sizeof(stim.durs)/sizeof(stim.durs[0]); ++i)
-    {
-    std::cout << "DURS:" <<stim.durs[i] << std::endl;
-     }
+    printf("STIM durs:");
+    printf("%f",stim.durs[0]);
 
 }
 void FreeStimData(Stim &stim) {
@@ -457,43 +441,38 @@ double diffclock(clock_t clock1, clock_t clock2)
 }
 
 void SaveArrayToFile(const char* FN, const int N, const double* Arr) {
+    printf("printing %s size is %d\n", FN, N);
     const int prec = 3;
-
-    if (UNIX_VERSION) {
-        printf("SaveArrayToFile UNIX Version\n");
-        const H5std_string  FILE_NAME( FN );
-        H5File file( FILE_NAME, H5F_ACC_TRUNC );
-        int RANK = 2;
-        hsize_t dimsf[2] = {1, N};
-
-        DataSpace dataspace(RANK, dimsf);
-        FloatType datatype(PredType::NATIVE_DOUBLE);
-        datatype.setOrder(H5T_ORDER_LE);
-        DataSet dataset = file.createDataSet(datasetname, datatype, dataspace);
-        dataset.write(Arr, PredType::NATIVE_DOUBLE );
-    } else {
-        printf("SaveArrayToFile w/o HDF5\n");
-        FILE *file = fopen(FN, "wb");
-        if (file) {
-            fwrite(&N, sizeof(int), 1, file);
-            fwrite(&prec, sizeof(int), 1, file);
-            fwrite(Arr, sizeof(double), N, file);
-        }
-        else {
-            printf("ERR SaveArrayToFile %s %d\n", FN, N);
-        }
-        fclose(file);
+    
+    FILE *file = fopen(FN, "wb");
+    if (file) {
+        fwrite(&N, sizeof(int), 1, file);
+        fwrite(&prec, sizeof(int), 1, file);
+        fwrite(Arr, sizeof(double), N, file);
     }
-
+    else {
+        printf("ERR SaveArrayToFile %s %d\n", FN, N);
+    }
+    fclose(file);
 }
 void SaveArrayToFile(const char* FN, const int N, const float* Arr) {
-    printf("converting %s to double\n", FN);
-    double* arr_dbl = (double*) malloc(N * sizeof(double));
+    printf("\nprinting %s size is %d\n", FN, N);
+    double* arr_dbl;
+    arr_dbl =(double*) malloc(N * sizeof(double));
     const int prec = 3;
     for (int i = 0; i < N; i++) {
         arr_dbl[i] = (double)Arr[i];
     }
-    SaveArrayToFile(FN, N, arr_dbl);
+    FILE *file = fopen(FN, "wb");
+    if (file) {
+        fwrite(&N, sizeof(int), 1, file);
+        fwrite(&prec, sizeof(int), 1, file);
+        fwrite(arr_dbl, sizeof(double), N, file);
+    }
+    else {
+        printf("ERR SaveArrayToFile %s %d\n", FN, N);
+    }
+    fclose(file);
 }
 
 MYFTYPE* transposeMat(MYFTYPE* Arr, MYDTYPE width, MYDTYPE length) {
@@ -532,11 +511,13 @@ void ReadDebugData(const char* FN, MYFTYPE** DebugData, MYDTYPE Nsegs, MYDTYPE N
 FILE *fl;
 MYDTYPE NP;
 fl = fopen(FN, "rb");
+
 for (int i = 0; i<NSTATES; i++){
 DebugData[i] = (MYFTYPE*)malloc((Nsegs*Nt)*sizeof(MYFTYPE));
 fread(DebugData[i], sizeof(MYFTYPE), Nsegs*Nt, fl);
 }
 }
+
 void SetStatesFromDebug(MYFTYPE** StatesM, MYFTYPE** DebugData, MYDTYPE iter, MYDTYPE Nseg){
 MYDTYPE debugIter;
 if (iter>0){
@@ -623,13 +604,13 @@ bool IsAppBuiltAs64()
 }
 int* checkPeerAccess(int &n_p2p) {
     n_p2p = 0;
-    printf("[%s] - Starting...\n");
+    //printf("[%s] - Starting...\n");
     if (!IsAppBuiltAs64())
     {
-        printf("%s is only supported with on 64-bit OSs and the application must be built as a 64-bit target.  Test is being waived.\n");
+    //    printf("%s is only supported with on 64-bit OSs and the application must be built as a 64-bit target.  Test is being waived.\n");
     }
     // Number of GPUs
-    printf("Checking for multiple GPUs...\n");
+    //printf("Checking for multiple GPUs...\n");
     int gpu_n;
     CUDA_RT_CALL(cudaGetDeviceCount(&gpu_n));
     printf("CUDA-capable device count: %i\n", gpu_n);
@@ -659,7 +640,7 @@ int* checkPeerAccess(int &n_p2p) {
             gpuid[gpu_count++] = i;
         }
 
-        printf("> GPU%d = \"%15s\" %s capable of Peer-to-Peer (P2P)\n", i, prop[i].name, (IsGPUCapableP2P(&prop[i]) ? "IS " : "NOT"));
+    //    printf("> GPU%d = \"%15s\" %s capable of Peer-to-Peer (P2P)\n", i, prop[i].name, (IsGPUCapableP2P(&prop[i]) ? "IS " : "NOT"));
     }
 
     // Check for TCC for Windows
@@ -674,7 +655,7 @@ int* checkPeerAccess(int &n_p2p) {
 
     }
     // Check possibility for peer access
-    printf("\nChecking GPU(s) for support of peer to peer memory access...\n");
+    //printf("\nChecking GPU(s) for support of peer to peer memory access...\n");
     int can_access_peer;
     int* p2pCapableGPUs; // We take only 1 pair of P2P capable GPUs
     p2pCapableGPUs = (int*)malloc(gpu_n * sizeof(int));
@@ -686,9 +667,7 @@ int* checkPeerAccess(int &n_p2p) {
     {
         p2pCapableGPUs[i] = -1;
         CUDA_RT_CALL(cudaDeviceCanAccessPeer(&can_access_peer, gpuid[i], 0));
-        printf("> Peer access from %s (GPU%d) -> %s (GPU%d) : %s\n", prop[gpuid[i]].name, gpuid[i],
-            prop[0].name, gpuid[0],
-            can_access_peer ? "Yes" : "No");
+    //    printf("> Peer access from %s (GPU%d) -> %s (GPU%d) : %s\n", prop[gpuid[i]].name, gpuid[i],prop[0].name, gpuid[0],can_access_peer ? "Yes" : "No");
         if (can_access_peer)
         {
             p2pCapableGPUs[i] = gpuid[i];
@@ -707,23 +686,22 @@ void enablePeerAccess(int* p2pCapableGPUs, int np2p) {
     int gpuid[64];
     // Use all  of p2p to 0 capable GPUs detected.
     int gpu_n;
-    int index = 0;
+    //int index = 0;
     CUDA_RT_CALL(cudaGetDeviceCount(&gpu_n));
     for (int i = 1; i < np2p; i++) {
-        printf("in enablep2p i is %d p2p is %d\n", i, np2p);
+    //    printf("in enablep2p i is %d p2p is %d\n", i, np2p);
         gpuid[i] = p2pCapableGPUs[i];
         CUDA_RT_CALL(cudaGetDeviceProperties(&prop[i], gpuid[i]));
-        printf("Enabling peer access from GPU%d to GPU%d...\n", gpuid[i], 0);
+    //    printf("Enabling peer access from GPU%d to GPU%d...\n", gpuid[i], 0);
         CUDA_RT_CALL(cudaSetDevice(gpuid[i]));
         CUDA_RT_CALL(cudaDeviceEnablePeerAccess(0, 0));
-        printf("Checking GPU%d and GPU%d for UVA capabilities...\n", gpuid[0], gpuid[i]);
+    //    printf("Checking GPU%d and GPU%d for UVA capabilities...\n", gpuid[0], gpuid[i]);
         const bool has_uva = (prop[gpuid[0]].unifiedAddressing && prop[gpuid[i]].unifiedAddressing);
-        printf("> %s (GPU%d) supports UVA: %s\n", prop[gpuid[i]].name, gpuid[i], (prop[gpuid[i]].unifiedAddressing ? "Yes" : "No"));
+    //    printf("> %s (GPU%d) supports UVA: %s\n", prop[gpuid[i]].name, gpuid[i], (prop[gpuid[i]].unifiedAddressing ? "Yes" : "No"));
     }
 
-    printf("leaving enablepeeraccess");
+    //printf("leaving enablepeeraccess");
 }
-
 int char2int(char* str){
 return atoi(str);
 }
