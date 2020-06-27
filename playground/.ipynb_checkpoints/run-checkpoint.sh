@@ -10,9 +10,10 @@ echo model
 
 if [ "$gaGPU" = "True" ]
     then
-       cd gen_alg_GPU/genetic_alg/
+       cd gen_alg_GPU/python/
        source ./load_env
-       srun python optimize_parameters_genetic_alg.py --offspring_size $OFFSPRING_SIZE --max_ngen $MAX_NGEN
+       cd ..
+       sbatch running_GA_GPU.sh
        exit 1
 fi
 

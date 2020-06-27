@@ -1,6 +1,0 @@
-Traceback (most recent call last):
-  File "optimize_parameters_genetic_alg_SG.py", line 1, in <module>
-    import bluepyopt as bpop
-ModuleNotFoundError: No module named 'bluepyopt'
-srun: error: cgpu07: task 0: Exited with exit code 1
-srun: Terminating job step 613651.0
