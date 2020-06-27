@@ -34,8 +34,8 @@ target_volts_path = './target_volts/allen_data_target_volts_10000.hdf5'
 target_volts_hdf5 = h5py.File(target_volts_path, 'r')
 ap_tune_stim_name = '18'
 ap_tune_weight = 0
-params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-#params_opt_ind = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+#params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+params_opt_ind = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 model_dir = '..'
 data_dir = model_dir+'/Data/'
 run_dir = '../bin'
@@ -340,7 +340,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         print("evaluation took: ", eval_times)
         print("everything took: ", eval_end - start_time_sim)
         
-        ap_tune_score = self.ap_tune(self.params, self.ap_tune_target, self.ap_tune_stim_name, self.ap_tune_weight)
+        #ap_tune_score = self.ap_tune(self.params, self.ap_tune_target, self.ap_tune_stim_name, self.ap_tune_weight)
        
         #return [score + ap_tune_score]
         score = np.reshape(score,(self.nindv,nstims-2))
