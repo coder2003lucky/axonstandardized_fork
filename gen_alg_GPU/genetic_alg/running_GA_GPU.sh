@@ -1,10 +1,12 @@
 #!/bin/bash
 
-#SBATCH -q debug
+
 #SBATCH -N 1
 #SBATCH -t 00:30:00
-#SBATCH -C knl
+#SBATCH -C gpu
 #SBATCH -L SCRATCH
+#SBATCH --gres=gpu:8
+#SBATCH -A m2043
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
 

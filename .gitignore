@@ -5,4 +5,4 @@ ipcontroller.pid
 ipcontroller_config.py
 tasks.db
 gen_alg_GPU/Data/*
-./gen_alg_GPU 
+ 

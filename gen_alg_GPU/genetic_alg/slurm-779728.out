@@ -1,0 +1,17 @@
+/var/spool/escori.slurmd/job779728/slurm_script: line 25: input.txt: No such file or directory
+running GA
+OFFSPRING_SIZE is
+for generations
+seed:
+my workdir = /global/cscratch1/sd/zladd/axonstandardized/gen_alg_GPU/genetic_alg
+usage: optimize_parameters_genetic_alg.py [-h] [--start] [--continu]
+                                          [--checkpoint CHECKPOINT]
+                                          [--offspring_size OFFSPRING_SIZE]
+                                          [--max_ngen MAX_NGEN]
+                                          [--responses RESPONSES] [--analyse]
+                                          [--compile] [--hocanalyse]
+                                          [--seed SEED] [--ipyparallel]
+                                          [--diversity DIVERSITY] [-v]
+optimize_parameters_genetic_alg.py: error: argument --offspring_size: expected one argument
+srun: error: cgpu07: task 0: Exited with exit code 2
+srun: Terminating job step 779728.0
