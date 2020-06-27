@@ -155,9 +155,11 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             stim = opt_stim_name_list[i].decode("utf-8")
             dt = allen_stim_file[stim+'_dt'][:][0]
             self.dts.append(dt)
-            wtr = csv.writer(open ("../Data/times{}.csv".format(i), 'w'), delimiter=',', lineterminator='\n')
+            f = open ("../Data/times{}.csv".format(i), 'w')
+            wtr = csv.writer(f, delimiter=',', lineterminator='\n')
             current_times = [dt for i in range(ntimestep)]
             wtr.writerow(current_times)
+            f.close()
             np.savetxt("../Data/Stim_raw{}.csv".format(i), 
                        allen_stim_file[stim][:],
                        delimiter=",")
