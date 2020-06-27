@@ -6,7 +6,7 @@ To run neurogpu with sbatch
 1. go into playground directory (axonstandardized/playground/)
 2. make sure inputs.txt has correct offspring_size and ngen and that gaGPU is set to True
 3. run run.sh (in playground)
-4. results pkl files in \textbf{axonstandardized/playground/gen_algGPU/python/}
+10. results pkl files in **axonstandardized/playground/gen_algGPU/python/** and slurm left in axonstandardized/playground/slurm_out/
 
 
 To run neurogpu interactively
@@ -15,8 +15,9 @@ To run neurogpu interactively
 2. run command: source load_env
 3. salloc -C gpu -N 1 -t 20 --gres=gpu:8 -c 80  -A m2043 (note: can lower cores or gpus to get node faster)
 4. run command: source load_env (yes twice)
-5. srun python optimize_parameters_genetic_alg.py --offspring_size 2 --max_ngen 1
-6. results pkl files in axonstandardized/playground/gen_algGPU/python/
+7. srun python optimize_parameters_genetic_alg.py --offspring_size 2 --max_ngen 1
+    **you can also run srun python test_neuroGPU.py to run my unit tests**
+8. results pkl files in axonstandardized/playground/gen_algGPU/python/
 
 if you are running anything using GPU make sure your account is configured for that or else you will get an error saying invalid QOS.
 
