@@ -1,0 +1,464 @@
+running GA
+OFFSPRING_SIZE is 5
+for 1 generations
+seed: 1
+got stim num 0
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+10000.000000
+STIM durs:0.780000 ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 0
+got stim num 2
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+10000.000000
+STIM durs:0.155000 ntempnsets241
+got stim num 7
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+got stim num 1
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+10000.000000
+stim NT:
+10000.000000
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 2
+got stim num 3
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+STIM durs:0.525000 ntempnsets241
+Start reading file - ReadSimData()
+ReadCSVStim 
+STIM durs:0.155000 ntempnsets241
+stim NT:
+10000.000000
+got stim num 5
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+got stim num 6
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+ReadCSVStim 
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 7
+got stim num 4
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+STIM durs:0.450000Start reading file - ReadSimData()
+reading file ../Data/BasicConst
+ ntempnsets241
+in stefork
+calling initframework p2pCapableGPUs[i] is 1
+stim NT:
+ReadCSVStim 
+10000.000000
+Start reading file - ReadSimData()
+ReadCSVStim stim NT:
+
+10000.000000
+stim NT:
+10000.000000
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 3
+STIM durs:0.275000 ntempnsets241
+STIM durs:0.525000 ntempnsets241
+STIM durs:0.450000 ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 6
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 5
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 4
+done initframework dev0 curr Kernel is 6
+calling kernel dev0
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 6
+calling kernel dev2
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 6
+calling kernel dev1
+in mallocing loop
+******
+kernel not ran yet
+done initframework dev0 curr Kernel is 6
+calling kernel dev7
+done initframework dev0 curr Kernel is 6
+calling kernel dev3
+in mallocing loop
+******
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+kernel not ran yet
+done initframework dev0 curr Kernel is 6
+calling kernel dev6
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 6
+calling kernel dev5
+done initframework dev0 curr Kernel is 6
+calling kernel dev4
+in mallocing loop
+******
+kernel not ran yet
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done synch2
+it took 6852.551270 ms
+
+printing ../Data/VHotP2.dat size is 60000
+done synch1
+it took 6852.647949 ms
+
+printing ../Data/VHotP1.dat size is 60000
+done synch6
+it took 6850.864746 ms
+
+printing ../Data/VHotP6.dat size is 60000
+done synch3
+it took 6865.437500 ms
+
+printing ../Data/VHotP3.dat size is 60000
+done synch5
+it took 6864.601562 ms
+
+printing ../Data/VHotP5.dat size is 60000
+done synch4
+it took 6874.785645 ms
+
+printing ../Data/VHotP4.dat size is 60000
+done synch7
+it took 6895.998535 ms
+
+printing ../Data/VHotP7.dat size is 60000
+done synch0
+it took 7967.444824 ms
+
+printing ../Data/VHotP0.dat size is 60000
+Init target volts
+[0.78, 0.155, 0.155, 0.45, 0.45, 0.525, 0.275, 0.525, 0.275, 0.45, 0.155, 0.034999999999999996, 0.155, 0.155, 0.034999999999999996, 0.034999999999999996, 0.034999999999999996, 0.034999999999999996] : DT
+Params: (6, 14)
+ALL P SHAPE: (6, 4577)
+SHAPE DVOLTS: (8, 6, 10000)
+got stim num 0
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+10000.000000
+STIM durs:0.780000 ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 0
+got stim num 1
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+10000.000000
+got stim num 3
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+10000.000000
+STIM durs:0.450000STIM durs:0.155000 ntempnsets241
+ ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 3
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 1
+got stim num 4
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+got stim num 5
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+got stim num 7
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+got stim num 6
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+10000.000000
+stim NT:
+10000.000000
+STIM durs:0.525000 ntempnsets241
+STIM durs:0.275000 ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 7
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 6
+Start reading file - ReadSimData()
+Start reading file - ReadSimData()
+ReadCSVStim 
+ReadCSVStim 
+stim NT:
+10000.000000
+stim NT:
+10000.000000
+STIM durs:0.450000 ntempnsets241
+STIM durs:0.525000 ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 4
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 5
+got stim num 2
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+10000.000000
+STIM durs:0.155000 ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 2
+done initframework dev0 curr Kernel is 6
+calling kernel dev0
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 6
+calling kernel dev3
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 6
+calling kernel dev1
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 6
+calling kernel dev7
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 6
+calling kernel dev6
+done initframework dev0 curr Kernel is 6
+calling kernel dev4
+in mallocing loop
+******
+in mallocing loop
+******
+kernel not ran yet
+kernel not ran yet
+done initframework dev0 curr Kernel is 6
+calling kernel dev2
+in mallocing loop
+******
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done initframework dev0 curr Kernel is 6
+calling kernel dev5
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done synch1
+it took 6859.921387 ms
+
+printing ../Data/VHotP1.dat size is 60000
+done synch3
+it took 6871.809570 ms
+
+printing ../Data/VHotP3.dat size is 60000
+done synch2
+it took 6861.090332 ms
+
+printing ../Data/VHotP2.dat size is 60000
+done synch6
+it took 6865.505371 ms
+
+printing ../Data/VHotP6.dat size is 60000
+done synch7
+it took 6875.663086 ms
+
+printing ../Data/VHotP7.dat size is 60000
+done synch5
+it took 6870.406250 ms
+
+printing ../Data/VHotP5.dat size is 60000
+done synch4
+it took 6889.645020 ms
+
+printing ../Data/VHotP4.dat size is 60000
+done synch0
+it took 7968.703125 ms
+
+printing ../Data/VHotP0.dat size is 60000
+SHAPE DVOLTS: (8, 6, 10000)
+got stim num 0
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+got stim num 1
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+stim NT:
+10000.000000
+10000.000000
+STIM durs:0.780000 ntempnsets241
+STIM durs:0.155000 ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 0
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 1
+done initframework dev0 curr Kernel is 6
+calling kernel dev1
+in mallocing loop
+******
+kernel not ran yet
+done initframework dev0 curr Kernel is 6
+calling kernel dev0
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done synch1
+it took 6825.416992 ms
+
+printing ../Data/VHotP1.dat size is 60000
+done synch0
+it took 7967.698730 ms
+
+printing ../Data/VHotP0.dat size is 60000
+got stim num 0
+/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/genetic_alg 
+Length: 78
+Start reading file - ReadSimData()
+ReadCSVStim 
+stim NT:
+10000.000000
+STIM durs:0.780000 ntempnsets241
+reading file ../Data/BasicConst
+in stefork
+calling initframework p2pCapableGPUs[i] is 0
+done initframework dev0 curr Kernel is 6
+calling kernel dev0
+in mallocing loop
+******
+kernel not ran yet
+kernel ran before memcpyasync currkernel run is 6
+done copying*&*&*&*&*&*&*
+out of the loop
+done synch0
+it took 7967.483398 ms
+
+printing ../Data/VHotP0.dat size is 60000
+average neuroGPU runtime:  9.792090813318888
+neuroGPU runtimes:  [9.81858516 9.82040787 9.8223052  9.82402563 9.82649732 9.82838035
+ 9.83064628 9.83300114 9.97018194 9.97331667 9.9747026  9.96972418
+ 9.96620893 9.9612689  9.95528507 9.95079541 8.97113061 8.96117139]
+evaluation took:  [6.271902561187744, 6.379666090011597]
+everything took:  26.19739055633545
+(6, 1) SCORE SHAPE
+Current generation:  1
+Hall of fame:  [[8.388046024316111e-06, -66.5999984741211, 4.672187855010787, 0.9257824245272863, 0.04234669252063023, 10.865885779502475, 56.70835552896881, 0.07757742595938161, 0.0010202584521154462, 0.07087630286973585, 0.001099975213956179, 13.871863421252824, 0.004547854269029575, 0.0019249445955028892], [6.387609910994547e-06, -66.5999984741211, 9.017844340101952, 1.4847943530840761, 0.3810068027561736, 24.521149645502618, 49.79442559683623, 0.14374353424159658, 0.0022883872686469253, 0.2537062256161904, 0.0009493979049963966, 0.6183327893040138, 0.0022496437258439903, 0.0008636992650793538], [2.2891955856332397e-05, -66.5999984741211, 14.81964837873168, 0.8892676912061811, 0.28455598664708714, 25.905426594631763, 79.23196075474489, 0.020078513876074476, 0.0011590739763343756, 0.012876755059120733, 0.0009080708618989614, 7.5524658991088875, 0.0002531688641800643, 0.000649506704341719], [2.3260524860353012e-05, -66.5999984741211, 11.982400970357657, 2.2844860561020566, 0.3123644002856757, 0.6261267151682618, 71.64840269023169, 0.14654202177617026, 0.0009399580514890317, 0.05343945653543517, 0.0038401400261414754, 5.079783420706261, 0.0007106923486758614, 0.0003320525204389862], [3.0225088498167517e-05, -66.5999984741211, 42.475490748014046, 2.819872583683666, 0.20823332494279598, 37.085951523989095, 34.127237742154215, 0.1163127266852742, 0.002252309628068665, 0.2028810761492332, 0.003460990089194368, 8.607363880880875, 0.004938532465558256, 0.00017384967443190302]] 
+
+log:  gen	nevals	avg    	std    	min    	max    
+1  	6     	3781.18	81.0614	3645.09	3897.31 
+
+History:  <deap.tools.support.History object at 0x2aaabd9ce9e8> 
+
+Best individuals:  [[8.388046024316111e-06, -66.5999984741211, 4.672187855010787, 0.9257824245272863, 0.04234669252063023, 10.865885779502475, 56.70835552896881, 0.07757742595938161, 0.0010202584521154462, 0.07087630286973585, 0.001099975213956179, 13.871863421252824, 0.004547854269029575, 0.0019249445955028892]] 
+

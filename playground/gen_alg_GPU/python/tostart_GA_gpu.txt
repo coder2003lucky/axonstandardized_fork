@@ -1,0 +1,7 @@
+
+
+
+source load_env
+salloc -C gpu -N 1 -t 80 --gres=gpu:8 -c 80 -A m2043 #can load less gpus if needed
+source load_env
+srun python optimize_parameters_genetic_alg.py --offspring_size 25 --max_ngen 1
