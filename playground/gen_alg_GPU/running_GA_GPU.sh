@@ -1,11 +1,11 @@
 #!/bin/bash
 
 #SBATCH -N 1
-#SBATCH -t 00:30:00
+#SBATCH -t 02:00:00
 #SBATCH -C gpu
 #SBATCH -L SCRATCH
 #SBATCH --mail-user=zladd@berkeley.edu
-#SBATCH --mail-type=FAIL
+#SBATCH --mail-type=ALL
 #SBATCH --gres=gpu:8
 #SBATCH -c 80
 #SBATCH -A m2043 
@@ -25,17 +25,18 @@ echo for ${MAX_NGEN} generations
 echo seed: ${seed}
 
 export OMP_NUM_THREADS=1
-export IPYTHONDIR=${PWD}/.ipython
-export IPYTHON_PROFILE=benchmark.${SLURM_JOBID}
 
 
 cd python/
+
+module purge all
+source load_env
 
 srun python optimize_parameters_genetic_alg.py --offspring_size $OFFSPRING_SIZE --max_ngen $MAX_NGEN 
 
 cd ../
 
-mv slurm* ../slurm_out
+mv slurm* ../slurm_out/
 
 # dirToRun="genetic_alg/"
 
@@ -51,11 +52,9 @@ mv slurm* ../slurm_out
 
 # nrnivmodl
 # ipcontroller --init --ip='*' --sqlitedb --ping=30000 --profile=${IPYTHON_PROFILE} &
-sleep 100
 # srun -n 120 ipengine --timeout=50 --profile=${IPYTHON_PROFILE} &
 #FOR KYUNG to change later ^ I don't have enough hours for this
 # srun -n 60 ipengine --timeout=50 --profile=${IPYTHON_PROFILE} &
-sleep 100
 
 #CHECKPOINTS_DIR="checkpoints"
 #mkdir -p ${CHECKPOINTS_DIR}

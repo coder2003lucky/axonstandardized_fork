@@ -5,8 +5,9 @@ To run neurogpu with sbatch
 ===================================
 1. go into playground directory (axonstandardized/playground/)
 2. make sure inputs.txt has correct offspring_size and ngen and that gaGPU is set to True
-3. run run.sh (in playground)
-10. results pkl files in **axonstandardized/playground/gen_algGPU/python/** and slurm left in axonstandardized/playground/slurm_out/
+3. run "module load esslurm"
+3. run "sh run.sh" (in playground)
+4. results pkl files in **axonstandardized/playground/gen_algGPU/python/** and slurm left in axonstandardized/playground/slurm_out/
 
 
 To run neurogpu interactively

@@ -10,6 +10,8 @@ import numpy as np
 from datetime import datetime
 import argparse
 import os
+os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
+os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4 
 import sys
 import argparse
 import textwrap
@@ -45,7 +47,7 @@ def create_optimizer(args):
 	seed = os.getenv('BLUEPYOPT_SEED', args.seed)
 	opt = bpop.optimisations.DEAPOptimisation(
 		evaluator=evaluator,
-		map_function=map_function,
+		#map_function=map_function,
 		seed=seed,
 		eta=20,
 		mutpb=0.3,
@@ -114,7 +116,16 @@ def main():
 								logging.INFO,
 								logging.DEBUG)[args.verbose],
 								stream=sys.stdout)
-	opt = create_optimizer(args)
+	#opt = create_optimizer(args)
+	evaluator = hoc_ev.hoc_evaluator()
+	seed = os.getenv('BLUEPYOPT_SEED', args.seed)
+	opt = bpop.optimisations.DEAPOptimisation(
+		evaluator=evaluator,
+		#map_function=map_function,
+		seed=seed,
+		eta=20,
+		mutpb=0.3,
+		cxpb=0.7)
 	pop, hof, log, hst = opt.run(max_ngen=args.max_ngen,
 		offspring_size=args.offspring_size,
 		continue_cp=args.continu,

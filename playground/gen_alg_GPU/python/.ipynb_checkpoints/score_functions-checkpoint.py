@@ -495,7 +495,7 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     counter = 0
     for ind in nan_inds_bol:
         if ind:
-            #print("NEVALS BUG HERE, why is there a nan")
+            print("NEVALS BUG HERE, why is there a nan")
             #print(1/0)
             res.append(np.zeros(1)+100000)
         else:

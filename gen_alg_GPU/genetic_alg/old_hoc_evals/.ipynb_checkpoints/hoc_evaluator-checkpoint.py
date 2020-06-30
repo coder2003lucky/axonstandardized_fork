@@ -6,48 +6,23 @@ import nrnUtils
 import score_functions as sf
 import efel
 import pandas as pd
-import os
+import ap_tuner as tuner
 
-
-
-
-model='bbp'
-peeling='potassium'
-date='04_08_2020'
-params_opt_ind=[5,7,12,13,17]
 run_file = './run_model_cori.hoc'
-run_volts_path = '../../../run_volts/run_volts_' + model + "_" + peeling
-paramsCSV = '../../playground/param_stim_generator/params_reference/params_'+ model + '_' + peeling +'.csv'
-orig_params = h5py.File('params_' + model + '_' + peeling + '.hdf5', 'r')['orig_' + peeling][0]
+run_volts_path = '../run_volts_bbp_full_gpu_tuned/'
+paramsCSV = run_volts_path+'params/params_bbp_full_gpu_tuned_10_based.csv'
+orig_params = h5py.File(run_volts_path+'params/params_bbp_full_allen_gpu_tune.hdf5', 'r')['orig_full'][0]
 scores_path = '../scores/'
-
-
-
-model_dir = '../'
-param_file ='./params/gen.csv'               #What is gen.csv? does it matter?
-data_dir = model_dir+'/Data/'
-params_table = data_dir + 'opt_table.csv'    #bbp template ORIG
-run_dir = '../bin'
-orig_volts_fn = data_dir + 'exp_data.csv' #ORIG volts
-vs_fn = model_dir + '/Data/VHotP'
-times_file_path = model_dir + '/Data/times.csv'
-nstims = 2
-target_volts = np.genfromtxt(orig_volts_fn)
-times =  np.cumsum(np.genfromtxt(times_file_path,delimiter=','))
-#nCpus =  multiprocessing.cpu_count()
-# TO DO: set link to correct objectives_file
-# objectives_file = h5py.File('./objectives/multi_stim_without_sensitivity_' + model +  '_' + peeling \
-# + '_1_0_20_stims_no_v_init.hdf5', 'r')
-#objectives_file = h5py.File('./objectives/multi_stim_without_sensitivity_bbp_sodium_1_0_20_stims_no_v_init.hdf5', 'r')
-objectives_file = h5py.File('./objectives/multi_stim_without_sensitivity_' + model \
-+ '_' + peeling +'_'+ date + '_stims.hdf5', 'r')
+objectives_file = h5py.File('./objectives/multi_stim_bbp_full_allen_gpu_tune_18_stims.hdf5', 'r')
 opt_weight_list = objectives_file['opt_weight_list'][:]
 opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
 score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
-stims_path = '../stims/stims_full.hdf5'
-#params_opt_ind = [9, 10, 14, 17, 18, 22]
-
-
+stims_path = run_volts_path+'/stims/allen_data_stims_10000.hdf5'
+target_volts_path = './target_volts/allen_data_target_volts_10000.hdf5'
+target_volts_hdf5 = h5py.File(target_volts_path, 'r')
+ap_tune_stim_name = '18'
+ap_tune_weight = 0
+params_opt_ind = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 
 custom_score_functions = [
 					'chi_square_normal',\
@@ -61,26 +36,39 @@ custom_score_functions = [
 # Number of timesteps for the output volt.
 ntimestep = 10000
 
-# Value of dt in miliseconds
-dt = 0.02
-
 def run_model(param_set, stim_name_list):
 	h.load_file(run_file)
 	volts_list = []
 	for elem in stim_name_list:
-		curr_stim = h5py.File(stims_path, 'r')[elem][:]
+		stims_hdf5 = h5py.File(stims_path, 'r')
+		curr_stim = stims_hdf5[elem][:]
 		total_params_num = len(param_set)
+		dt = stims_hdf5[elem+'_dt']
 		timestamps = np.array([dt for i in range(ntimestep)])
 		h.curr_stim = h.Vector().from_python(curr_stim)
 		h.transvec = h.Vector(total_params_num, 1).from_python(param_set)
 		h.stimtime = h.Matrix(1, len(timestamps)).from_vector(h.Vector().from_python(timestamps))
 		h.ntimestep = ntimestep
 		h.runStim()
-		out = h.vecOut.to_python()
+		out = h.vecOut.to_python()		
 		volts_list.append(out)
 	return np.array(volts_list)
 
 def evaluate_score_function(stim_name_list, target_volts_list, data_volts_list, weights):
+	def get_fist_zero(stim):
+		for i in range(len(stim)-2, -1, -1):
+			if stim[i] > 0 and stim[i+1] == 0:
+				return i+1
+		return None
+	def check_ap_at_zero(stim, volt):
+		first_zero_ind = get_fist_zero(stim)
+		if first_zero_ind:
+			if np.mean(stim[first_zero_ind:]) == 0:
+				first_ind_to_check = first_zero_ind + 1000
+				APs = [True if v > -50 else False for v in volt[first_ind_to_check:]]
+				if True in APs:
+					return 400
+		return 0
 	def eval_function(target, data, function, dt):
 		if function in custom_score_functions:
 			score = getattr(sf, function)(target, data, dt)
@@ -101,6 +89,10 @@ def evaluate_score_function(stim_name_list, target_volts_list, data_volts_list, 
 	for i in range(len(stim_name_list)):
 		curr_data_volt = data_volts_list[i]
 		curr_target_volt = target_volts_list[i]
+		stims_hdf5 = h5py.File(stims_path, 'r')
+		dt = stims_hdf5[stim_name_list[i]+'_dt'][0]
+		curr_stim = stims_hdf5[stim_name_list[i]][:]
+		total_score += check_ap_at_zero(curr_stim, curr_data_volt)
 		for j in range(len(score_function_ordered_list)):
 			curr_sf = score_function_ordered_list[j].decode('ascii')
 			curr_weight = weights[len(score_function_ordered_list)*i + j]
@@ -115,6 +107,13 @@ def evaluate_score_function(stim_name_list, target_volts_list, data_volts_list, 
 			total_score += norm_score * curr_weight
 	return total_score
 
+def ap_tune(param_values, target_volts, stim_name, weight):
+	stim_list = [stim_name]
+	data_volt = run_model(param_values, stim_list)[0]
+	stims_hdf5 = h5py.File(stims_path, 'r')
+	dt = stims_hdf5[stim_name+'_dt']
+	return tuner.fine_tune_ap(target_volts, data_volt, weight, dt)
+
 class hoc_evaluator(bpop.evaluators.Evaluator):
 	def __init__(self):
 		"""Constructor"""
@@ -125,20 +124,32 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 		self.orig_params = orig_params
 		self.params = [bpop.parameters.Parameter(name, bounds=(minval, maxval)) for name, minval, maxval in params_]
 		print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
-		print("Orig params:", self.orig_params)
 		self.weights = opt_weight_list
 		self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
 		self.objectives = [bpop.objectives.Objective('Weighted score functions')]
 		print("Init target volts")
-		self.target_volts_list = run_model(orig_params, self.opt_stim_list)
-
+		self.target_volts_list = [target_volts_hdf5[s][:] for s in self.opt_stim_list]
+		self.ap_tune_stim_name = ap_tune_stim_name
+		self.ap_tune_weight = ap_tune_weight
+		self.ap_tune_target = target_volts_hdf5[self.ap_tune_stim_name][:]
+		
 	def evaluate_with_lists(self, param_values):
-		input_values = self.orig_params
+		input_values = np.copy(self.orig_params)
 		for i in range(len(param_values)):
 			curr_opt_ind = self.opt_ind[i]
 			input_values[curr_opt_ind] = param_values[i]
-		data_volts_list = run_model(input_values, self.opt_stim_list*5)
-		print(np.array(param_values).shape)    
+		data_volts_list = run_model(input_values, self.opt_stim_list)
 		score = evaluate_score_function(self.opt_stim_list, self.target_volts_list, data_volts_list, self.weights)
-		print(score)
-		return [score]
+# 		ap_tune_score = ap_tune(input_values, self.ap_tune_target, self.ap_tune_stim_name, self.ap_tune_weight)
+		return score #+ ap_tune_score]
+
+
+
+
+
+
+
+
+
+
+
