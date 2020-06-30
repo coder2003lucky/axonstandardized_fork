@@ -34,17 +34,19 @@ target_volts_path = './target_volts/allen_data_target_volts_10000.hdf5'
 target_volts_hdf5 = h5py.File(target_volts_path, 'r')
 ap_tune_stim_name = '18'
 ap_tune_weight = 0
-params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+params_opt_ind = [0, 1,2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 #params_opt_ind = [0, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 model_dir = '..'
 data_dir = model_dir+'/Data/'
 run_dir = '../bin'
 vs_fn = model_dir + '/Data/VHotP'
-#nCpus =  multiprocessing.cpu_count()
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()
 allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
 old_eval = algo._evaluate_invalid_fitness
+
+print("USING nGPUS: ", nGpus, " and USING nCPUS: ", nCpus)
+
 
 
 custom_score_functions = [
@@ -106,10 +108,13 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.opt_ind = params_opt_ind
         data = np.array([data[i] for i in self.opt_ind])
         self.orig_params = orig_params
-        self.pmin = np.array(data[:,1], dtype=np.float32)
-        self.pmax = np.array(data[:,2], dtype=np.float32)
+        self.pmin = np.abs(np.array((data[:,1]), dtype=np.float64))
+        self.pmin[1] = self.pmin[1] - .000001 #TODO, there are some issues with this param
+        # THIS IS A SHORT TERM FIX, need to fix it in evaluate with lists
+        self.pmax = np.abs(np.array((data[:,2]), dtype=np.float64)) 
+        self.pmax[1] = self.pmax[1] + .000001 # need to remove it from optimization and add it back in for mapping
         self.ptarget = self.orig_params
-        params = [] #EITHER Rename this or rename params
+        params = [] 
         for i in range(len(data)):
             #print(params_[i][0])
             params.append(bpop.parameters.Parameter(data[i][0], bounds=(self.pmin[i],self.pmax[i])))
@@ -117,13 +122,16 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
         print("Init target volts")
-        self.target_volts_list = [target_volts_hdf5[s][:] for s in self.opt_stim_list]
-        #print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
+        self.target_volts_list = np.abs([target_volts_hdf5[s][:] for s in self.opt_stim_list])
+        #print("Params to optimize:", params[1])
         self.objectives = [bpop.objectives.Objective('Weighted score functions')]
         self.ap_tune_stim_name = ap_tune_stim_name
         self.ap_tune_weight = ap_tune_weight
         self.ap_tune_target = target_volts_hdf5[self.ap_tune_stim_name][:]
         self.dts = []
+        
+        #print(self.top_ten_SF())
+        #print(1/0)
         
     def my_evaluate_invalid_fitness(toolbox, population):
         '''Evaluate the individuals with an invalid fitness
@@ -213,6 +221,21 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 norm_scores[k] = 1
         return np.reshape(norm_scores * curr_weight,(-1,1)) # TO DO FIX THIS LATER
     
+    def top_ten_SF(self):
+        """finds top ten scoring function indices for every stim
+        TODO:write a unit test"""
+        all_pairs = []
+        for i in range(nGpus):
+            sf_len = len(score_function_ordered_list)
+            curr_weights = self.weights[sf_len*i: sf_len*i + sf_len]
+            top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
+            pairs = list(zip(np.repeat(i,10), [ind for ind in top_inds])) #zips up indices with corresponding stim
+            all_pairs.append(pairs)
+            #all_pairs = np.append(all_pairs,top_ten_pairs)
+        flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
+        #print(flat_pairs)
+        #print("ALL PAIRS", np.shape(np.array(all_pairs)))
+        return flat_pairs
 
     
     def eval_in_par(self):
@@ -231,7 +254,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         --------------------
         2d list of scalar scores for each parameter set w/ shape (nindv,1)
         '''
-        fxnsNStims = [(x,y) for x in range(nGpus) for y in range(len(score_function_ordered_list)) ] 
+        #fxnsNStims = [(x,y) for x in range(nGpus) for y in range(10) ] #range(len(score_function_ordered_list)) ] **june28
+        #print(fxnsNStims)
+        fxnsNStims = self.top_ten_SF()
+        #print(fxnsNStims)
         with Pool(nCpus) as p:
             res = p.map(self.test_par, fxnsNStims)
         res = np.array(list(res))
@@ -286,13 +312,14 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         '''
         
         #stim_reset()   #TODO dont need both of these
+        self.dts = []
         self.convert_allen_data()    
         self.nindv = len(param_values)
         # convert these param values to allParams for neuroGPU
         allparams = allparams_from_mapping(param_values) #allparams is not finalized
         self.data_volts_list = np.array([])
         nstims = len(self.opt_stim_list)
-        #nstims = 4 #testing
+        #nstims = 10 #testing
         start_time_sim = time.time()
         p_objects = []
         score = []
@@ -349,7 +376,11 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         score = np.reshape(np.sum(score,axis=1), (-1,1)) # sum over stims, axis =0
         # gives answer that looks right but it should be axis=1 to sum over stims
         print(score.shape, "SCORE SHAPE")
-        return score
+        print(np.isnan(score).any(), ": nan scores?")
+        #score[1:,0]  =  score[1:,0] + 2.4212 #quick fix that first two scores are the same and numpy on sbatch can't handle for some reason
+        #score[0:,0]  =  score[0:,0] + self.nindv/100000 + np.random.random_sample()
+        print(score, ": score")
+        return score.astype(float)
 
     
 algo._evaluate_invalid_fitness =hoc_evaluator.my_evaluate_invalid_fitness

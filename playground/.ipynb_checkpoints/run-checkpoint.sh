@@ -6,13 +6,10 @@
 echo `pwd`
 source ./input.txt
 echo $gaGPU        #test               #test
-echo model
 
 if [ "$gaGPU" = "True" ]
     then
-       cd gen_alg_GPU/python/
-       source ./load_env
-       cd ..
+       cd gen_alg_GPU/
        sbatch running_GA_GPU.sh
        exit 1
 fi
@@ -66,10 +63,10 @@ shopt -s nullglob
 found=0
 target_volts=$num_volts
 
-while [ $found -ne $target_volts ]
-do
-        found=`ls -lR ${wrkDir}/volts/*.hdf5 | wc -l`
-done
+# while [ $found -ne $target_volts ]
+# do
+#         found=`ls -lR ${wrkDir}/volts/*.hdf5 | wc -l`
+# done
 
 echo made $num_volts volts successfully
 shopt -u nullglob
@@ -92,10 +89,10 @@ shopt -s nullglob
 found=0
 target_volts=$num_volts
 
-while [ $found -ne $target_volts ]
-do
-        found=`ls -lR ${wrkDir}/scores/*.hdf5 | wc -l`
-done
+# while [ $found -ne $target_volts ]
+# do
+#         found=`ls -lR ${wrkDir}/scores/*.hdf5 | wc -l`
+# done
 
 echo made $num_volts scores successfully
 shopt -u nullglob
@@ -110,10 +107,10 @@ shopt -s nullglob
 found=0
 target_files=1
 
-while [ $found -ne $target_files ]
-do
-        found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
-done
+# while [ $found -ne $target_files ]
+# do
+#         found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
+# done
 
 echo finished creating objectives file
 shopt -u nullglob
