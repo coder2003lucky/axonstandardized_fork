@@ -41,6 +41,8 @@ vs_fn = model_dir + '/Data/VHotP'
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()
 
+print("USING nGPUS: ", nGpus, " and USING nCPUS: ", nCpus)
+
 allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
 
 custom_score_functions = [
@@ -277,7 +279,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         allparams = allparams_from_mapping(param_values) #allparams is not finalized
         self.data_volts_list = np.array([])
         nstims = len(self.opt_stim_list)
-        nstims = 2 #testing only
+        #nstims = 2 #testing only
         start_time_sim = time.time()
         p_objects = []
         score = []
@@ -324,13 +326,13 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         print("evaluation took: ", eval_times)
         print("everything took: ", eval_end - start_time_sim)
         
-        ap_tune_score = self.ap_tune(self.params, self.ap_tune_target, self.ap_tune_stim_name, self.ap_tune_weight)
+#         ap_tune_score = self.ap_tune(self.params, self.ap_tune_target, self.ap_tune_stim_name, self.ap_tune_weight)
        
-        score = np.reshape(score,(self.nindv,nstims))
+        score = np.reshape(score,(self.nindv,nstims-2))
         score = np.reshape(np.sum(score,axis=1), (-1,1)) # sum over stims, axis =0
         # gives answer that looks right but it should be axis=1 to sum over stims
         print(score.shape, "SCORE SHAPE")
-        return score + ap_tune_score
+        return score #+ ap_tune_score
 
     
 algo._evaluate_invalid_fitness =hoc_evaluator.my_evaluate_invalid_fitness
