@@ -9,6 +9,7 @@ comp_width_dict = {}
 comp_height_dict = {}
 traj_score_dict = {}
 threshold = -10
+from concurrent.futures import ProcessPoolExecutor as Pool
 
 # These constants exist for efel features
 
@@ -460,23 +461,29 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     curr_trace_target['stim_start'] = [stim_start]
     curr_trace_target['stim_end'] = [stim_end]
     traces = [curr_trace_target]
-    nan_inds_bol = np.isnan(data).any(axis=1)
+    #print(data.shape,"DATASHAPE")
+    #data = np.array(data).T
+    #print(data.shape,"DATASHAPE")
+    nan_inds_bol = np.isnan(data).any(axis=0)
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
     data = np.delete(data,nan_inds,axis=0)
-    for i in range(len(data)):
+    for i in range(len(data[0])):
         curr_trace_data = {}
         curr_trace_data['T'] = time
-        curr_trace_data['V'] = data[i]
+        curr_trace_data['V'] = data[:,i]
         curr_trace_data['stim_start'] = [stim_start]
         curr_trace_data['stim_end'] = [stim_end]
         traces.append(curr_trace_data)
-    #print(len(traces[0]['V']), len(traces[0]['T']), 'TRACE LEN')
+    #print(len(traces[1]['V']), len(traces[1]['T']), 'TRACE LEN')
+    #print(1/0)
+    #with Pool(nCpus) as p:
+        #traces_results = efel.getFeatureValues(traces, [feature_name] , p.map, raise_warnings=False)
     traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
     #diff_feature = diff_lists(traces_results[0][feature_name], traces_results[1][feature_name])
     #print(diff_feature)
     #return diff_feature
     curr_feature_list = []
-    for i in range(len(data)):
+    for i in range(len(data[0])):
         f_counter = 0
         if feature_name is not 'chi':
             diff_feature = diff_lists(traces_results[0][feature_name], traces_results[i+1][feature_name])
