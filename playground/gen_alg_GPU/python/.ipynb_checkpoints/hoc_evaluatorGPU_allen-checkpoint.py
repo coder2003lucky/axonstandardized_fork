@@ -17,6 +17,7 @@ import bluepyopt.deapext.algorithms as algo
 from concurrent.futures import ProcessPoolExecutor as Pool
 import multiprocessing
 import ap_tuner as tuner
+import csv
 
 run_file = './run_model_cori.hoc'
 run_volts_path = '../run_volts_bbp_full_gpu_tuned/'
@@ -105,27 +106,60 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         super(hoc_evaluator, self).__init__()
         self.orig_params = orig_params
         self.opt_ind = params_opt_ind
-        data = np.array([data[i] for i in params_opt_ind])#self.opt_ind])
+        data = np.array([data[i] for i in self.opt_ind])
+        #print(orig_params, "orig params")
         self.orig_params = orig_params
-        self.pmin = np.array(data[:,1], dtype=np.float32)
-        self.pmax = np.array(data[:,2], dtype=np.float32)
+        #print(1/0)
+        self.pmin = np.array((data[:,1]), dtype=np.float64)
+        # THIS IS A SHORT TERM FIX, need to fix it in evaluate with lists
+        self.pmax = np.array((data[:,2]), dtype=np.float64) 
+        #testing
+        #self.pmin = self.orig_params - .000000001
+        #self.pmax = self.orig_params + .000001
+        self.pmax = np.delete(self.pmax, 1, 0)
+        self.pmin = np.delete(self.pmin, 1, 0)
+        
+        #old
+        #self.pmax[1] = self.pmax[1] + .000001 # need to remove it from optimization and add it back in for mapping
+        #self.pmin[1] = self.pmin[1] - .000001 #TODO, there are some issues with this param 
+        
         self.ptarget = self.orig_params
-        params = [] #EITHER Rename this or rename params
-        for i in range(len(data)):
-            #print(params_[i][0])
+        params = [] 
+        for i in range(len(self.pmin)):
+#              params.append(bpop.parameters.Parameter(data[i][0], bounds=(np.abs(self.ptarget[i])-.000000000001,np.abs(self.ptarget[i])+.0000000000001)))
+            #testing
             params.append(bpop.parameters.Parameter(data[i][0], bounds=(self.pmin[i],self.pmax[i])))
-            
-        self.params = params#[bpop.parameters.Parameter(name, bounds=(minval, maxval)) for name, minval, maxval in params_]
+        self.params = params
+        
+        
+        #to reset mapping 
+           #old 
+        
+#         data = np.genfromtxt(params_table,delimiter=',',names=True)
+#         self.pmin = data[0]
+#         print(self.pmin, "PMIN")
+#         self.pmax = data[1]
+#         self.ptarget = data[2]
+#         params = []
+#         for i in range(len(self.pmin)):
+#             params.append(bpop.parameters.Parameter('p' + str(i), bounds=(self.pmin[i],self.pmax[i])))
+#         self.params = params
+        
+        
+        
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
         print("Init target volts")
-        self.target_volts_list = [target_volts_hdf5[s][:] for s in self.opt_stim_list]#[target_volts_hdf5[s][:] for s in self.opt_stim_list]
-        #print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
+        self.target_volts_list = np.abs([target_volts_hdf5[s][:] for s in self.opt_stim_list])
+        #print("Params to optimize:", params[1])
         self.objectives = [bpop.objectives.Objective('Weighted score functions')]
         self.ap_tune_stim_name = ap_tune_stim_name
         self.ap_tune_weight = ap_tune_weight
         self.ap_tune_target = target_volts_hdf5[self.ap_tune_stim_name][:]
         self.dts = []
+        
+        #print(self.top_ten_SF())
+        #print(1/0)
         
     def my_evaluate_invalid_fitness(toolbox, population):
         '''Evaluate the individuals with an invalid fitness
@@ -146,25 +180,42 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         return p_object
     
     def convert_allen_data(self):
-        '''Convert allen data to CSV files to be read by NeuroGPU
-        TODO: neuroGPU currently only reads tims not times_i, need to fix'''
+        """Sets up allen data in Data folder with dts corresponding to each times 
+        and nstims corresponding to each of those"""
         for i in range(len(opt_stim_name_list)):
             old_stim = "../Data/Stim_raw{}.csv"
             old_time = "../Data/times_{}.csv"
             if os.path.exists(old_stim) :
                 os.remove(old_stim)
-                #os.remove(old_time)
+                os.remove(old_time)
         for i in range(len(opt_stim_name_list)):
             stim = opt_stim_name_list[i].decode("utf-8")
             dt = allen_stim_file[stim+'_dt'][:][0]
             self.dts.append(dt)
+            f = open ("../Data/times{}.csv".format(i), 'w')
+            wtr = csv.writer(f, delimiter=',', lineterminator='\n')
+            current_times = [dt for i in range(ntimestep)]
+            wtr.writerow(current_times)
+            f.close()
             np.savetxt("../Data/Stim_raw{}.csv".format(i), 
                        allen_stim_file[stim][:],
                        delimiter=",")
-            np.savetxt("../Data/times{}.csv".format(i), 
-                         np.array([dt for i in range(ntimestep)]),   
-                       delimiter=",")
-        print(self.dts, ": DT")
+    def top_SFs(self):
+        """finds top ten scoring function indices for every stim
+        TODO:write a unit test"""
+        all_pairs = []
+        for i in range(nGpus):
+            sf_len = len(score_function_ordered_list)
+            curr_weights = self.weights[sf_len*i: sf_len*i + sf_len]
+            #top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
+            top_inds = np.where(curr_weights > 50)[0]
+            pairs = list(zip(np.repeat(i,10), [ind for ind in top_inds])) #zips up indices with corresponding stim
+            all_pairs.append(pairs)
+        flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
+        #print(flat_pairs)
+        #print("ALL PAIRS", np.shape(np.array(all_pairs)))
+        return flat_pairs
+
 
 
     def evaluate_score_function(self,stim_name_list, target_volts_list, data_volts_list, weights,dts):
@@ -273,10 +324,14 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         '''
         
         #stim_reset()   #TODO dont need both of these
+        self.dts = []
         self.convert_allen_data()    
         self.nindv = len(param_values)
+        full_params = np.insert(np.array(param_values), 1, np.abs(self.ptarget[1]), axis = 1)
+        print(full_params.shape, "insert missing param")
+        allparams = allparams_from_mapping(list(full_params)) #allparams is not finalized
         # convert these param values to allParams for neuroGPU
-        allparams = allparams_from_mapping(param_values) #allparams is not finalized
+        #allparams = allparams_from_mapping(param_values) #allparams is not finalized
         self.data_volts_list = np.array([])
         nstims = len(self.opt_stim_list)
         #nstims = 2 #testing only
