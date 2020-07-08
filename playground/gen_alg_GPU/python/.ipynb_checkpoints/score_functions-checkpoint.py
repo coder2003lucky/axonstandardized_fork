@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import efel
-
+import matplotlib.pyplot as plt
 # These are here for efficiency. In order to avoid redundant computation, we cache the results for
 # comp_width_helper, comp_height_helper and traj_score_helper. The name of stim and index as a string
 # need to be passed in to do this.
@@ -461,29 +461,24 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     curr_trace_target['stim_start'] = [stim_start]
     curr_trace_target['stim_end'] = [stim_end]
     traces = [curr_trace_target]
-    #print(data.shape,"DATASHAPE")
-    #data = np.array(data).T
-    #print(data.shape,"DATASHAPE")
-    nan_inds_bol = np.isnan(data).any(axis=0)
+    nan_inds_bol = np.isnan(data).any(axis=1)
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
-    data = np.delete(data,nan_inds,axis=0)
-    for i in range(len(data[0])):
+    data = np.delete(data,nan_inds,axis=1)
+    #fig, ax = plt.subplots(5, figsize=(8,18))
+    for i in range(len(data)):
         curr_trace_data = {}
         curr_trace_data['T'] = time
-        curr_trace_data['V'] = data[:,i]
+        curr_trace_data['V'] = data[i,:]
+        #if i < 5:
+            #ax[i].plot(np.arange(len(time)), data[i,:])
         curr_trace_data['stim_start'] = [stim_start]
         curr_trace_data['stim_end'] = [stim_end]
         traces.append(curr_trace_data)
-    #print(len(traces[1]['V']), len(traces[1]['T']), 'TRACE LEN')
-    #print(1/0)
-    #with Pool(nCpus) as p:
-        #traces_results = efel.getFeatureValues(traces, [feature_name] , p.map, raise_warnings=False)
+    #plt.savefig("testing_volts.png")
+    #print(len(traces[1]['V']), len(traces[1]['T']), 'TRACE LEN')   
     traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
-    #diff_feature = diff_lists(traces_results[0][feature_name], traces_results[1][feature_name])
-    #print(diff_feature)
-    #return diff_feature
     curr_feature_list = []
-    for i in range(len(data[0])):
+    for i in range(len(data)):
         f_counter = 0
         if feature_name is not 'chi':
             diff_feature = diff_lists(traces_results[0][feature_name], traces_results[i+1][feature_name])
@@ -495,18 +490,18 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
                 diff_feature = 10000
         curr_feature_list.append(diff_feature)
         #print(np.array(traces_results), print(len(curr_feature_list)), "traces, curr feat list")
-
         f_counter +=1
     curr_feature_list = np.array(curr_feature_list)
     res = []
     counter = 0
     for ind in nan_inds_bol:
         if ind:
-            print("NEVALS BUG HERE, why is there a nan")
-            #print(1/0)
+            print("there are some nans in these volts")
             res.append(np.zeros(1)+100000)
         else:
             res.append(curr_feature_list[counter])
             counter +=1
     #print(['best indvs ',res[0]])
+    #print(np.array(res).shape, "RES shape")
+    #print(1/0)
     return res
