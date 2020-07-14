@@ -68,10 +68,6 @@ custom_score_functions = [
 # Number of timesteps for the output volt.
 ntimestep = 10000
 
-def nrnMreadH5(fileName):
-    f = h5py.File(fileName,'r')
-    dat = f['Data'][:][0]
-    return np.array(dat)
 
 def nrnMread(fileName):
     f = open(fileName, "rb")
@@ -91,21 +87,6 @@ def stim_swap(idx, i):
     #os.rename(r'../Data/times' + str(i) + '.csv', r'../Data/times' + str(idx) + '.csv')
 
 
-        
-def stim_reset():
-    shutil.rmtree('../Data')
-    copyanything('../AllenData', '../Data')
-
-def copyanything(src, dst):
-    try:
-        shutil.copytree(src, dst)
-    except OSError as exc: # python >2.5
-        if exc.errno == errno.ENOTDIR:
-            shutil.copy(src, dst)
-        else: raise        
-        
-
-
 class hoc_evaluator(bpop.evaluators.Evaluator):
     def __init__(self):
         """Constructor"""
@@ -120,40 +101,14 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.pmin = np.array((data[:,1]), dtype=np.float64)
         # THIS IS A SHORT TERM FIX, need to fix it in evaluate with lists
         self.pmax = np.array((data[:,2]), dtype=np.float64) 
-        #testing
-        #self.pmin = self.orig_params - .000000001
-        #self.pmax = self.orig_params + .000001
         self.pmax = np.delete(self.pmax, 1, 0)
         self.pmin = np.delete(self.pmin, 1, 0)
-        
-        #old
-        #self.pmax[1] = self.pmax[1] + .000001 # need to remove it from optimization and add it back in for mapping
-        #self.pmin[1] = self.pmin[1] - .000001 #TODO, there are some issues with this param 
-        
+   
         self.ptarget = self.orig_params
         params = [] 
         for i in range(len(self.pmin)):
-#              params.append(bpop.parameters.Parameter(data[i][0], bounds=(np.abs(self.ptarget[i])-.000000000001,np.abs(self.ptarget[i])+.0000000000001)))
-            #testing
             params.append(bpop.parameters.Parameter(data[i][0], bounds=(self.pmin[i],self.pmax[i])))
         self.params = params
-        
-        
-        #to reset mapping 
-           #old 
-        
-#         data = np.genfromtxt(params_table,delimiter=',',names=True)
-#         self.pmin = data[0]
-#         print(self.pmin, "PMIN")
-#         self.pmax = data[1]
-#         self.ptarget = data[2]
-#         params = []
-#         for i in range(len(self.pmin)):
-#             params.append(bpop.parameters.Parameter('p' + str(i), bounds=(self.pmin[i],self.pmax[i])))
-#         self.params = params
-        
-        
-        
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
         print("Init target volts")
@@ -164,10 +119,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.ap_tune_weight = ap_tune_weight
         self.ap_tune_target = target_volts_hdf5[self.ap_tune_stim_name][:]
         self.dts = []
-        
-        #print(self.top_ten_SF())
-        #print(1/0)
-        
+
     def my_evaluate_invalid_fitness(toolbox, population):
         '''Evaluate the individuals with an invalid fitness
         Returns the count of individuals with invalid fitness
@@ -208,8 +160,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                        delimiter=",")
 
 
-
-        
     def eval_function(self,target, data, function, dt,i):
         '''changed from hoc eval so that it returns eval for list of indvs, not just one'''
         #print(data.shape, "VOLTS For eval, should be in indvs")
@@ -349,7 +299,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.convert_allen_data()
         self.nindv = len(param_values)
         full_params = np.insert(np.array(param_values), 1, np.abs(self.ptarget[1]), axis = 1)
-        print(full_params.shape, "insert missing param")
         allparams = allparams_from_mapping(list(full_params)) #allparams is not finalized
         #testing
         #allparams = allparams_from_mapping(param_values)
