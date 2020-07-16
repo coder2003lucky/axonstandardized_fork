@@ -6,7 +6,7 @@ import bluepyopt as bpop
 import struct
 import time
 import pandas as pd
-import efel_ext_old as efel_ext
+import efel_ext as efel_ext
 import time
 import glob
 import ctypes
@@ -164,9 +164,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 
     def evaluate_with_lists(self,param_values):
         nindv = len(param_values)
-        print(param_values[0], "PVAL 0")
         allparams = allparams_from_mapping(param_values)
-        print(1/0)
         scores=[]
         start_time_sim = time.time()
         print('running stim #')
@@ -194,7 +192,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         print ('simulation time took: ', str(stim_end_time-start_time_sim))
         print ('scoring time took: ', str(time.time()-start_time_scores))
         print ('everything took: ', str(time.time()-start_time_sim))
-        print(scores[0], scores[4], "SCORES FINAL SHAPE")
+        print(scores.shape, "SCORES FINAL SHAPE")
         return scores
 
 algo._evaluate_invalid_fitness =hoc_evaluator.my_evaluate_invalid_fitness

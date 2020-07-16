@@ -66,7 +66,8 @@ def eval(target_volts_list, data_volts_list,times):
 #     print(np.array(traces).shape)
 #     print(traces[0])
 
-    #print(np.array(traces[0]['V']).shape, np.array(traces[0]['T']).shape)
+    print(np.array(traces[0]['V']).shape, np.array(traces[0]['T']).shape)
+    print(1/0)
     with Pool(nCpus) as p:
         traces_results = efel.getFeatureValues(traces, feature_list, p.map, raise_warnings=False)
     print('in efel after getting features')
