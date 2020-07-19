@@ -21,13 +21,6 @@ import csv
 import ap_tuner as tuner
 
 
-
-#testing
-model_dir = '../'
-param_file ='./params/gen.csv'               #What is gen.csv? does it matter?
-data_dir = model_dir+'Data/'
-params_table = data_dir + 'opt_table.csv'    #bbp template ORIG
-
 run_file = './run_model_cori.hoc'
 run_volts_path = '../run_volts_bbp_full_gpu_tuned/'
 paramsCSV = run_volts_path+'params/params_bbp_full_gpu_tuned_10_based.csv'
@@ -83,6 +76,29 @@ def stim_swap(idx, i):
         os.remove(old_time)
     os.rename(r'../Data/Stim_raw' + str(i) + '.csv', r'../Data/Stim_raw' + str(idx) + '.csv')
     os.rename(r'../Data/times' + str(i) + '.csv', r'../Data/times' + str(idx) + '.csv')
+
+def get_first_zero(stim):
+    for i in range(len(stim)-2, -1, -1):
+        if stim[i] > 0 and stim[i+1] == 0:
+            return i+1
+    return None
+
+def check_ap_at_zero(stim_ind, volts):
+    stim_name = list([e.decode('ascii') for e in opt_stim_name_list])[int(stim_ind)]
+    stim = allen_stim_file[stim_name][:]
+    first_zero_ind = get_first_zero(stim)
+    nindv =volts.shape[0]
+    checks = np.zeros(nindv)
+    for i in range(nindv):
+        volt = volts[i,:]
+        if first_zero_ind:
+            if np.mean(stim[first_zero_ind:]) == 0:
+                first_ind_to_check = first_zero_ind + 1000
+            APs = [True if v > 0 else False for v in volt[first_ind_to_check:]]
+            if True in APs:
+                #return 400
+                checks[i] = 1400
+    return checks    
 
 class hoc_evaluator(bpop.evaluators.Evaluator):
     def __init__(self):
@@ -152,38 +168,21 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                        allen_stim_file[stim][:],
                        delimiter=",")
 
-
-
         
     def eval_function(self,target, data, function, dt,i):
         '''changed from hoc eval so that it returns eval for list of indvs, not just one
-        data has shape nindv,1000
-        #####check passed#####
-#         fig, ax = plt.subplots(5, figsize=(8,18))
-#         for i in range(5):
-#             ax[i].plot(np.arange(ntimestep), data[i,:])
-#         plt.savefig("testing_volts.png")'''
-        #print(data.shape, "VOLTS For eval, should be in indvs")
-        #shape is nindv,1000
-        #check passed
-#         fig, ax = plt.subplots(5, figsize=(8,18))
-#         for i in range(5):
-#             ax[i].plot(np.arange(ntimestep), data[i,:])
-#         plt.savefig("testing_volts.png")
+        returns each individuals score + check for early spike'''
         num_indvs = data.shape[0]
         if function in custom_score_functions:
-            score = [getattr(sf, function)(target, data[i,:], dt) for i in range(num_indvs)]
+            score = [getattr(sf, function)(target, data[indv,:], dt) for indv in range(num_indvs)]
         else:
             score = sf.eval_efel(function, target, data, dt)
-            #testing
-#             for i in range(len(score)):
-#                 print(score[i]," : Efel for :", i)
-#         if function == 'AP2_begin_voltage':
-#             print(score, "SCORE")
-#         score = np.reshape(score, self.nindv)
-#         if function == 'AP2_begin_voltage':
-#             print(score, "Reshaped SCORE")
-        return score
+        check = check_ap_at_zero(i, data)
+        for j in range(len(check)):
+            if check[j] > 0:
+                pass
+                #print(j, " index where AP CHECK FIRED")
+        return score + check_ap_at_zero(i, data)# here is where we would add penalty
     
     def normalize_scores(self,curr_scores, transformation,i):
         '''changed from hoc eval so that it returns normalized score for list of indvs, not just one
@@ -201,11 +200,14 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         return normalized_single_score
 
     def test_par(self,perm):
-        """ i is the stim j is the score function to use"""
+        """ i is the stim j is the score function to use, have to use modulus i in order to
+        get the target volts and volts indices because the lists are getting moved
+        down every eval round """
         i = perm[0]
+        mod_i = i % 8
         j = perm[1]
-        curr_data_volt = self.data_volts_list[i,:,:]
-        curr_target_volt = self.targV[i]
+        curr_data_volt = self.data_volts_list[mod_i,:,:]
+        curr_target_volt = self.targV[mod_i]
         curr_sf = score_function_ordered_list[j].decode('ascii')
         curr_weight = self.weights[len(score_function_ordered_list)*i + j]
         transformation = h5py.File(scores_path+self.opt_stim_list[i]+'_scores.hdf5', 'r')['transformation_const_'+curr_sf][:]
@@ -235,7 +237,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             curr_weights = self.weights[sf_len*i: sf_len*i + sf_len]
             #top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
             top_inds = np.where(curr_weights > 50)[0]
-            pairs = list(zip(np.repeat(i%8,10), [ind for ind in top_inds])) #zips up indices with corresponding stim # mod 8 to make sure it is refrencing a relevant stim
+            pairs = list(zip(np.repeat(i,len(top_inds)), [ind for ind in top_inds])) #zips up indices with corresponding stim # to make sure it is refrencing a relevant stim
             all_pairs.append(pairs)
         flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
         #print(flat_pairs)
@@ -260,30 +262,30 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         2d list of scalar scores for each parameter set w/ shape (nindv,1)
         '''
         fxnsNStims = self.top_SFs(run_num) # 52 stim-sf combinations (stim#,sf#)
-        print(fxnsNStims)
-        with Pool(nCpus) as p:
+        with Pool(nCpus) as p: # parallel mapping
             res = p.map(self.test_par, fxnsNStims)
-        res = np.array(list(res))
-        print(res.shape, "RES SHAPE")
-        print(len(score_function_ordered_list), "Score functions")
-        res = res[:,:] #158,11
-        prev_sf_idx = 0
-        num_selected_stims = len(set([pair[0] for pair in fxnsNStims]))
-        for i in range(num_selected_stims):
-            num_sfs = prev_sf_idx + sum([1 for pair in fxnsNStims if pair[0]==i])
+        res = np.array(list(res)) #results with shape (# of sf stim pairs, nindv)
+        res = res[:,:] 
+        prev_sf_idx = 0 
+        num_selected_stims = len(set([pair[0] for pair in fxnsNStims])) # not always using 8 stims
+        for i in range(num_selected_stims):  # iterate stims and sum
+            num_sfs = prev_sf_idx + sum([1 for pair in fxnsNStims if pair[0]==i]) #find sf indices for this stim
             if i == 0:
                 weighted_sums = np.reshape(np.sum(res[prev_sf_idx:prev_sf_idx+num_sfs, :], axis=0),(-1,1))
             else:
-                print(prev_sf_idx, "stim start idx", num_sfs, "stim end idx")
+                #print(prev_sf_idx, "stim start idx", num_sfs, "stim end idx")
                 curr_stim_sum = np.sum(res[prev_sf_idx:prev_sf_idx+num_sfs, :], axis=0)
                 curr_stim_sum = np.reshape(curr_stim_sum, (-1,1))
                 weighted_sums = np.append(weighted_sums, curr_stim_sum , axis = 1)
-                print(curr_stim_sum.shape," : cur stim sum SHAPE      ", weighted_sums.shape, ": weighted sums shape")
-            prev_sf_idx = num_sfs
+                #print(curr_stim_sum.shape," : cur stim sum SHAPE      ", weighted_sums.shape, ": weighted sums shape")
+            prev_sf_idx = num_sfs # update score function tracking index
         return weighted_sums
             
     def ap_tune(self,param_values, target_volts, stim_name, weight):
-        '''TODO: is it possible to have AP tune preprocessed?'''
+        '''
+        TODO: is it possible to have AP tune preprocessed?
+        DEPRECATED?
+        '''
         stim_list = [stim_name]
         i  = int(stim_name) -1
         stim = opt_stim_name_list[i].decode("utf-8")
@@ -324,10 +326,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.dts = []
         self.convert_allen_data()
         self.nindv = len(param_values)
-        full_params = np.insert(np.array(param_values), 1, np.abs(self.ptarget[1]), axis = 1)
+        # insert negative param value back in
         full_params = np.insert(np.array(param_values), 1, self.ptarget[1], axis = 1)
-
-        allparams = allparams_from_mapping(list(full_params)) #allparams is not finalized
+        allparams = allparams_from_mapping(list(full_params)) 
         self.data_volts_list = np.array([])
         nstims = len(self.opt_stim_list)
         nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
@@ -335,7 +336,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         start_time_sim = time.time()
         p_objects = []
         score = []
-        start_times = []
+        start_times = [] # a bunch of timers
         end_times = []
         eval_times = []
         run_num = 0
@@ -351,38 +352,35 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             shaped_volts = self.getVolts(idx)
             
             if idx == 0:
-                print("APPENDED volts: ", i)
                 self.data_volts_list = shaped_volts #start stacking volts
             else:
-                print("APPENDED volts: ", i)
                 self.data_volts_list = np.append(self.data_volts_list, shaped_volts, axis = 0) # check this
-            first_batch = i < nGpus #use this so neuroGPU doesn't keep running 
-            last_batch  = i == (nstims - 1)
-            if not first_batch:
+            first_batch = i < nGpus # we only evaluate on first batch because we already started neuroGPU
+            last_batch  = i == (nstims - 1) # True if we are on last iter
+            if not first_batch: #TODO: add "and not last batch"
                 start_times.append(time.time())
                 if i != idx:
-                    print("replaced ", idx, " with ", i)
+                    #print("replaced dts and stims for ", idx, " with the ones for  ", i)
                     stim_swap(idx, i)
-                print('running: ',idx, "   real num:", i)
                 p_objects[idx] = self.run_model(idx, []) #ship off job to neuroGPU for next iter
             if idx == nGpus-1:
-                self.data_volts_list = np.reshape(self.data_volts_list, (nGpus,self.nindv,ntimestep))
+                self.data_volts_list = np.reshape(self.data_volts_list, (nGpus,self.nindv,ntimestep)) # ok
                 eval_start = time.time()
                 if i == nGpus-1:
-                    #need to shift over weights maybe?
-                    self.targV = self.target_volts_list[:nGpus]
-                    self.curr_dts = self.dts[:nGpus]
-                    score = self.eval_in_par(run_num)
+                    self.targV = self.target_volts_list[:nGpus] # shifting targV and current dts
+                    self.curr_dts = self.dts[:nGpus] #  so that parallel evaluator can see just the relevant parts
+                    score = self.eval_in_par(run_num) # call to parallel eval
                 else:
                     self.targV = self.target_volts_list[i-nGpus+1:i+1] # i = 15, i-nGpus+1 = 8, i+1 = 16 
                     self.curr_dts = self.dts[i-nGpus+1:i+1] # so therefore we get range(8,16) for dts and targ vs
-                    score = np.append(score,self.eval_in_par(run_num),axis =1)
+                    score = np.append(score,self.eval_in_par(run_num),axis =1) #stacks scores by stim
                     
                 eval_end = time.time()
                 eval_times.append(eval_end - eval_start)
                 self.data_volts_list = np.array([])
                 run_num += 1
-                
+            #### this part only runs on the last iteration, just to finish off the last two volts and stims
+            #### same code as above but only runs two stims instead of 18
             if last_batch: #end of batch
                 for ii in range(3):
                     idx = ii % (nGpus)
@@ -400,8 +398,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                         score = np.append(score,self.eval_in_par(run_num),axis =1)
 
 
-                
-      
         #print("average neuroGPU runtime: ", np.mean(np.array(end_times) - np.array(start_times)))
         #print("neuroGPU runtimes: ", np.array(end_times) - np.array(start_times))
         #print("evaluation took: ", eval_times)

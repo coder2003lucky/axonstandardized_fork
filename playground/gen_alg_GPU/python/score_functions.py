@@ -2,6 +2,7 @@ import numpy as np
 import math
 import efel
 import matplotlib.pyplot as plt
+import time as timer
 # These are here for efficiency. In order to avoid redundant computation, we cache the results for
 # comp_width_helper, comp_height_helper and traj_score_helper. The name of stim and index as a string
 # need to be passed in to do this.
@@ -440,9 +441,6 @@ def DTWDistance(target, data, dt=0.02, stims = None, index = None):
 
 def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     def diff_lists(lis1, lis2):
-        if feature_name == 'AP2_begin_voltage':
-            #print(lis1,"<--list 1, list 2-->" ,lis2)
-            pass
         if lis1 is None and lis2 is None:
             return 0
         if lis1 is None:     #SWAP IF STATEMENT CONTROL FLOW
@@ -454,10 +452,6 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
             lis2 = np.concatenate((lis2, np.zeros(len1 - len2)), axis=0)
         if len2 > len1:
             lis1 = np.concatenate((lis1, np.zeros(len2 - len1)), axis=0)
-        if feature_name == 'AP2_begin_voltage':
-            #print(lis1,"<--list 1, list 2-->" ,lis2)
-            #print(np.sqrt(safe_mean((lis1 - lis2)**2)))
-            pass
         return np.sqrt(safe_mean((lis1 - lis2)**2))
     all_features = []
     time = np.cumsum([dt for i in range(time_stamps)])
@@ -471,19 +465,21 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     nan_inds_bol = np.isnan(data).any(axis=1)
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
     data = np.delete(data,nan_inds,axis=1)
-    fig, ax = plt.subplots(5, figsize=(8,18))
+    #fig, ax = plt.subplots(5, figsize=(8,18))
     for i in range(len(data)):
         curr_trace_data = {}
         curr_trace_data['T'] = time
         curr_trace_data['V'] = data[i,:]
-        if i < 5:
-            ax[i].plot(np.arange(len(time)), data[i,:])
+        #if i < 5:
+            #ax[i].plot(np.arange(len(time)), data[i,:])
         curr_trace_data['stim_start'] = [stim_start]
         curr_trace_data['stim_end'] = [stim_end]
         traces.append(curr_trace_data)
-    plt.savefig("testing_volts.png")
+    #plt.savefig("testing_volts.png")
     #print(len(traces[1]['V']), len(traces[1]['T']), 'TRACE LEN')   
+    efelstart = timer.time()
     traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
+    #print("EFEL eval took: ", timer.time()-efelstart)
     diff_features = []
     for i in range(len(data)): #testing
         diff_features.append(diff_lists(traces_results[0][feature_name], traces_results[i+1][feature_name]))
@@ -491,37 +487,3 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
 #             print(f' i is {i} and diff is {diff_features[i]}')
     return diff_features
 
-
-
-
-
-
-
-#     curr_feature_list = []
-#     for i in range(len(data)):
-#         f_counter = 0
-#         if feature_name is not 'chi':
-#             diff_feature = diff_lists(traces_results[0][feature_name], traces_results[i+1][feature_name])
-#             if math.isnan(diff_feature):
-#                 diff_feature = 10000
-#         else:
-#             diff_feature = all_chis[i]
-#             if math.isnan(diff_feature):
-#                 diff_feature = 10000
-#         curr_feature_list.append(diff_feature)
-#         #print(np.array(traces_results), print(len(curr_feature_list)), "traces, curr feat list")
-#         f_counter +=1
-#     curr_feature_list = np.array(curr_feature_list)
-#     res = []
-#     counter = 0
-#     for ind in nan_inds_bol:
-#         if ind:
-#             print("there are some nans in these volts")
-#             res.append(np.zeros(1)+100000)
-#         else:
-#             res.append(curr_feature_list[counter])
-#             counter +=1
-#     #print(['best indvs ',res[0]])
-#     #print(np.array(res).shape, "RES shape")
-#     #print(1/0)
-#     return res

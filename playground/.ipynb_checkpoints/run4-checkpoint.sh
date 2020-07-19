@@ -4,12 +4,12 @@
 #!/bin/bash
 
 echo `pwd`
-source ./input.txt
+source ./input4.txt
 echo $gaGPU        #test               #test
 
 if [ "$gaGPU" = "True" ]
     then
-       cd gen_alg_GPU1/
+       cd gen_alg_GPU4/
        sbatch running_GA_GPU.sh
        exit 1
 fi
