@@ -4,7 +4,7 @@
 #!/bin/bash
 
 echo `pwd`
-source ./input2.txt
+source ./input.txt
 echo $gaGPU        #test               #test
 
 if [ "$gaGPU" = "True" ]
