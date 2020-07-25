@@ -66,6 +66,10 @@
 #include <string.h>
 //#include <conio.h>
 #include <time.h>
+class random{
+public:
+    int* dev_pointer_numbers;
+};
 
 typedef struct {
 	MYSECONDFTYPE *e;
@@ -135,7 +139,6 @@ typedef struct {
 	MYDTYPE NRecSites;
 	MYDTYPE* RecSites;
 }Sim;
-
 
 void RunByModelSerial();
 void RunByModelP(int argc);

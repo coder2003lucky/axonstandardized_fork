@@ -1,11 +1,11 @@
 #!/bin/bash
 
-#SBATCH -N 1
+#SBATCH -N 3
 #SBATCH -t 006:00:00
 #SBATCH -C gpu
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
-#SBATCH --gres=gpu:8
+#SBATCH --gres=gpu:6
 #SBATCH -c 80
 #SBATCH -A m2043 
 

@@ -470,13 +470,17 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
         curr_trace_data = {}
         curr_trace_data['T'] = time
         curr_trace_data['V'] = data[i,:]
+        # testing
+#         if len(data[i,:]) != 10000:
+#             print(len(data[i,:]))
+#             print(i)
+#             print(1/0)
         #if i < 5:
             #ax[i].plot(np.arange(len(time)), data[i,:])
         curr_trace_data['stim_start'] = [stim_start]
         curr_trace_data['stim_end'] = [stim_end]
         traces.append(curr_trace_data)
     #plt.savefig("testing_volts.png")
-    #print(len(traces[1]['V']), len(traces[1]['T']), 'TRACE LEN')   
     efelstart = timer.time()
     traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
     #print("EFEL eval took: ", timer.time()-efelstart)

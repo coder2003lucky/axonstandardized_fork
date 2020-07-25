@@ -1,6 +1,13 @@
 #include "Util.h"
 //#include "CudaStuff.cuh"
 #define checkCudaErrors(val)           check ( (val), #val, __FILE__, __LINE__ )
+#include <mpi.h>
+#include <iostream>
+#include <memory>
+#include <mpi.h>
+#include <cuda_runtime.h>
+
+
 MYFTYPE  maxf(MYFTYPE  a, MYFTYPE  b) {
     if (a>b)
         return a;
@@ -335,6 +342,13 @@ void ReadStimFromFile(const char* FN, Stim &stim) {//deprecated
 
 }
 void ReadCSVStim(Stim &stim) {
+    //int myrank, tag=99;
+    //MPI_Status status;
+    //MPI_Init(NULL, NULL);
+    //MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
+    //printf("my rank in csv reader : %d", myrank);
+    int global_rank = 2;
+
     char FileName[300];
     sprintf(FileName, "%s", Stim_csv_meta);
     //sprintf(FileName,"%s%d.dat",FN,MUL32*32);
@@ -357,7 +371,7 @@ void ReadCSVStim(Stim &stim) {
     ReadFloatFromCSV(line, &stim.area, 1);
     int stim_ind;
     cudaGetDevice(&stim_ind);
-    sprintf(FileName, "%s%d.csv", Stim_csv_raw,stim_ind);
+    sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind*(global_rank+1));
     FILE *f2 = fopen(FileName, "r");
     if (!f2) {
         printf("Failed to read StimRaw Data2 - %s\n",FileName);
@@ -371,8 +385,9 @@ void ReadCSVStim(Stim &stim) {
         ReadFloatFromCSV(line, &stim.amps[i*int(stim.Nt)], stim.Nt);
     }
 
-    sprintf(FileName, "%s%d.csv", Time_steps_FN,stim_ind);
+    //sprintf(FileName, "%s%d.csv", Time_steps_FN,stim_ind);
     //sprintf(FileName,"%s%d.dat",FN,MUL32*32);
+    sprintf(FileName, "../Data/times%d.csv", stim_ind+(global_rank*6));
     FILE *f3 = fopen(FileName, "r"); // YYY add FILE*
     if (!f3) {
         printf("Failed to read SimData3\n");
