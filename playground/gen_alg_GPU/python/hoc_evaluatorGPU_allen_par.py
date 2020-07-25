@@ -19,7 +19,14 @@ from concurrent.futures import ProcessPoolExecutor as Pool
 import multiprocessing
 import csv
 import ap_tuner as tuner
+os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
+os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4
+os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULLCOPY
 
+from mpi4py import MPI
+
+comm = MPI.COMM_WORLD
+rank = comm.Get_rank()
 
 run_file = './run_model_cori.hoc'
 run_volts_path = '../run_volts_bbp_full_gpu_tuned/'
@@ -46,8 +53,6 @@ allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_st
 old_eval = algo._evaluate_invalid_fitness
 
 print("USING nGPUS: ", nGpus, " and USING nCPUS: ", nCpus)
-
-
 
 custom_score_functions = [
                     'chi_square_normal',\
@@ -439,6 +444,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                     p_objects[idx].wait() #wait to get volts output from previous run then read and stack
                     end_times.append(time.time())
                     shaped_volts = self.getVolts(idx)
+                    print(shaped_volts.shape, "SHAPED VOLTS SHapE")
+                    print(1/0)
                     if idx == 0:
                         self.data_volts_list = shaped_volts #start stacking volts
                     else:

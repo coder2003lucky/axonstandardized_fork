@@ -1,6 +1,9 @@
 #include "CudaStuff.cuh"
 //#include "AllModels.cu"
 #include "AllModels.cuh"
+#include <mpi.h>
+
+
 #define ILP16
 __constant__ MYFTYPE cCm[NSEG];
 __constant__ MYSECONDFTYPE cE[NSEG];
@@ -575,7 +578,13 @@ void stEfork2Main(Stim stim, Sim sim, MYFTYPE* ParamsM, MYFTYPE* InitStatesM, HM
     int curr_dev;
     CUDA_RT_CALL(cudaGetDevice(&curr_dev));
     char FileName[300];
-	sprintf(FileName, "%s%d.dat", VHOT_OUT_FN_P,curr_dev);
+    //int argc;
+    //argc = 0;
+    //char *argv[];
+    //argv = "";
+    int global_rank = 2;
+	sprintf(FileName, "../Data/VHotP%d.dat",curr_dev + (global_rank*6));
+    printf("\n MY RANK on GPU: %d \n", global_rank+1);
 	SaveArrayToFile(FileName, NSets*Nt*stim.NStimuli*sim.NRecSites, Vhots);
 }
 

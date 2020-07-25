@@ -36,6 +36,8 @@
 # Location of the CUDA Toolkit
 CUDA_PATH ?= /cm/extra/apps/CUDA.linux86-64/10.0.130_410.48
 $dbg=1
+
+export CRAY_CPU_TARGET=x86-64
 ##############################
 # start deprecated interface #
 ##############################
@@ -147,8 +149,10 @@ else ifneq ($(TARGET_ARCH),$(HOST_ARCH))
         HOST_COMPILER ?= powerpc64le-linux-gnu-g++
     endif
 endif
-HOST_COMPILER ?= g++
+CRAY_CPU_TARGET=x86-64
+HOST_COMPILER ?= mpiCC
 NVCC          := $(CUDA_PATH)/bin/nvcc -ccbin $(HOST_COMPILER)
+
 
 # internal flags
 NVCCFLAGS   := -m${TARGET_SIZE} -dc -O3
@@ -310,7 +314,7 @@ MainC.o:MainC.cu Util.h
 kernel.o:kernel.cu 
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
-neuroGPU: AllModels.o kernel.o MainC.o  Util.o CudaStuff.o
+neuroGPU: AllModels.o kernel.o MainC.o  Util.o CudaStuff.o 
 #neuroGPU: kernel.o MainC.o  Util.o CudaStuff.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p ../bin/
