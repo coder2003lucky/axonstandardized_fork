@@ -21,9 +21,9 @@ from multiprocessing import Pool
 import multiprocessing
 import csv
 import ap_tuner as tuner
-os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
-os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4
-os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULLCOPY
+#os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
+#os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4
+#os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULLCOPY
 from mpi4py import MPI
 from joblib import Parallel, delayed
 #from mpi4py.futures import MPIPoolExecutor
@@ -78,6 +78,12 @@ custom_score_functions = [
 # Number of timesteps for the output volt.
 ntimestep = 10000
 
+
+stim_names = list([e.decode('ascii') for e in opt_stim_name_list])
+stims = []
+for stim_name in stim_names:
+    stims.append(allen_stim_file[stim_name][:])
+
 def nrnMread(fileName):
     f = open(fileName, "rb")
     nparam = struct.unpack('i', f.read(4))[0]
@@ -110,8 +116,10 @@ def check_ap_at_zero(stim_ind, volts):
     Kyung function to check if a volt should be penalized for having an AP before there 
     should be one. Modified to take in "volts" as a list of individuals instead of "volt"
     """
-    stim_name = list([e.decode('ascii') for e in opt_stim_name_list])[int(stim_ind)]
-    stim = allen_stim_file[stim_name][:]
+    #stim_name = list([e.decode('ascii') for e in opt_stim_name_list])[int(stim_ind)]
+    #print(stim_name, " : STIM NAME")
+    stim = stims[stim_ind]#allen_stim_file[stim_name][:]
+
     first_zero_ind = get_first_zero(stim)
     nindv =volts.shape[0]
     checks = np.zeros(nindv)
@@ -204,11 +212,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         ---------------------------------------------------------
         p_object: process object that stops when neuroGPU done
         """
-        volts_fn = vs_fn + str(stim_ind*(global_rank+1)) + '.dat'
+        volts_fn = vs_fn + str(stim_ind +(global_rank*nGpus)) + '.dat'
+        print("removing ", volts_fn, " from ", global_rank)
         if os.path.exists(volts_fn):
-            #print("removed: ", volts_fn)
-            #os.remove(volts_fn)
-            pass
+            os.remove(volts_fn)
         p_object = subprocess.Popen(['../bin/neuroGPU'+str(global_rank),str(stim_ind), str(global_rank)])
         return p_object
     
@@ -305,9 +312,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         
         """
         i = perm[0]
-        mod_i = i % 8
+        mod_i = i % nCpus
         j = perm[1]
-        curr_data_volt = self.data_volts_list[mod_i,:,:]
+        curr_data_volt = self.getVolts(i)[0,:,:]  
+        #curr_data_volt2 = self.data_volts_list[mod_i,:,:]
         curr_target_volt = self.target_volts_list[i]
         curr_sf = score_function_ordered_list[j].decode('ascii')
         curr_weight = self.weights[len(score_function_ordered_list)*i + j]
@@ -337,14 +345,15 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         --------------------
         2d list of scalar scores for each parameter set w/ shape (nindv,nstims)
         '''
+        comm.Barrier() # so all workers do mapping at the same time
         fxnsNStims = self.top_SFs(run_num) # 52 stim-sf combinations (stim#,sf#)
         #MPI Version
-        #executor = MPIPoolExecutor()
-        #res = executor.map(self.eval_stim_sf_pair, fxnsNStims)
+       # executor = MPIPoolExecutor()
+       # res = executor.map(self.eval_stim_sf_pair, fxnsNStims)
         #joblib
-#        res = Parallel(n_jobs=nCpus, prefer="threads")(delayed(self.eval_stim_sf_pair)(FnS) for FnS in fxnsNStims)
+        #res = Parallel(n_jobs=nCpus, prefer="threads")(delayed(self.eval_stim_sf_pair)(FnS) for FnS in fxnsNStims)
         #multiproc / concurrent futures
-        with Pool(nCpus) as p: # parallel mapping
+        with Pool(nCpus) as p:
             res = p.map(self.eval_stim_sf_pair, fxnsNStims)
         res = np.array(list(res)) ########## important: map returns results with shape (# of sf stim pairs, nindv)
         res = res[:,:] 
@@ -384,6 +393,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
     
     def getVolts(self,idx):
         '''Helper function that gets volts from data and shapes them for a given stim index'''
+        #print( "asking for volts:", idx, " from rank: ", idx)
+
         fn = vs_fn + str(idx) +  '.dat'    #'.h5'
         curr_volts =  nrnMread(fn)
         Nt = int(len(curr_volts)/ntimestep)
@@ -412,9 +423,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             # insert negative param value back in to each set
             full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)
             # assuming parameter sets are the same among workers TODO:VERIFY
-            allparams = allparams_from_mapping(list(full_params))  
+            allparams = allparams_from_mapping(list(full_params))
         ################# with MPI we can have different populations so here we sync them up #########
-        param_values = comm.bcast(param_values, root=0)
+        #param_values = comm.bcast(param_values, root=0)
         self.dts = [allen_stim_file[stim.decode("utf-8") + '_dt'][:][0] for stim in opt_stim_name_list]  
         self.nindv = len(param_values)
         self.data_volts_list = np.array([])
@@ -437,15 +448,16 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             mod_stim_num = stim_num % (nGpus)
             p_objects[mod_stim_num].wait() #wait to get volts output from previous run then read and stack
             end_times.append(time.time())
-            shaped_volts = self.getVolts(stim_num)  
+            #shaped_volts = self.getVolts(stim_num)  
             #for indv in range(shaped_volts.shape[0]): # testing
                 #print(shaped_volts[indv,0:100], "before mapping")
             if mod_stim_num == 0:
-                self.data_volts_list = shaped_volts
+                pass
+                #self.data_volts_list = shaped_volts
             else:
-                self.data_volts_list = np.append(self.data_volts_list, shaped_volts, axis=0) # stacking volts
+                pass
+                #self.data_volts_list = np.append(self.data_volts_list, shaped_volts, axis=0) # stacking volts
             
-            print(self.data_volts_list.shape, "DVOLTS, shape")
             if mod_stim_num == nGpus-1:
                 eval_start = time.time()
                 #self.data_volts_list = np.reshape(self.data_volts_list, (nGpus,self.nindv,ntimestep))

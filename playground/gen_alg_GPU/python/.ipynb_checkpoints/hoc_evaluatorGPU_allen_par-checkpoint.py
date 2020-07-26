@@ -444,8 +444,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                     p_objects[idx].wait() #wait to get volts output from previous run then read and stack
                     end_times.append(time.time())
                     shaped_volts = self.getVolts(idx)
-                    print(shaped_volts.shape, "SHAPED VOLTS SHapE")
-                    print(1/0)
                     if idx == 0:
                         self.data_volts_list = shaped_volts #start stacking volts
                     else:
