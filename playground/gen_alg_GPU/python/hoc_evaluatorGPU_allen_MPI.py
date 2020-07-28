@@ -6,6 +6,7 @@ import score_functions as sf
 import efel
 import pandas as pd
 import os
+import os.path
 import subprocess
 import time
 import shutil
@@ -17,17 +18,17 @@ from extractModel_mappings_linux import   allparams_from_mapping
 import bluepyopt.deapext.algorithms as algo
 from multiprocessing import Pool
 
-#from concurrent.futures import ProcessPoolExecutor as Pool
+#from concurrent.futures import ThreadPoolExecutor as Pool
 import multiprocessing
 import csv
 import ap_tuner as tuner
 #os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
 #os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4
-#os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULLCOPY
+os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULLCOPY
 from mpi4py import MPI
 from joblib import Parallel, delayed
 #from mpi4py.futures import MPIPoolExecutor
-
+import dask.array as da
 
 # set up environment variables
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
@@ -60,7 +61,7 @@ params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 model_dir = '..'
 data_dir = model_dir+'/Data/'
 run_dir = '../bin'
-vs_fn = model_dir + '/Data/VHotP'
+vs_fn = '/tmp/Data/VHotP'#model_dir + '/Data/VHotP'
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()
 allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
@@ -77,8 +78,19 @@ custom_score_functions = [
 
 # Number of timesteps for the output volt.
 ntimestep = 10000
+import shutil, errno
 
+def copyanything(src, dst):
+    try:
+        shutil.copytree(src, dst)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dst)
+        else: 
+            raise
+            
 
+#print(1/0)
 stim_names = list([e.decode('ascii') for e in opt_stim_name_list])
 stims = []
 for stim_name in stim_names:
@@ -175,21 +187,17 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             ind.fitness.values = fit
         return len(invalid_ind)
     
-    def top_SFs(self, run_num):
+    def top_SFs(self):
         """
         finds scoring functions w/ weight over 50 and pairs them with that stim and sends
         them to mapping function so that we will run so many processes
-        Arguments
-        --------------------------------------------------------------
-        run_num: the number of times neuroGPU has ran for 8 stims,
-        keep track of what stims we are picking out score functions for
         """
         all_pairs = []
-        last_stim = (run_num + 1) * nGpus # ie: 0th run last_stim = (0+1)*8 = 8
-        first_stim = last_stim - nGpus # on the the last round this will be 24 - 8 = 16
+        last_stim = (global_rank+1) * nGpus # ie: 0th rank last_stim = (0+1)*ngpus = ngpus
+        first_stim = last_stim - nGpus
         if last_stim > 18:
             last_stim = 18
-        #print(first_stim,last_stim, "first and last")
+        print(first_stim,last_stim, "first and last...... rank: ", global_rank)
         for i in range(first_stim, last_stim):#range(first_stim,last_stim):
             sf_len = len(score_function_ordered_list)
             curr_weights = self.weights[sf_len*i: sf_len*i + sf_len] #get range of sfs for this stim
@@ -215,7 +223,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         volts_fn = vs_fn + str(stim_ind +(global_rank*nGpus)) + '.dat'
         print("removing ", volts_fn, " from ", global_rank)
         if os.path.exists(volts_fn):
-            os.remove(volts_fn)
+            #os.remove(volts_fn)
+            pass
         p_object = subprocess.Popen(['../bin/neuroGPU'+str(global_rank),str(stim_ind), str(global_rank)])
         return p_object
     
@@ -269,8 +278,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         """
         
         num_indvs = data.shape[0]
-        #for indv in range(num_indvs):
-            #print(data[indv,:].shape, "DAT SHAP")
+#         for indv in range(num_indvs):
+#             print(np.isnan(data[indv,:]), "is Nan for ", indv)
+#         print(1/0)
         if function in custom_score_functions:
             score = [getattr(sf, function)(target, data[indv,:], dt) for indv in range(num_indvs)]
         else:
@@ -314,7 +324,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         i = perm[0]
         mod_i = i % nCpus
         j = perm[1]
-        curr_data_volt = self.getVolts(i)[0,:,:]  
+        counter = 0
+        curr_data_volt = self.getVolts(i)[0,:,:] 
         #curr_data_volt2 = self.data_volts_list[mod_i,:,:]
         curr_target_volt = self.target_volts_list[i]
         curr_sf = score_function_ordered_list[j].decode('ascii')
@@ -331,28 +342,29 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         return norm_scores * curr_weight 
     
     
-    def map_par(self,run_num):
+    def map_par(self):
         ''' 
         This function maps out what stim and score function pairs should be mapped to be evaluated in parallel
         first it finds the pairs with the highest weights, the maps them and then adds up the score for each stim
         for every individual.
         
-        Parameters
-        -------------------- 
-        run_num: the amount of times neuroGPU has ran for 8 stims
         
         Return
         --------------------
         2d list of scalar scores for each parameter set w/ shape (nindv,nstims)
         '''
+        if os.path.isdir('/tmp/Data'):
+            shutil.rmtree('/tmp/Data')
+        if not os.path.isdir('/tmp/Data'):
+            copyanything('../Data', '/tmp/Data')
         comm.Barrier() # so all workers do mapping at the same time
-        fxnsNStims = self.top_SFs(run_num) # 52 stim-sf combinations (stim#,sf#)
+        fxnsNStims = self.top_SFs() # 52 stim-sf combinations (stim#,sf#)
         #MPI Version
-       # executor = MPIPoolExecutor()
-       # res = executor.map(self.eval_stim_sf_pair, fxnsNStims)
+        #executor = MPIPoolExecutor()
+        #res = executor.map(self.eval_stim_sf_pair, fxnsNStims)
         #joblib
         #res = Parallel(n_jobs=nCpus, prefer="threads")(delayed(self.eval_stim_sf_pair)(FnS) for FnS in fxnsNStims)
-        #multiproc / concurrent futures
+        #multiproc / concurrent future
         with Pool(nCpus) as p:
             res = p.map(self.eval_stim_sf_pair, fxnsNStims)
         res = np.array(list(res)) ########## important: map returns results with shape (# of sf stim pairs, nindv)
@@ -419,6 +431,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         
         if global_rank == 0:
             #self.convert_allen_data(total_stims) # reintialize allen stuff for clean run
+            #print(1/0)
             self.dts = []
             # insert negative param value back in to each set
             full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)
@@ -436,7 +449,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         start_times = []
         end_times = []
         eval_times = []
-        run_num = 0
         #start running neuroGPU
         for stim_num in stim_range:
             start_times.append(time.time())
@@ -462,7 +474,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 eval_start = time.time()
                 #self.data_volts_list = np.reshape(self.data_volts_list, (nGpus,self.nindv,ntimestep))
                 self.curr_dts = self.dts[min(stim_range):max(stim_range)] #  so that parallel evaluator can see just the relevant dts
-                score = self.map_par(run_num) # call to parallel eval
+                score = self.map_par() # call to parallel eval
                 
                 eval_end = time.time()
                 eval_times.append(eval_end - eval_start)
@@ -492,8 +504,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         res = [i for i, j in enumerate(final_score) if j == temp] 
         print("The Positions of minimum element : " + str(res)) 
         #testing
-#         for i in range(len(score)):
-#             print(score[i], ": " + str(i))
+        if global_rank == 0:
+            for i in range(len(score)):
+                print(score[i], ": " + str(i))
         return final_score.reshape(-1,1)
 
     
