@@ -371,7 +371,7 @@ void ReadCSVStim(Stim &stim) {
     ReadFloatFromCSV(line, &stim.area, 1);
     int stim_ind;
     cudaGetDevice(&stim_ind);
-    sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind*(global_rank+1));
+    sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind+(global_rank*6));
     FILE *f2 = fopen(FileName, "r");
     if (!f2) {
         printf("Failed to read StimRaw Data2 - %s\n",FileName);
