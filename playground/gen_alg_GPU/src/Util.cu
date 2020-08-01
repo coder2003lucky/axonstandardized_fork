@@ -8,6 +8,12 @@
 #include <cuda_runtime.h>
 
 
+//#include "H5Cpp.h"
+//using namespace H5;
+//using std::endl;
+//using std::cout;
+//const H5std_string  datasetname( "Data" ); // dataset key for HDF5
+
 MYFTYPE  maxf(MYFTYPE  a, MYFTYPE  b) {
     if (a>b)
         return a;

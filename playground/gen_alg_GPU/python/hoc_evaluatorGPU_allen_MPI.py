@@ -22,7 +22,7 @@ from multiprocessing import Pool
 import multiprocessing
 import csv
 import ap_tuner as tuner
-#os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
+#os.environ["OMP_NUM_THREADS"] = "80" # export OMP_NUM_THREADS=4
 #os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4
 os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULLCOPY
 from mpi4py import MPI
@@ -61,7 +61,7 @@ params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 model_dir = '..'
 data_dir = model_dir+'/Data/'
 run_dir = '../bin'
-vs_fn = '/tmp/Data/VHotP'#model_dir + '/Data/VHotP'
+vs_fn = model_dir + '/Data/VHotP'
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()
 allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
@@ -223,8 +223,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         volts_fn = vs_fn + str(stim_ind +(global_rank*nGpus)) + '.dat'
         print("removing ", volts_fn, " from ", global_rank)
         if os.path.exists(volts_fn):
-            #os.remove(volts_fn)
-            pass
+            os.remove(volts_fn)
         p_object = subprocess.Popen(['../bin/neuroGPU'+str(global_rank),str(stim_ind), str(global_rank)])
         return p_object
     
@@ -436,7 +435,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             # insert negative param value back in to each set
             full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)
             # assuming parameter sets are the same among workers TODO:VERIFY
-            allparams = allparams_from_mapping(list(full_params))
+        else:
+            full_params = None
+        full_params = comm.bcast(full_params, root=0)
+        allparams = allparams_from_mapping(list(full_params))
         ################# with MPI we can have different populations so here we sync them up #########
         #param_values = comm.bcast(param_values, root=0)
         self.dts = [allen_stim_file[stim.decode("utf-8") + '_dt'][:][0] for stim in opt_stim_name_list]  
@@ -504,9 +506,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         res = [i for i, j in enumerate(final_score) if j == temp] 
         print("The Positions of minimum element : " + str(res)) 
         #testing
-        if global_rank == 0:
-            for i in range(len(score)):
-                print(score[i], ": " + str(i))
+#         if global_rank == 0:
+#             for i in range(len(score)):
+#                 print(score[i], ": " + str(i))
         return final_score.reshape(-1,1)
 
     
