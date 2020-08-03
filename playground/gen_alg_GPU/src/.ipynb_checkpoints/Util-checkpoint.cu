@@ -353,7 +353,7 @@ void ReadCSVStim(Stim &stim) {
     //MPI_Init(NULL, NULL);
     //MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     //printf("my rank in csv reader : %d", myrank);
-    int global_rank = 2;
+    int global_rank = 8;
 
     char FileName[300];
     sprintf(FileName, "%s", Stim_csv_meta);
@@ -377,7 +377,7 @@ void ReadCSVStim(Stim &stim) {
     ReadFloatFromCSV(line, &stim.area, 1);
     int stim_ind;
     cudaGetDevice(&stim_ind);
-    sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind+(global_rank*6));
+    sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind+(global_rank*2));
     FILE *f2 = fopen(FileName, "r");
     if (!f2) {
         printf("Failed to read StimRaw Data2 - %s\n",FileName);
@@ -393,7 +393,7 @@ void ReadCSVStim(Stim &stim) {
 
     //sprintf(FileName, "%s%d.csv", Time_steps_FN,stim_ind);
     //sprintf(FileName,"%s%d.dat",FN,MUL32*32);
-    sprintf(FileName, "../Data/times%d.csv", stim_ind+(global_rank*6));
+    sprintf(FileName, "../Data/times%d.csv", stim_ind+(global_rank*2));
     FILE *f3 = fopen(FileName, "r"); // YYY add FILE*
     if (!f3) {
         printf("Failed to read SimData3\n");

@@ -317,8 +317,8 @@ kernel.o:kernel.cu
 neuroGPU: AllModels.o kernel.o MainC.o  Util.o CudaStuff.o 
 #neuroGPU: kernel.o MainC.o  Util.o CudaStuff.o
 	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
-	$(EXEC) mkdir -p ../bin/
-	$(EXEC) cp $@ ../bin/neuroGPU
+	$(EXEC) mkdir -p ../bigbin/
+	$(EXEC) cp $@ ../bigbin/neuroGPU
 $(info "printing ccflags")
 $(info ALLCCFLAGS is  $(ALL_CCFLAGS))
 
@@ -329,7 +329,7 @@ run: build
 
 clean:
 	rm -f neuroGPU kernel.o MainC.o Util.o CudaStuff.o AllModels.o
-	rm -rf ../bin/neuroGPU
+	rm -rf ../bigbin/neuroGPU
 
 
 clobber: clean

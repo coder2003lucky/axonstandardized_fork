@@ -582,8 +582,8 @@ void stEfork2Main(Stim stim, Sim sim, MYFTYPE* ParamsM, MYFTYPE* InitStatesM, HM
     //argc = 0;
     //char *argv[];
     //argv = "";
-    int global_rank = 2;
-	sprintf(FileName, "../Data/VHotP%d.dat",curr_dev + (global_rank*6));
+    int global_rank = 8;
+	sprintf(FileName, "../Data/VHotP%d.dat",curr_dev + (global_rank*2));
     printf("\n MY RANK on GPU: %d \n", global_rank+1);
 	SaveArrayToFile(FileName, NSets*Nt*stim.NStimuli*sim.NRecSites, Vhots);
 }
