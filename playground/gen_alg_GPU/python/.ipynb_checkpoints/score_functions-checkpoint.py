@@ -443,7 +443,7 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     def diff_lists(lis1, lis2):
         if lis1 is None and lis2 is None:
             return 0
-        if lis1 is None:     #SWAP IF STATEMENT CONTROL FLOW
+        if lis1 is None:     
             lis1 = [0]
         if lis2 is None:
             lis2 = [0]
@@ -463,16 +463,16 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     curr_trace_target['stim_end'] = [stim_end]
     traces = [curr_trace_target]
     #print(data.shape, " before nan delete") # unittest
-    beforenandelete = data.shape
+    #beforenandelete = data.shape
     nan_inds_bol = np.isnan(data).any(axis=1)
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
     data = np.delete(data,nan_inds,axis=1)
-    afternandelete = data.shape
+    #afternandelete = data.shape
     #print(data.shape, " after nan delete")
     #print(1/0)
-    if beforenandelete != afternandelete:
-        print("before after", beforenandelete, afternandelete)
-        print(1/0)
+#     if beforenandelete != afternandelete:
+#         print("before after", beforenandelete, afternandelete)
+#         print(1/0)
 
     #fig, ax = plt.subplots(5, figsize=(8,18))
     for i in range(len(data)):
@@ -496,7 +496,5 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     diff_features = []
     for i in range(len(data)): #testing
         diff_features.append(diff_lists(traces_results[0][feature_name], traces_results[i+1][feature_name]))
-#         if feature_name == 'AP2_begin_voltage':
-#             print(f' i is {i} and diff is {diff_features[i]}')
     return diff_features
 
