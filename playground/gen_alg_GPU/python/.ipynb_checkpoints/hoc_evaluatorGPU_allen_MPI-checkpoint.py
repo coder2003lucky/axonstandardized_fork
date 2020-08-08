@@ -117,7 +117,7 @@ def check_ap_at_zero(stim_ind, volts):
                 if True in APs:
                     #return 400 # threshold parameter that I am still tuning
                     #print("indv:",i, "stim ind: ", stim_ind)
-                    checks[i] = 250
+                    checks[i] = 400
     return checks    
 
 class hoc_evaluator(bpop.evaluators.Evaluator):
@@ -174,7 +174,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             sf_len = len(score_function_ordered_list)
             curr_weights = self.weights[sf_len*i: sf_len*i + sf_len] #get range of sfs for this stim
             #top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
-            top_inds = np.where(curr_weights > 50)[0] # weights bigger than 50
+            top_inds = np.where(curr_weights > 20)[0] # weights bigger than 50 #TODO: maybe this can help glitch
             pairs = list(zip(np.repeat(i,len(top_inds)), [ind for ind in top_inds])) #zips up indices with corresponding stim # to make sure it is refrencing a relevant stim
             all_pairs.append(pairs)
         flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
@@ -273,6 +273,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         curr_weight = self.weights[len(score_function_ordered_list)*i + j]
         transformation = h5py.File(scores_path+self.opt_stim_list[i]+'_scores.hdf5', 'r')['transformation_const_'+curr_sf][:]
         if curr_weight == 0:
+            print("BAD WEIGHTS")
             curr_scores = np.zeros(self.nindv)
         else:
             num_indvs = curr_data_volt.shape[0]
@@ -280,8 +281,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 score = [getattr(sf, curr_sf)(curr_target_volt, curr_data_volt[indv,:], self.dts[i]) for indv in range(num_indvs)]
             else:
                 score = sf.eval_efel(curr_sf, curr_target_volt, curr_data_volt, self.dts[i])
-            curr_scores =  score + check_ap_at_zero(i, curr_data_volt)# here is I am adding penalty
-        norm_scores = self.normalize_scores(curr_scores, transformation,i)
+            curr_scores =  score #+ check_ap_at_zero(i, curr_data_volt)# here is I am adding penalty
+        norm_scores = self.normalize_scores(curr_scores, transformation, i)
         for k in range(len(norm_scores)):
             if np.isnan(norm_scores[k]):
                 norm_scores[k] = 1
@@ -300,8 +301,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         2d list of scalar scores for each parameter set w/ shape (nindv,nstims)
         '''
         comm.Barrier() # so all workers do mapping at the same time
-        fxnsNStims = self.top_SFs() # 52 stim-sf combinations (stim#,sf#)
-        
+        fxnsNStims = self.top_SFs() # 52 stim-sf combinations (stim#,sf#)        
         ##OPTIONS FOR PARALLELISM FOR NOW
         #MPI Version
         #executor = MPIPoolExecutor()
@@ -314,16 +314,24 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         res = np.array(list(res)) ########## important: map returns results with shape (# of sf stim pairs, nindv)
         res = res[:,:] 
         prev_sf_idx = 0 
-        # look at key of each stim score pair to see how many stims to sum
-        num_selected_stims = len(set([pair[0] for pair in fxnsNStims])) # not always using 8 stims
-        for i in range(num_selected_stims):  # iterate stims and sum
-            num_sfs = prev_sf_idx + sum([1 for pair in fxnsNStims if pair[0]==i]) #find how many sf indices for this stim
-            if i == 0:
-                weighted_sums = np.reshape(np.sum(res[prev_sf_idx:prev_sf_idx+num_sfs, :], axis=0),(-1,1))
+        # get first and last stim so we cna iterate through them and make their scores from mapping
+        last_stim = (global_rank+1) * nGpus # ie: 0th rank last_stim = (0+1)*ngpus = ngpus
+        first_stim = last_stim - nGpus
+        for i in range(first_stim, last_stim):  # iterate stims and sum
+            num_curr_sfs = sum([1 for pair in fxnsNStims if pair[0]==i]) #find how many sf indices for this stim
+            #print([pair for pair in fxnsNStims if pair[0]==i], "PAIRS for stim :" , i, "from:  ", global_rank)
+
+            AP_penalty = check_ap_at_zero(i, self.getVolts(i))
+            # sum over score functions for a particular stim
+            if i == first_stim:
+                weighted_sums = np.reshape(np.sum(res[prev_sf_idx:prev_sf_idx+num_curr_sfs, :], axis=0) + AP_penalty ,(-1,1))
             else:
-                curr_stim_sum = np.sum(res[prev_sf_idx:prev_sf_idx+num_sfs, :], axis=0).reshape(-1,1)
+                curr_stim_sum = np.reshape(np.sum(res[prev_sf_idx:prev_sf_idx+num_curr_sfs, :], axis=0) + AP_penalty, (-1,1))
+                #print(min(curr_stim_sum[:,0]), "MIN SCORE FOR STIM", i)
                 weighted_sums = np.append(weighted_sums, curr_stim_sum , axis = 1)
-            prev_sf_idx = num_sfs # update score function tracking index
+                #print(fxnsNStims[prev_sf_idx:prev_sf_idx+num_curr_sfs], "FXNS BEING SUMMED at ", i)
+
+            prev_sf_idx = prev_sf_idx + num_curr_sfs # update score function tracking index
         return weighted_sums
     
     def getVolts(self,idx):
@@ -352,8 +360,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         stim_range = np.arange(nGpus) + (nGpus * global_rank)
         
         if global_rank == 0:
-            #self.convert_allen_data(total_stims) # reintialize allen stuff for clean run
-            #print(1/0)
+            self.convert_allen_data(total_stims) # reintialize allen stuff for clean run
             self.dts = []
             # insert negative param value back in to each set
             full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)
@@ -397,6 +404,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         print("evaluation took: ", eval_times)
         print("everything took: ", eval_end - start_time_sim)
         sum_score = np.reshape(np.sum(score,axis=1), (-1,1))
+
         sendbuf = sum_score
         recvbuf = None
         if global_rank == 0:
@@ -408,13 +416,13 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         else:
             final_score = None
         final_score = comm.bcast(final_score, root=0)
-        
         #print(np.array(final_score).shape, " : final score shape")
         # Minimum element indices in list 
         # Using list comprehension + min() + enumerate() 
         temp = min(final_score) 
         res = [i for i, j in enumerate(final_score) if j == temp] 
         print("The Positions of minimum element : " + str(res)) 
+        #print(final_score, "FINAL SCORE")
 
         return final_score.reshape(-1,1)
 

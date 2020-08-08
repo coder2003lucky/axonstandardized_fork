@@ -327,6 +327,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         num_selected_stims = len(set([pair[0] for pair in fxnsNStims])) # not always using 8 stims
         for i in range(num_selected_stims):  # iterate stims and sum
             num_sfs = prev_sf_idx + sum([1 for pair in fxnsNStims if pair[0]==i]) #find how many sf indices for this stim
+            print([pair for pair in fxnsNStims if pair[0]==i], "pairs from : ", run_num)
+            print("THATS AN ISSUE ^ fix it")
+
             if i == 0:
                 weighted_sums = np.reshape(np.sum(res[prev_sf_idx:prev_sf_idx+num_sfs, :], axis=0),(-1,1))
             else:

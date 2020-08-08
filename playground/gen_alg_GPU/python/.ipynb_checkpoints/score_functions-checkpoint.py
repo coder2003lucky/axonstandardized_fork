@@ -13,10 +13,6 @@ threshold = -10
 from concurrent.futures import ProcessPoolExecutor as Pool
 
 # These constants exist for efel features
-
-
-
-#CHANGED TIME STAMPS
 time_stamps =  10000
 starting_time_stamp = 1000
 ending_time_stamp = 7000
