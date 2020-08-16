@@ -1,6 +1,20 @@
 # axonstandardized
 standardization updates to the axon research run procedure. Started 10/15/19.
 
+To set up environment / dependencies
+=======================================
+1. In root_dir run "conda env create -f environment_root.yml"
+2. then "conda activate pipeline_env"
+3. Make sure you have correct module files with "source load_env" in playground folder
+
+
+To run
+=======================================
+1. Makre sure dependecies installed and you can activate pipeline env
+2. Go in playground directory
+3. Fill out input.txt with params, model, peeling and number of trials to run
+4. sh run.sh
+
 To run neurogpu with sbatch
 ===================================
 1. go into playground directory (axonstandardized/playground/)
@@ -23,13 +37,6 @@ To run neurogpu interactively
 if you are running anything using GPU make sure your account is configured for that or else you will get an error saying invalid QOS.
 
 
-To run
-=======================================
-1. Fill out input.txt with params, model, peeling and number of trials to run
-2. sh run.sh, leave terminal open and wait.
-done!
-
-
 Steps in run.sh
 =======================================
 1. Generate Params using input.txt and makeParamSet.py
@@ -47,4 +54,15 @@ initial is how we received files originally
 ![Proposed File Struct](/proposed_file_struct.png)
 
 
-TODO: fix passive params template, it has an n/a where it shouldn't. give zander mainen specific run files?
+TODO
+=======================================
+* fix passive params template, it has an n/a where it shouldn't. give zander mainen specific run files
+* create a good way to insure all correct module files are loaded
+* neuroGPU has to have one executable for each rank because I couldn't figure out how to make MPI aware cuda yet
+* integration tests
+* sandbox procedure needs to be debugged
+* need to try cprofile inside multiprocessing for more speed up at some point
+* adapt to work on files for more datasets
+* pycuda wrappers for efel? 
+* cpython
+* look into allen inst spike eval: https://github.com/AllenInstitute/ipfx
