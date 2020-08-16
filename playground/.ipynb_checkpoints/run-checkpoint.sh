@@ -10,6 +10,7 @@ echo $gaGPU        #test               #test
 if [ "$gaGPU" = "True" ]
     then
        cd gen_alg_GPU/
+       source load_env
        sbatch running_GA_GPU.sh
        exit 1
 fi
@@ -25,7 +26,6 @@ do
     IFS="=" read -ra inputs <<< "$line"
     name="${inputs[0]}"
     data="${inputs[1]}"
-    printf -v $name "$data"
 done < "$input"
 
 true=True
@@ -63,10 +63,10 @@ shopt -s nullglob
 found=0
 target_volts=$num_volts
 
-# while [ $found -ne $target_volts ]
-# do
-#         found=`ls -lR ${wrkDir}/volts/*.hdf5 | wc -l`
-# done
+while [ $found -ne $target_volts ]
+do
+        found=`ls -lR ${wrkDir}/volts/*.hdf5 | wc -l`
+done
 
 echo made $num_volts volts successfully
 shopt -u nullglob
@@ -89,10 +89,10 @@ shopt -s nullglob
 found=0
 target_volts=$num_volts
 
-# while [ $found -ne $target_volts ]
-# do
-#         found=`ls -lR ${wrkDir}/scores/*.hdf5 | wc -l`
-# done
+while [ $found -ne $target_volts ]
+do
+        found=`ls -lR ${wrkDir}/scores/*.hdf5 | wc -l`
+done
 
 echo made $num_volts scores successfully
 shopt -u nullglob
@@ -107,10 +107,10 @@ shopt -s nullglob
 found=0
 target_files=1
 
-# while [ $found -ne $target_files ]
-# do
-#         found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
-# done
+while [ $found -ne $target_files ]
+do
+        found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
+done
 
 echo finished creating objectives file
 shopt -u nullglob

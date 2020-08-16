@@ -458,34 +458,16 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     curr_trace_target['stim_start'] = [stim_start]
     curr_trace_target['stim_end'] = [stim_end]
     traces = [curr_trace_target]
-    #print(data.shape, " before nan delete") # unittest
-    #beforenandelete = data.shape
     nan_inds_bol = np.isnan(data).any(axis=1)
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
     data = np.delete(data,nan_inds,axis=1)
-    #afternandelete = data.shape
-    #print(data.shape, " after nan delete")
-    #print(1/0)
-#     if beforenandelete != afternandelete:
-#         print("before after", beforenandelete, afternandelete)
-#         print(1/0)
-
-    #fig, ax = plt.subplots(5, figsize=(8,18))
     for i in range(len(data)):
         curr_trace_data = {}
         curr_trace_data['T'] = time
         curr_trace_data['V'] = data[i,:]
-        # testing
-#         if len(data[i,:]) != 10000:
-#             print(len(data[i,:]))
-#             print(i)
-#             print(1/0)
-#         #if i < 5:
-            #ax[i].plot(np.arange(len(time)), data[i,:])
         curr_trace_data['stim_start'] = [stim_start]
         curr_trace_data['stim_end'] = [stim_end]
         traces.append(curr_trace_data)
-    #plt.savefig("testing_volts.png")
     efelstart = timer.time()
     traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
     #print("EFEL eval took: ", timer.time()-efelstart)

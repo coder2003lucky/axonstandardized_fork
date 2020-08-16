@@ -5,7 +5,7 @@
 #SBATCH -t 10:00:00
 #SBATCH -C haswell
 #SBATCH -L SCRATCH
-#SBATCH --mail-user=kyung4952@berkeley.edu
+#SBATCH --mail-user=zladd#berkeley.edu
 #SBATCH --mail-type=ALL
 
 

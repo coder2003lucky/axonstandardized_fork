@@ -1,10 +1,5 @@
 import bluepyopt as bpop
 import bluepyopt.deapext.algorithms as algo
-
-
-#import neurogpu_multistim_evaluator_SG as hoc_ev
-import hoc_evaluatorGPU_allen_MPI as hoc_ev
-#import hoc_evaluatorGPU_allen_par as hoc_ev
 import pickle
 import time
 import numpy as np
@@ -21,6 +16,11 @@ from mpi4py import MPI
 comm = MPI.COMM_WORLD
 global_rank = comm.Get_rank()
 size = comm.Get_size()
+
+if size > 1
+    import hoc_evaluatorGPU_allen_MPI as hoc_ev
+else:
+    import hoc_evaluatorGPU_allen_par as hoc_ev
 
 logger = logging.getLogger()
 gen_counter = 0

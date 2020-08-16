@@ -9,7 +9,6 @@ import os
 import os.path
 import subprocess
 import time
-import shutil
 import struct
 import glob
 import ctypes
@@ -17,11 +16,9 @@ import matplotlib.pyplot as plt
 from extractModel_mappings_linux import   allparams_from_mapping
 import bluepyopt.deapext.algorithms as algo
 from multiprocessing import Pool
-import shutil, errno
-
-
-#from concurrent.futures import ThreadPoolExecutor as Pool
 import multiprocessing
+import shutil, errno
+#from concurrent.futures import ThreadPoolExecutor as Pool
 import csv
 import ap_tuner as tuner
 #os.environ["OMP_NUM_THREADS"] = "80" # export OMP_NUM_THREADS=4
@@ -31,7 +28,9 @@ from mpi4py import MPI
 from joblib import Parallel, delayed
 #from mpi4py.futures import MPIPoolExecutor
 
-# set up environment variables
+
+
+####### set up environment variables ##############
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()
 comm = MPI.COMM_WORLD
@@ -62,7 +61,7 @@ params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 model_dir = '..'
 data_dir = model_dir+'/Data/'
 run_dir = '../bin'
-vs_fn = model_dir + '/Data/VHotP'
+vs_fn = '/tmp/Data/VHotP'
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()
 allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
@@ -84,12 +83,21 @@ stim_names = list([e.decode('ascii') for e in opt_stim_name_list])
 stims = []
 for stim_name in stim_names:
     stims.append(allen_stim_file[stim_name][:])
+    
+if not os.path.isdir("/tmp/Data"):
+    os.mkdir("/tmp/Data")
 
 def nrnMread(fileName):
     f = open(fileName, "rb")
     nparam = struct.unpack('i', f.read(4))[0]
     typeFlg = struct.unpack('i', f.read(4))[0]
     return np.fromfile(f,np.double)
+
+def nrnMreadH5(fileName):
+    f = h5py.File(fileName,'r')
+    dat = f['Data'][:][0]
+    return np.array(dat)
+
 
 
 def get_first_zero(stim):
@@ -117,7 +125,7 @@ def check_ap_at_zero(stim_ind, volts):
                 if True in APs:
                     #return 400 # threshold parameter that I am still tuning
                     #print("indv:",i, "stim ind: ", stim_ind)
-                    checks[i] = 400
+                    checks[i] = 350
     return checks    
 
 class hoc_evaluator(bpop.evaluators.Evaluator):
@@ -174,7 +182,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             sf_len = len(score_function_ordered_list)
             curr_weights = self.weights[sf_len*i: sf_len*i + sf_len] #get range of sfs for this stim
             #top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
-            top_inds = np.where(curr_weights > 20)[0] # weights bigger than 50 #TODO: maybe this can help glitch
+            top_inds = np.where(curr_weights > 40)[0] # weights bigger than 50 #TODO: maybe this can help glitch
             pairs = list(zip(np.repeat(i,len(top_inds)), [ind for ind in top_inds])) #zips up indices with corresponding stim # to make sure it is refrencing a relevant stim
             all_pairs.append(pairs)
         flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
@@ -209,14 +217,11 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         and timesi and removes previous ones. Using csv writer to write timesi so it reads well.
         """
         for stim_num in range(stim_range):
-            print(stim_num)
             old_stim = "../Data/Stim_raw{}.csv".format(stim_num)
             old_time = "../Data/times_{}.csv".format(stim_num)
             if os.path.exists(old_stim) :
-                print("old stim: ", old_stim)
                 os.remove(old_stim)
             if os.path.exists(old_time) :
-                print("old time: ", old_time)
                 os.remove(old_time)
             stim = opt_stim_name_list[stim_num].decode("utf-8")
             dt = allen_stim_file[stim+'_dt'][:][0]
@@ -247,11 +252,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 
     def eval_stim_sf_pair(self,perm):
         """ 
-        function that evaluates a stim and score function pair on line 252. Sets i as the actual 
-        index and and mod_i as it's adjusted index (should get 15th target volt but that will 
-        be 7th in the data_volts_list). transform then normalize and then multiply by weight
-        and then SENT BACK to MAPPER. uses self. for weights, data_volts, and target volts because
-        it is easy information transfer instead of passing arguments into map.
+        function that evaluates a stim and score function pair on line 252. Sets i as stim # and sets j as 
+        score function #. Evaluates volts for that score function in efel or custom. Normalize scores
+         then SENT BACK to MAPPER.
         
         Arguments
         --------------------------------------------------------------------
@@ -281,12 +284,12 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 score = [getattr(sf, curr_sf)(curr_target_volt, curr_data_volt[indv,:], self.dts[i]) for indv in range(num_indvs)]
             else:
                 score = sf.eval_efel(curr_sf, curr_target_volt, curr_data_volt, self.dts[i])
-            curr_scores =  score #+ check_ap_at_zero(i, curr_data_volt)# here is I am adding penalty
+            curr_scores =  score 
         norm_scores = self.normalize_scores(curr_scores, transformation, i)
         for k in range(len(norm_scores)):
             if np.isnan(norm_scores[k]):
                 norm_scores[k] = 1
-        return norm_scores * curr_weight #+ check_ap_at_zero(i, curr_data_volt)# here is I am adding penalty
+        return norm_scores * curr_weight
     
     
     def map_par(self):
@@ -294,7 +297,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         This function maps out what stim and score function pairs should be mapped to be evaluated in parallel
         first it finds the pairs with the highest weights, the maps them and then adds up the score for each stim
         for every individual.
-        
         
         Return
         --------------------
@@ -338,8 +340,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         '''Helper function that gets volts from data and shapes them for a given stim index'''
         #print( "asking for volts:", idx, " from rank: ", idx)
 
-        fn = vs_fn + str(idx) +  '.dat'    #'.h5'
-        curr_volts =  nrnMread(fn)
+        fn = vs_fn + str(idx) +  '.h5' #.dat
+        curr_volts =  nrnMreadH5(fn)
         Nt = int(len(curr_volts)/ntimestep)
         shaped_volts = np.reshape(curr_volts, [Nt,ntimestep])
         return shaped_volts
@@ -360,7 +362,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         stim_range = np.arange(nGpus) + (nGpus * global_rank)
         
         if global_rank == 0:
-            #self.convert_allen_data(total_stims) # reintialize allen stuff for clean run
+            ##### TODO: write a function to check for missing data?
+            self.convert_allen_data(total_stims) # reintialize allen stuff for clean run
             self.dts = []
             # insert negative param value back in to each set
             full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)

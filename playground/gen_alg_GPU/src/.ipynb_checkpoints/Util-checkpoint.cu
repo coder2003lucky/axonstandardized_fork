@@ -1,18 +1,21 @@
 #include "Util.h"
 //#include "CudaStuff.cuh"
 #define checkCudaErrors(val)           check ( (val), #val, __FILE__, __LINE__ )
-#include <mpi.h>
+
 #include <iostream>
-#include <memory>
-#include <mpi.h>
-#include <cuda_runtime.h>
 
+#include "H5Cpp.h"
 
-//#include "H5Cpp.h"
-//using namespace H5;
-//using std::endl;
-//using std::cout;
-//const H5std_string  datasetname( "Data" ); // dataset key for HDF5
+#if defined(unix) || defined(__unix__) || defined(__unix)
+#define UNIX_VERSION true
+#else
+#define UNIX_VERSION false
+#endif
+
+using namespace H5;
+using std::endl;
+using std::cout;
+const H5std_string  datasetname( "Data" ); // dataset key for HDF5
 
 MYFTYPE  maxf(MYFTYPE  a, MYFTYPE  b) {
     if (a>b)
@@ -353,7 +356,7 @@ void ReadCSVStim(Stim &stim) {
     //MPI_Init(NULL, NULL);
     //MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     //printf("my rank in csv reader : %d", myrank);
-    int global_rank = 8;
+    int global_rank = 2;
 
     char FileName[300];
     sprintf(FileName, "%s", Stim_csv_meta);
@@ -377,7 +380,9 @@ void ReadCSVStim(Stim &stim) {
     ReadFloatFromCSV(line, &stim.area, 1);
     int stim_ind;
     cudaGetDevice(&stim_ind);
-    sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind+(global_rank*2));
+    sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind+(global_rank*6));
+    //sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind);
+
     FILE *f2 = fopen(FileName, "r");
     if (!f2) {
         printf("Failed to read StimRaw Data2 - %s\n",FileName);
@@ -393,7 +398,7 @@ void ReadCSVStim(Stim &stim) {
 
     //sprintf(FileName, "%s%d.csv", Time_steps_FN,stim_ind);
     //sprintf(FileName,"%s%d.dat",FN,MUL32*32);
-    sprintf(FileName, "../Data/times%d.csv", stim_ind+(global_rank*2));
+    sprintf(FileName, "../Data/times%d.csv", stim_ind+(global_rank*6));
     FILE *f3 = fopen(FileName, "r"); // YYY add FILE*
     if (!f3) {
         printf("Failed to read SimData3\n");
@@ -462,39 +467,45 @@ double diffclock(clock_t clock1, clock_t clock2)
 }
 
 void SaveArrayToFile(const char* FN, const int N, const double* Arr) {
-    printf("printing %s size is %d\n", FN, N);
     const int prec = 3;
-    
-    FILE *file = fopen(FN, "wb");
-    if (file) {
-        fwrite(&N, sizeof(int), 1, file);
-        fwrite(&prec, sizeof(int), 1, file);
-        fwrite(Arr, sizeof(double), N, file);
+
+    if (UNIX_VERSION) {
+        printf("SaveArrayToFile UNIX Version\n");
+		const H5std_string  FILE_NAME( FN );
+        H5File file( FILE_NAME, H5F_ACC_TRUNC );
+        int RANK = 2;
+        hsize_t dimsf[2] = {1, N};
+
+        DataSpace dataspace(RANK, dimsf);
+        FloatType datatype(PredType::NATIVE_DOUBLE);
+        datatype.setOrder(H5T_ORDER_LE);
+        DataSet dataset = file.createDataSet(datasetname, datatype, dataspace);
+        dataset.write(Arr, PredType::NATIVE_DOUBLE );
+    } else {
+        printf("SaveArrayToFile w/o HDF5\n");
+        FILE *file = fopen(FN, "wb");
+        if (file) {
+            fwrite(&N, sizeof(int), 1, file);
+            fwrite(&prec, sizeof(int), 1, file);
+            fwrite(Arr, sizeof(double), N, file);
+        }
+        else {
+            printf("ERR SaveArrayToFile %s %d\n", FN, N);
+        }
+        fclose(file);
     }
-    else {
-        printf("ERR SaveArrayToFile %s %d\n", FN, N);
-    }
-    fclose(file);
+
 }
 void SaveArrayToFile(const char* FN, const int N, const float* Arr) {
-    printf("\nprinting %s size is %d\n", FN, N);
-    double* arr_dbl;
-    arr_dbl =(double*) malloc(N * sizeof(double));
+    printf("converting %s to double\n", FN);
+    double* arr_dbl = (double*) malloc(N * sizeof(double));
     const int prec = 3;
     for (int i = 0; i < N; i++) {
         arr_dbl[i] = (double)Arr[i];
     }
-    FILE *file = fopen(FN, "wb");
-    if (file) {
-        fwrite(&N, sizeof(int), 1, file);
-        fwrite(&prec, sizeof(int), 1, file);
-        fwrite(arr_dbl, sizeof(double), N, file);
-    }
-    else {
-        printf("ERR SaveArrayToFile %s %d\n", FN, N);
-    }
-    fclose(file);
+    SaveArrayToFile(FN, N, arr_dbl);
 }
+
 
 MYFTYPE* transposeMat(MYFTYPE* Arr, MYDTYPE width, MYDTYPE length) {
     MYFTYPE* ans = (MYFTYPE*)malloc(width*length * sizeof(MYFTYPE));

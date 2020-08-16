@@ -484,8 +484,9 @@ void SaveArrayToFile(const char* FN, const int N, const double* Arr) {
         }
         fclose(file);
     }
-
 }
+
+
 void SaveArrayToFile(const char* FN, const int N, const float* Arr) {
     printf("converting %s to double\n", FN);
     double* arr_dbl = (double*) malloc(N * sizeof(double));

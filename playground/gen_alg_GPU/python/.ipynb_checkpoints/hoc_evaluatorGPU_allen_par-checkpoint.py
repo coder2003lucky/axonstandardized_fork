@@ -46,7 +46,7 @@ params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 model_dir = '..'
 data_dir = model_dir+'/Data/'
 run_dir = '../bin'
-vs_fn = model_dir + '/Data/VHotP'
+vs_fn = '/tmp/Data/VHotP'
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()
 allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
@@ -66,11 +66,20 @@ custom_score_functions = [
 # Number of timesteps for the output volt.
 ntimestep = 10000
 
+if not os.path.isdir("/tmp/Data"):
+    os.mkdir("/tmp/Data")
+
 def nrnMread(fileName):
     f = open(fileName, "rb")
     nparam = struct.unpack('i', f.read(4))[0]
     typeFlg = struct.unpack('i', f.read(4))[0]
     return np.fromfile(f,np.double)
+
+def nrnMreadH5(fileName):
+    f = h5py.File(fileName,'r')
+    dat = f['Data'][:][0]
+    return np.array(dat)
+
 
 def stim_swap(idx, i):
     """
@@ -192,7 +201,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         ---------------------------------------------------------
         p_object: process object that stops when neuroGPU done
         """
-        volts_fn = vs_fn + str(stim_ind) + '.dat'
+        #volts_fn = vs_fn + str(stim_ind) + '.dat'
+        volts_fn = vs_fn + str(stim_ind) + '.h5'
         if os.path.exists(volts_fn):
             os.remove(volts_fn)
         p_object = subprocess.Popen(['../bin/neuroGPU',str(stim_ind)])
@@ -324,13 +334,18 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         res = res[:,:] 
         prev_sf_idx = 0 
         # look at key of each stim score pair to see how many stims to sum
-        num_selected_stims = len(set([pair[0] for pair in fxnsNStims])) # not always using 8 stims
-        for i in range(num_selected_stims):  # iterate stims and sum
-            num_sfs = prev_sf_idx + sum([1 for pair in fxnsNStims if pair[0]==i]) #find how many sf indices for this stim
-            print([pair for pair in fxnsNStims if pair[0]==i], "pairs from : ", run_num)
-            print("THATS AN ISSUE ^ fix it")
+        #num_selected_stims = len(set([pair[0] for pair in fxnsNStims])) # not always using 8 stims
+        last_stim = (run_num + 1) * nGpus # ie: 0th run last_stim = (0+1)*8 = 8
+        first_stim = last_stim - nGpus # on the the last round this will be 24 - 8 = 16
+        if last_stim > 18:
+            last_stim = 18
+        #print(last_stim, first_stim, "last and first")
+        for i in range(first_stim, last_stim):  # iterate stims and sum
+            num_sfs = sum([1 for pair in fxnsNStims if pair[0]==i]) #find how many sf indices for this stim
+            #print([pair for pair in fxnsNStims if pair[0]==i], "pairs from : ", run_num)
+            #print(fxnsNStims[prev_sf_idx:prev_sf_idx+num_sfs], "Currently evaluating")
 
-            if i == 0:
+            if i % nGpus == 0:
                 weighted_sums = np.reshape(np.sum(res[prev_sf_idx:prev_sf_idx+num_sfs, :], axis=0),(-1,1))
             else:
                 #print(prev_sf_idx, "stim start idx", num_sfs, "stim end idx")
@@ -338,7 +353,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 curr_stim_sum = np.reshape(curr_stim_sum, (-1,1))
                 weighted_sums = np.append(weighted_sums, curr_stim_sum , axis = 1)
                 #print(curr_stim_sum.shape," : cur stim sum SHAPE      ", weighted_sums.shape, ": weighted sums shape")
-            prev_sf_idx = num_sfs # update score function tracking index
+            prev_sf_idx = prev_sf_idx + num_sfs # update score function tracking index
         return weighted_sums
             
     def ap_tune(self,param_values, target_volts, stim_name, weight):
@@ -361,10 +376,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
     
     def getVolts(self,idx):
         '''Helper function that gets volts from data and shapes them for a given stim index'''
-        #fn = vs_fn + str(idx) +  '.h5'    #'.h5' 
-        #curr_volts =  nrnMreadH5(fn)
-        fn = vs_fn + str(idx) +  '.dat'    #'.h5'
-        curr_volts =  nrnMread(fn)
+        fn = vs_fn + str(idx) +  '.h5'    #'.h5' 
+        curr_volts =  nrnMreadH5(fn)
+        #fn = vs_fn + str(idx) +  '.dat'    #'.h5'
+        #curr_volts =  nrnMread(fn)
         Nt = int(len(curr_volts)/ntimestep)
         shaped_volts = np.reshape(curr_volts, [Nt,ntimestep])
         return shaped_volts
@@ -420,7 +435,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             if not first_batch:
                 start_times.append(time.time())
                 if i != idx:
-                    #print("replaced dts and stims for ", idx, " with the ones for  ", i)
+                    print("replaced dts and stims for ", idx, " with the ones for  ", i)
                     stim_swap(idx, i)
                 p_objects[idx] = self.run_model(idx, []) #ship off job to neuroGPU for next iter
             if idx == nGpus-1:
