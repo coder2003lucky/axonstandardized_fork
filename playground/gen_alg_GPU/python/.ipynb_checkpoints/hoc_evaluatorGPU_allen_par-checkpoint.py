@@ -13,7 +13,7 @@ import struct
 import glob
 import ctypes
 import matplotlib.pyplot as plt
-from extractModel_mappings_linux import   allparams_from_mapping
+from extractModel_mappings import   allparams_from_mapping
 import bluepyopt.deapext.algorithms as algo
 from concurrent.futures import ProcessPoolExecutor as Pool
 import multiprocessing
@@ -30,8 +30,10 @@ rank = comm.Get_rank()
 
 run_file = './run_model_cori.hoc'
 run_volts_path = '../run_volts_bbp_full_gpu_tuned/'
-paramsCSV = run_volts_path+'params/params_bbp_full_gpu_tuned_10_based.csv'
-orig_params = h5py.File(run_volts_path+'params/params_bbp_full_allen_gpu_tune.hdf5', 'r')['orig_full'][0]
+#paramsCSV = run_volts_path+'params/params_bbp_full_gpu_tuned_10_based.csv'
+paramsCSV = run_volts_path+'params/params_bbp_full.csv'
+#orig_params = h5py.File(run_volts_path+'params/params_bbp_full_allen_gpu_tune.hdf5', 'r')['orig_full'][0]
+orig_params = np.array(np.array(nrnUtils.readParamsCSV(paramsCSV))[:,1], dtype=np.float64)
 scores_path = '../scores/'
 objectives_file = h5py.File('./objectives/multi_stim_bbp_full_allen_gpu_tune_18_stims.hdf5', 'r')
 opt_weight_list = objectives_file['opt_weight_list'][:]
@@ -42,7 +44,8 @@ target_volts_path = './target_volts/allen_data_target_volts_10000.hdf5'
 target_volts_hdf5 = h5py.File(target_volts_path, 'r')
 ap_tune_stim_name = '18'
 ap_tune_weight = 0
-params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+#params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+params_opt_ind = np.arange(24)
 model_dir = '..'
 data_dir = model_dir+'/Data/'
 run_dir = '../bin'
@@ -133,10 +136,16 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.opt_ind = params_opt_ind
         data = np.array([data[i] for i in self.opt_ind])
         self.orig_params = orig_params
-        self.pmin = np.array((data[:,1]), dtype=np.float64)
-        self.pmax = np.array((data[:,2]), dtype=np.float64) 
-        self.pmax = np.delete(self.pmax, 1, 0) # need to delete second parameter because it is negative and BPOP cannot take negative params, we will add it back to every set of params in eval_list before allParams
-        self.pmin = np.delete(self.pmin, 1, 0)
+        self.pmin = np.array((data[:,2]), dtype=np.float64)
+        self.pmax = np.array((data[:,3]), dtype=np.float64)
+        # make this a function
+        for param_idx in range(len(orig_params)):
+            if self.orig_params[param_idx] == self.pmin[param_idx] and self.pmin[param_idx] == self.pmax[param_idx]:
+                self.pmin[param_idx] = self.pmin[param_idx] * .9999
+                self.pmax[param_idx] = self.pmax[param_idx] * 1.001
+
+#         self.pmax = np.delete(self.pmax, 1, 0) # need to delete second parameter because it is negative and BPOP cannot take negative params, we will add it back to every set of params in eval_list before allParams
+#         self.pmin = np.delete(self.pmin, 1, 0)
         #self.ptarget = self.orig_params
         params = [] 
         for i in range(len(self.pmin)):
@@ -252,7 +261,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         score: scores for each individual in an array corresponding to this score function
         with shape (nindv, 1)
         """
-        
+        #testing
+        #print(np.where(np.isnan(data[0,:])), i, "nans at i")
+        print(np.max(data[0,:]), np.min(data[0,:]))
+        #print(1/0)
         num_indvs = data.shape[0]
         if function in custom_score_functions:
             score = [getattr(sf, function)(target, data[indv,:], dt) for indv in range(num_indvs)]
@@ -401,8 +413,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.convert_allen_data() # reintialize allen stuff for clean run
         self.nindv = len(param_values)
         # insert negative param value back in to each set
-        full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)
-        allparams = allparams_from_mapping(list(full_params)) 
+        #full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)
+        #np.savetxt("generatedBBPfull_params_50indv.csv", full_params)
+        #allparams = allparams_from_mapping(list(full_params)) 
+        allparams = allparams_from_mapping(list(param_values)) 
         self.data_volts_list = np.array([])
         nstims = len(self.opt_stim_list)
         nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])

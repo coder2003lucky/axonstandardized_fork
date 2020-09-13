@@ -10,7 +10,6 @@ echo $gaGPU        #test               #test
 if [ "$gaGPU" = "True" ]
     then
        cd gen_alg_GPU/
-       source load_env
        sbatch running_GA_GPU.sh
        exit 1
 fi

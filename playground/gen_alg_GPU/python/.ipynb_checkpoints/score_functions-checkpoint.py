@@ -460,11 +460,23 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     traces = [curr_trace_target]
     nan_inds_bol = np.isnan(data).any(axis=1)
     nan_inds = [i for i, x in enumerate(nan_inds_bol) if x]
+    #testing
+    #print(nan_inds, "nan inds")
     data = np.delete(data,nan_inds,axis=1)
+    #print(np.isnan(data[0,0:10]))
+    #print(data[0,0:10])
+
+
     for i in range(len(data)):
         curr_trace_data = {}
         curr_trace_data['T'] = time
         curr_trace_data['V'] = data[i,:]
+        if len(data[i,:]) != 10000 or len(curr_trace_data['V']) != 10000:
+            print(len(data[i,:]))
+            #print(data[i,9980:9990], 'at', i)
+            print(np.where(np.isnan(data[i,:])))
+            #print(len(curr_trace_data['V']))
+            print(1/0)
         curr_trace_data['stim_start'] = [stim_start]
         curr_trace_data['stim_end'] = [stim_end]
         traces.append(curr_trace_data)
