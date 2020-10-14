@@ -17,7 +17,6 @@ from extractModel_mappings import   allparams_from_mapping
 import bluepyopt.deapext.algorithms as algo
 from concurrent.futures import ProcessPoolExecutor as Pool
 import multiprocessing
-import cProfile
 import csv
 import ap_tuner as tuner
 os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
@@ -264,7 +263,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         """
         #testing
         #print(np.where(np.isnan(data[0,:])), i, "nans at i")
-        #print(np.max(data[0,:]), np.min(data[0,:]))
+        print(np.max(data[0,:]), np.min(data[0,:]))
         #print(1/0)
         num_indvs = data.shape[0]
         if function in custom_score_functions:
@@ -325,13 +324,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 norm_scores[k] = 1
         return norm_scores * curr_weight 
     
-    def wrap_eval(self,pair):
-        result = [None]
-        pid = os.getpid()
-        cProfile.runctx("result[0] = self.eval_stim_sf_pair(pair)", globals(), locals(), 'prof%d.prof' % pid)
-        return result[0]
-
-
     
     def map_par(self,run_num):
         ''' 
@@ -349,7 +341,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         '''
         fxnsNStims = self.top_SFs(run_num) # 52 stim-sf combinations (stim#,sf#)
         with Pool(nCpus) as p: # parallel mapping
-            res = p.map(self.wrap_eval, fxnsNStims)
+            res = p.map(self.eval_stim_sf_pair, fxnsNStims)
         res = np.array(list(res)) ########## important: map returns results with shape (# of sf stim pairs, nindv)
         res = res[:,:] 
         prev_sf_idx = 0 

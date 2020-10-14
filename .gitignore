@@ -8,5 +8,4 @@ gen_alg_GPU/Data/*
 ./gen_alg_GPU
 *2020.pkl
 *.pkl
-*.out
-*.prof 
+*.out 
