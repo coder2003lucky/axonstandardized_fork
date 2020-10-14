@@ -328,6 +328,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
     def wrap_eval(self,pair):
         result = [None]
         pid = os.getpid()
+        print(pid)
         cProfile.runctx("result[0] = self.eval_stim_sf_pair(pair)", globals(), locals(), 'prof%d.prof' % pid)
         return result[0]
 
