@@ -3,12 +3,24 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to NeuroGPU's documentation!
+Welcome to NeuroGPU documentation!
 ====================================
+
+This documentation contains two segments. The first is Dr. Roy Ben-Shalom's NeuroGPU and the
+second is Kyung Geun Kim's Axon Pipeline.
+
 
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
+
+   Introduction <intro>
+   Optimization <opt>
+   Evaluators <eval>
+   Scoring Functions <scoring>
+   NeuroGPU
+   Examples <examples>
+   Credits <cred>
 
 
 
