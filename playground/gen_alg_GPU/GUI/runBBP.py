@@ -33,8 +33,9 @@ run_dir = '../bin'
 vs_fn = '/tmp/Data/VHotP'
 target_volts = np.genfromtxt("../Data/target_volts_BBP19.csv",delimiter = ',')
 
-if not os.path.isdir("/tmp/Data"): 
-    os.mkdir("/tmp/Data")
+if not os.path.isdir('/tmp/Data'):
+    os.mkdir('/tmp/Data')
+
 
 def nrnMread(fileName):
     f = open(fileName, "rb")
@@ -169,12 +170,39 @@ print(orig_params)
 
 nstims = len(opt_stim_list)
 convert_allen_data()
-allparams_from_mapping(paramset)
-for i in range(0,nstims):
+#allparams_from_mapping(paramset)
+
+
+###### TEN COPIES OF ORIG PARAMS FOR DEBUG #################
+param_values =  np.array(orig_params).reshape(1,-1)
+param_values = np.repeat(param_values, 10, axis=0)
+print(param_values.shape, "pvals shape!!!!!!!!")
+###### TEN COPIES OF ORIG PARAMS FOR DEBUG ################# 
+
+for i in range(0,3):
     if i != 0:
         p_object = run_model(0,i)
         p_object.wait()
         #getVolts(0)
         stim_swap(0,i)
-    
+
+import shutil, errno
+
+def copyanything(src, dst):
+    try:
+        shutil.copytree(src, dst)
+    except OSError as exc: # python >2.5
+        if exc.errno == errno.ENOTDIR:
+            shutil.copy(src, dst)
+        else: raise
+
+for file in os.listdir('../Data'):
+    if 'h5' in file:
+        print("removing: ", file)
+        os.remove('../Data/' + file)
+
+for file in os.listdir('/tmp/Data'):
+    shutil.move("/tmp/Data/"+ file, "../Data/" + file)
+
+
     
