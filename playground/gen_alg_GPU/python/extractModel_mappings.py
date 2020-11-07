@@ -160,7 +160,9 @@ def parse_model(model_file):
 def my_assemble_allparams(param_to_allparam,allparams_file,params,param_mappings):
     global reversed_mappings
     with open(allparams_file, 'r') as af:
-        allparams_matrix = list(reader(af))[:2]
+        #allparams_matrix = list(reader(af))[:2]
+        allparams_matrix = list(reader(af))
+
 ## Z testing
     #print(allparams_matrix[1][0:15])
     #Zprint(np.array(allparams_matrix)[1])
@@ -346,10 +348,7 @@ def allparams_from_mapping(params_input=None):
     model_mappings = parse_model(model_data)
     #print(model_mappings, "model mappings shape")
     allparams = my_assemble_allparams(param_to_allparam,reference,params,param_mappings)
-    #print(np.isnan(np.array(allparams, dtype=np.double)).any(), "allparams nan?")
     
-
-
     # collect allparams using function above
     # allparams = assemble_allparams(
     #     allparams_template, 

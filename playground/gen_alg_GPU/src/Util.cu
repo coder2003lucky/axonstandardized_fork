@@ -356,7 +356,7 @@ void ReadCSVStim(Stim &stim) {
     //MPI_Init(NULL, NULL);
     //MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     //printf("my rank in csv reader : %d", myrank);
-    int global_rank = 2;
+    int global_rank = 0;
 
     char FileName[300];
     sprintf(FileName, "%s", Stim_csv_meta);

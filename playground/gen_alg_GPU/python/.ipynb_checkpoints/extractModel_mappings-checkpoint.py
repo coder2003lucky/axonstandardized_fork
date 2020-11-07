@@ -160,7 +160,9 @@ def parse_model(model_file):
 def my_assemble_allparams(param_to_allparam,allparams_file,params,param_mappings):
     global reversed_mappings
     with open(allparams_file, 'r') as af:
-        allparams_matrix = list(reader(af))[:2]
+        #allparams_matrix = list(reader(af))[:2]
+        allparams_matrix = list(reader(af))
+
 ## Z testing
     #print(allparams_matrix[1][0:15])
     #Zprint(np.array(allparams_matrix)[1])
@@ -351,13 +353,13 @@ def allparams_from_mapping(params_input=None):
 
 
     # collect allparams using function above
-    # allparams = assemble_allparams(
-    #     allparams_template, 
-    #     params, 
-    #     param_to_allparam, 
-    #     param_mappings, 
-    #     model_mappings
-    # )
+    allparams = assemble_allparams(
+        allparams_template, 
+        params, 
+        param_to_allparam, 
+        param_mappings, 
+        model_mappings
+    )
 
     # write allparams to .csv file
     with open(all_params_fn, 'w', newline='') as ap:

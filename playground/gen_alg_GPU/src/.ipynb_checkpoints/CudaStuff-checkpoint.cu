@@ -580,7 +580,7 @@ void stEfork2Main(Stim stim, Sim sim, MYFTYPE* ParamsM, MYFTYPE* InitStatesM, HM
   int curr_dev;
   CUDA_RT_CALL(cudaGetDevice(&curr_dev));
     char FileName[300];
-      int global_rank = 2;
+      int global_rank = 0;
       sprintf(FileName, "/tmp/Data/VHotP%d.h5",curr_dev + (global_rank*6));
       //sprintf(FileName, "/tmp/Data/VHotP%d.h5",curr_dev);
       SaveArrayToFile(FileName, NSets*Nt*stim.NStimuli*sim.NRecSites, Vhots);
