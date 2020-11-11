@@ -6,7 +6,7 @@ import h5py
 import numpy as np
 import matplotlib.pyplot as plt
 import pickle
-from extractModel_mappings_linux import   allparams_from_mapping
+from extractModel_mappings import   allparams_from_mapping
 import subprocess
 
 
@@ -177,6 +177,7 @@ convert_allen_data()
 param_values =  np.array(orig_params).reshape(1,-1)
 param_values = np.repeat(param_values, 10, axis=0)
 print(param_values.shape, "pvals shape!!!!!!!!")
+allparams_from_mapping(param_values)
 ###### TEN COPIES OF ORIG PARAMS FOR DEBUG ################# 
 
 for i in range(0,3):
