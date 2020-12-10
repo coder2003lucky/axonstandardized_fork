@@ -9,3 +9,9 @@ gen_alg_GPU/Data/*
 *2020.pkl
 *.pkl
 *.out 
+*Data/*
+
+## this is a bit to ignore but we'll fix that later
+*.hdf5
+*.dat
+*.csv

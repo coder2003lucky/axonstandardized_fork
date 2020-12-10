@@ -4,7 +4,7 @@ import numpy as np
 from os.path import exists
 from neuron import h
 import time
-#from extractModel import run_extract
+from extractModel import run_extract
 import importlib
 import os
 
@@ -442,5 +442,10 @@ def main():
 #then restart kernel and run main:
 #main()
 #allparams_from_mapping()
-#if __name__ == "__main__":
+if __name__ == "__main__":
+    #first run this:
+    run_extract(False)
+    #then restart kernel and run main:
+    #main()
+    #allparams_from_mapping()
     #main()

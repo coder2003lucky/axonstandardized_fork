@@ -4,7 +4,7 @@ import numpy as np
 from os.path import exists
 from neuron import h
 import time
-#from extractModel import run_extract
+from extractModel import run_extract
 import importlib
 import os
 
@@ -348,18 +348,15 @@ def allparams_from_mapping(params_input=None):
     model_mappings = parse_model(model_data)
     #print(model_mappings, "model mappings shape")
     allparams = my_assemble_allparams(param_to_allparam,reference,params,param_mappings)
-    #print(np.isnan(np.array(allparams, dtype=np.double)).any(), "allparams nan?")
     
-
-
     # collect allparams using function above
-    allparams = assemble_allparams(
-        allparams_template, 
-        params, 
-        param_to_allparam, 
-        param_mappings, 
-        model_mappings
-    )
+    # allparams = assemble_allparams(
+    #     allparams_template, 
+    #     params, 
+    #     param_to_allparam, 
+    #     param_mappings, 
+    #     model_mappings
+    # )
 
     # write allparams to .csv file
     with open(all_params_fn, 'w', newline='') as ap:
@@ -445,5 +442,10 @@ def main():
 #then restart kernel and run main:
 #main()
 #allparams_from_mapping()
-#if __name__ == "__main__":
+if __name__ == "__main__":
+    #first run this:
+    run_extract(False)
+    #then restart kernel and run main:
+    #main()
+    #allparams_from_mapping()
     #main()
