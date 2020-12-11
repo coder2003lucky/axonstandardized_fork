@@ -10,7 +10,7 @@ import os
 
 # DEFINE
 data_dir =          '../Data'                                          # data directory (folder)
-params_dir =        'params'                                        # params directory (folder)
+params_dir =        '../params'                                        # params directory (folder)
 all_params_for_params_fn = f'./{data_dir}/AllParams_for_params.csv'
 params_file =       f'./{params_dir}/params_map.csv'                    # 12 parameters
 #params_file =       f'./{params_dir}/params.csv'                    # 12 parameters

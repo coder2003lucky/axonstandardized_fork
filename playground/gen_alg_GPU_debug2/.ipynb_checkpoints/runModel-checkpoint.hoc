@@ -10,7 +10,7 @@ calc_eca = 1
 
 
    stLoc = 0.41 
-base = "NeuroGPU/NeuroGPU_Base" 
+base = "/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU_debug2/NeuroGPU/NeuroGPU_Base" 
 paramsFile = "./params/params.csv" 
 stimFile = "./Stims/Step_8_.csv" 
 modelFile = "./mosinit.hoc" 

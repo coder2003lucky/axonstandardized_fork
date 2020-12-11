@@ -13,7 +13,7 @@ import bluepyopt as bpop
 import shutil, errno
 import pandas as pd
 
-os.chdir("NeuroGPU/NeuroGPU_Base/VS/pyNeuroGPU_win2/NeuroGPU6/python/")
+#os.chdir("NeuroGPU/NeuroGPU_Base/VS/pyNeuroGPU_win2/NeuroGPU6/python/")
 
 
 ## set up filepaths
@@ -124,7 +124,7 @@ def run_model(stim_ind,real_ind):
             print(line),
     p_object.wait()
     print(p_object.stderr)
-    os.rename(volts_fn,'/tmp/Data/VHotP'+str(real_ind)+'.h5')
+    #os.rename(volts_fn,'/tmp/Data/VHotP'+str(real_ind)+'.h5')
 
     return p_object
 
@@ -157,7 +157,7 @@ def getVolts(idx):
 
 def main():
     nstims = 8 # only running first 8 stims
-    prepare_data() # setting up directory to have times / stims
+    #prepare_data() # setting up directory to have times / stims
 
 
     ###### TEN COPIES OF ORIG PARAMS FOR DEBUG #################
@@ -166,23 +166,25 @@ def main():
     print(param_values.shape,  " : param value shape")
        
     ###### CREATE MAPPING ################# 
-    allparams_from_mapping(param_values)
+    #allparams_from_mapping(param_values)
     run_model(0,0)
+    data = nrnMread("../Data/VHotP0.dat")
+    print(np.max(data))
 
-    # run neuroGPU -- set up for either ONE gpu or 8
-    if nGpus == 1: 
-        for i in range(0,nstims):
-            if i != 0:
-                # swaps stim0.csv and times0.csv for stimi.csv and timesi.csv
-                stim_swap(0,i)
-                # run ...  wait is built into run model
-                run_model(0,i)
-            else: 
-                run_model(0,0)
-    else:
-        for i in range(0,nstims):
-            # run ...  wait is built into run model
-            run_model(i,i)
+#     # run neuroGPU -- set up for either ONE gpu or 8
+#     if nGpus == 1: 
+#         for i in range(0,nstims):
+#             if i != 0:
+#                 # swaps stim0.csv and times0.csv for stimi.csv and timesi.csv
+#                 stim_swap(0,i)
+#                 # run ...  wait is built into run model
+#                 run_model(0,i)
+#             else: 
+#                 run_model(0,0)
+#     else:
+#         for i in range(0,nstims):
+#             # run ...  wait is built into run model
+#             run_model(i,i)
 
 
 

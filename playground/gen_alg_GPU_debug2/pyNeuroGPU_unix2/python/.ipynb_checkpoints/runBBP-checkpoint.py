@@ -157,7 +157,7 @@ def getVolts(idx):
 
 def main():
     nstims = 8 # only running first 8 stims
-    #prepare_data() # setting up directory to have times / stims
+    prepare_data() # setting up directory to have times / stims
 
 
     ###### TEN COPIES OF ORIG PARAMS FOR DEBUG #################

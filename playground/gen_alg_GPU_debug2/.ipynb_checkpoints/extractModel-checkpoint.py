@@ -36,8 +36,8 @@ not_states = ['ica','cai']
 global vs_dir
 #vs_dir = '../../VS/pyNeuroGPU_win2/NeuroGPU6'
 #vs_root = '../../VS/pyNeuroGPU_win2/'
-run_dir = 'pyNeuroGPU_win2/'
-unix_dir = 'pyNeuroGPU_win2/'
+run_dir = 'pyNeuroGPU_unix2/'
+unix_dir = 'pyNeuroGPU_unix2/'
 data_dir = './Data/'
 split_flg = 0
 baseDir = ''
