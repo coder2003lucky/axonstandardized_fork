@@ -48,6 +48,15 @@ cp template.hoc pyNeuroGPU_unix2/python/
 cp fitCori_bbp.hoc pyNeuroGPU_unix2/python/
 cp basicCompareBBP.ipynb pyNeuroGPU_unix2/python/
 # perhaps just move all .o, .c and .hoc and .mod
+cp *.mod pyNeuroGPU_unix2/python/
+cp *.mod2 pyNeuroGPU_unix2/python/
+cp *.hoc pyNeuroGPU_unix2/python/
+cp *.h pyNeuroGPU_unix2/python/
+
+cp *.c pyNeuroGPU_unix2/python/
+cp *.o pyNeuroGPU_unix2/python/
+
+
 cp -r CParsed  pyNeuroGPU_unix2/python/
 cp -r morphology  pyNeuroGPU_unix2/python/
 cp -r params  pyNeuroGPU_unix2/python/
@@ -56,7 +65,11 @@ cp -r Stims  pyNeuroGPU_unix2/python/
 
 
 cd pyNeuroGPU_unix2/src 
+module load cuda
 make
+
+cd ../python/
+nrnivmodl
 
 
 

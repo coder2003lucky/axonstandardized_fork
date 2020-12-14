@@ -107,7 +107,6 @@ def check_allparams(allparams_file, reference_file):
         wrong = 0
         # pairwise iteration over elements in the corresponding rows
         for elem_a, elem_r in zip(row_a, row_r):
-            print(elem_r, "str to flat")
             elem_r = float(elem_r)
             if float(elem_a) != float(elem_r):
                 wrong += 1

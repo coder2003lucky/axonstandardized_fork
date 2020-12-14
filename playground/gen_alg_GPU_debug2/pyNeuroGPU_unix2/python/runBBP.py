@@ -166,7 +166,7 @@ def main():
     print(param_values.shape,  " : param value shape")
        
     ###### CREATE MAPPING ################# 
-    #allparams_from_mapping(param_values)
+    allparams_from_mapping(param_values)
     run_model(0,0)
     data = nrnMread("../Data/VHotP0.dat")
     print(np.max(data))

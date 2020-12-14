@@ -75,6 +75,7 @@ def proc_add_param_to_hoc_for_opt(all_parameters_non_global_c, hoc_base_fn, base
     if len(all_parameters_non_global_c) == 0:
         param_start_i = [0]
     param_start_i = np.array(param_start_i)
+    
 
     state_start_i = [0]
     if KINFLG:
@@ -295,6 +296,7 @@ def proc_add_param_to_hoc_for_opt(all_parameters_non_global_c, hoc_base_fn, base
             first_param_m = param_m  # Store only the first param_m for templating purposes
     param_m = None
     # print param_m
+    print(1/0)
 
     # all_params = all_params.reshape((all_params.shape[0] * all_params.shape[1],))
     f.close()
@@ -417,7 +419,8 @@ def proc_add_param_to_hoc_for_map(all_parameters_non_global_c, hoc_base_fn, base
     reversals_c = [None for i in range(len(available_mechanisms))]
     if neuron_sc:
         for cur_mod_i in range(1, len(available_mechanisms) + 1):
-            print(cur_mod_i)
+            print(cur_mod_i, len(neuron_sc), len(reversals_c))
+
             reversals_c[cur_mod_i - 1] = neuron_sc[cur_mod_i - 1]
         reversals_c = np.array(reversals_c)
     rep_comp = [None for i in range(len(reversals))]
