@@ -72,6 +72,8 @@ cd ../python/
 nrnivmodl
 
 
+cp ../../Data/Stim_raw1.csv ../Data/Stim_raw0.csv
+
 
 
 #make neuroGPU todo

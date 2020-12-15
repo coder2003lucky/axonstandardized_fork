@@ -563,7 +563,6 @@ def parse_models():
         # write_h_file(h_file, model_name[i],all_params_list[i],all_states[i],break_point_declare_list[i],deriv_declare_list[i],init_declare_list[i],call_to_init,call_to_deriv,call_to_break,call_to_break_dv)
         # (fn,model_name,all_params,all_states,break_point_declare,deriv_declare,init_declare,call_to_init,call_to_deriv,call_to_break,call_to_break_dv,):
         # output = get_comp_mechs()
-    
     kin_indices = []
     states_flat = [item for sublist in all_states for item in sublist]
     for curr_kins in all_kin_states:
@@ -2377,6 +2376,7 @@ def handle_params_block(lines, globals):
             new_params_lines_with_values.append(params_line[i])
         new_params_lines = [line.split(' ')[0] for line in new_params_lines]
         params = [x.strip(' \t') for x in new_params_lines]
+
         global_inds = []
         not_global_inds = []
         for i in range(len(params)):

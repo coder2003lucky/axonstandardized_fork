@@ -1,4 +1,4 @@
-// Automatically generated C for /global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU_debug2/pyNeuroGPU_unix2/python./runModel.hoc
+// Automatically generated C for /global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU_debug2./runModel.hoc
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -20,7 +20,7 @@
 MYFTYPE gCa,gCa_LVAst,gIh,gIm,gK_Pst,gK_Tst,gNaTa_t,gNaTs2_t,gNap_Et2,gSK_E2,gSKv3_1,hAlpha,hBeta,hInf,hTau,ihcn,mAlpha,mBeta,mInf,mTau,zInf;
 
 // Ion currents as Locals:
-MYFTYPE ik,ica,ina;
+MYFTYPE ina,ik,ica;
 
 // NGlobals:
 

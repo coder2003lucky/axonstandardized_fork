@@ -1,4 +1,4 @@
-// Automatically generated CUH for /global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU_debug2/pyNeuroGPU_unix2/python./runModel.hoc
+// Automatically generated CUH for /global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU_debug2./runModel.hoc
 
 #ifndef __ALLMODELSCU__
 #define __ALLMODELSCU__

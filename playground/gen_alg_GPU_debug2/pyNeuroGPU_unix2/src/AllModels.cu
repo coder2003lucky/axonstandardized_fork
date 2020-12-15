@@ -32,8 +32,8 @@
 // NGlobals:
 // Reversals:
 #define ek (-85.0f)
-#define ena (50.0f)
 #define DEF_eca2 (140.21871199503352f)
+#define ena (50.0f)
 
 // Declarations:
 __device__ void Curates_Ca_HVA(MYFTYPE v,MYFTYPE gCa_HVAbar_Ca_HVA,MYFTYPE &hAlpha,MYFTYPE &hBeta,MYFTYPE &hInf,MYFTYPE &hTau,MYFTYPE &mAlpha,MYFTYPE &mBeta,MYFTYPE &mInf,MYFTYPE &mTau);
@@ -426,7 +426,7 @@ sumConductivity+= gIh;
 
 
 __device__ void CuBreakpointModel_Im(MYSECONDFTYPE &sumCurrents, MYFTYPE &sumConductivity, MYFTYPE v,MYFTYPE &m,MYFTYPE gImbar_Im) {
-MYFTYPE gIm, ik, gk;
+MYFTYPE ik, gIm, gk;
 MYFTYPE ;
    gIm = gImbar_Im * m ;
    ik = gIm * ( v - ek ) ;
@@ -436,7 +436,7 @@ sumConductivity+= gIm;
 
 
 __device__ void CuBreakpointModel_K_Pst(MYSECONDFTYPE &sumCurrents, MYFTYPE &sumConductivity, MYFTYPE v,MYFTYPE &m,MYFTYPE &h,MYFTYPE gK_Pstbar_K_Pst) {
-MYFTYPE ik, gk, gK_Pst;
+MYFTYPE ik, gK_Pst, gk;
 MYFTYPE ;
    gK_Pst = gK_Pstbar_K_Pst * m * m * h ;
    ik = gK_Pst * ( v - ek ) ;
@@ -446,7 +446,7 @@ sumConductivity+= gK_Pst;
 
 
 __device__ void CuBreakpointModel_K_Tst(MYSECONDFTYPE &sumCurrents, MYFTYPE &sumConductivity, MYFTYPE v,MYFTYPE &m,MYFTYPE &h,MYFTYPE gK_Tstbar_K_Tst) {
-MYFTYPE ik, gk, gK_Tst;
+MYFTYPE gK_Tst, ik, gk;
 MYFTYPE ;
    gK_Tst = gK_Tstbar_K_Tst * powf( m , 4.0 ) * h ;
    ik = gK_Tst * ( v - ek ) ;
@@ -466,7 +466,7 @@ sumConductivity+= gNap_Et2;
 
 
 __device__ void CuBreakpointModel_NaTa_t(MYSECONDFTYPE &sumCurrents, MYFTYPE &sumConductivity, MYFTYPE v,MYFTYPE &m,MYFTYPE &h,MYFTYPE gNaTa_tbar_NaTa_t) {
-MYFTYPE gNaTa_t, ina, gna;
+MYFTYPE ina, gNaTa_t, gna;
 MYFTYPE ;
    gNaTa_t = gNaTa_tbar_NaTa_t * m * m * m * h ;
    ina = gNaTa_t * ( v - ena ) ;
@@ -476,7 +476,7 @@ sumConductivity+= gNaTa_t;
 
 
 __device__ void CuBreakpointModel_NaTs2_t(MYSECONDFTYPE &sumCurrents, MYFTYPE &sumConductivity, MYFTYPE v,MYFTYPE &m,MYFTYPE &h,MYFTYPE gNaTs2_tbar_NaTs2_t) {
-MYFTYPE gNaTs2_t, ina, gna;
+MYFTYPE gna, ina, gNaTs2_t;
 MYFTYPE ;
    gNaTs2_t = gNaTs2_tbar_NaTs2_t * m * m * m * h ;
    ina = gNaTs2_t * ( v - ena ) ;
@@ -497,7 +497,7 @@ sumConductivity+= g_pas;
 
 
 __device__ void CuBreakpointModel_SK_E2(MYSECONDFTYPE &sumCurrents, MYFTYPE &sumConductivity, MYFTYPE v,MYFTYPE &z,MYFTYPE gSK_E2bar_SK_E2,MYFTYPE zTau_SK_E2, MYFTYPE cai,MYFTYPE &eca) {
-MYFTYPE gSK_E2, ik, gk, gca;
+MYFTYPE gca, ik, gSK_E2, gk;
 MYFTYPE ;
    gSK_E2 = gSK_E2bar_SK_E2 * z ;
    ik = gSK_E2 * ( v - ek ) ;
@@ -507,7 +507,7 @@ sumConductivity+= gSK_E2;
 
 
 __device__ void CuBreakpointModel_SKv3_1(MYSECONDFTYPE &sumCurrents, MYFTYPE &sumConductivity, MYFTYPE v,MYFTYPE &m,MYFTYPE gSKv3_1bar_SKv3_1) {
-MYFTYPE ik, gk, gSKv3_1;
+MYFTYPE gSKv3_1, ik, gk;
 MYFTYPE ;
    gSKv3_1 = gSKv3_1bar_SKv3_1 * m ;
    ik = gSKv3_1 * ( v - ek ) ;
