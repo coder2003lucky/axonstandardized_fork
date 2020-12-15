@@ -24,9 +24,9 @@ cp pyNeuroGPU_unix2/Data/times.csv pyNeuroGPU_unix2/Data/times0.csv
 
 
 
-
-
 cp extractModel_mappings.py pyNeuroGPU_unix2/python/
+cp stim_converter.py pyNeuroGPU_unix2/python/
+
 cp extractModel.py pyNeuroGPU_unix2/python/
 cp file_io.py pyNeuroGPU_unix2/python/
 cp auxilliary.py pyNeuroGPU_unix2/python/
@@ -73,7 +73,7 @@ nrnivmodl
 
 
 cp ../../Data/Stim_raw1.csv ../Data/Stim_raw0.csv
-
+python stim_converter.py
 
 
 #make neuroGPU todo

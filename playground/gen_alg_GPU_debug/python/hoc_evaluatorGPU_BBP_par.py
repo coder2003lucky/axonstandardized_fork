@@ -411,6 +411,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         end_times = []
         eval_times = []
         run_num = 0
+        #testing
+        target_volts = np.genfromtxt("../Data/target_volts_BBP19.csv", delimiter=",").reshape(-1,1)
+        self.nindv = 1
+
         
         #start running neuroGPU
         for i in range(0, nGpus):
@@ -421,7 +425,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             idx = i % (nGpus)
             p_objects[idx].wait() #wait to get volts output from previous run then read and stack
             end_times.append(time.time())
-            shaped_volts = self.getVolts(idx)
+            #testing
+            shaped_volts = target_volts[i]#self.getVolts(idx)
             
             if idx == 0:
                 self.data_volts_list = shaped_volts #start stacking volts
@@ -485,6 +490,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
 #             print(score[i], ": " + str(i))
             
         print(score.shape, "SCORE SHAPE")
+        with open('neuroGPUScores.npy', 'wb') as f:
+            np.save(f, score)
         return score
 
     
