@@ -118,7 +118,15 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         for i in range(len(param_values)):
             curr_opt_ind = self.opt_ind[i]
             input_values[curr_opt_ind] = param_values[i]
-        data_volts_list =  np.genfromtxt("../gen_alg_GPU/Data/target_volts_BBP19.csv", delimiter=",")[:18]#run_model(input_values, self.opt_stim_list)
+        print(np.array(input_values), "INPUT VALS")
+        input_values = [8.00000000e-05, 1.38893066e+00, 7.64035478e-02, 5.97506911e-03,
+ 2.04550374e-03, 3.12783590e+02, 9.73612109e-01, 2.91000000e-03,
+ 3.91669185e-01, 2.08113077e-02, 8.94854164e-02, 1.42583605e+01,
+ 3.75469330e+00, 2.87198731e+02, 6.17154821e-01, 6.09000000e-04,
+ 9.25592209e-01, 9.45025559e-02, 2.59075235e-04, 1.29531759e+00,
+ 7.66411651e-03, 2.10485284e+02, 1.24331834e-02, 4.95669000e-04]
+        data_volts_list = run_model(input_values, self.opt_stim_list) #np.genfromtxt("../gen_alg_GPU/Data/target_volts_BBP19.csv", delimiter=",")[:18]#
+        np.savetxt("best_ind.csv", data_volts_list, delimiter=",")
         self.opt_stim_list = self.opt_stim_list[:18]
         self.target_volts_list = data_volts_list
         score = evaluate_score_function(self.opt_stim_list, self.target_volts_list, data_volts_list, self.weights)
