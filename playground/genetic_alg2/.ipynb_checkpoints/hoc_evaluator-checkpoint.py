@@ -78,8 +78,7 @@ def evaluate_score_function(stim_name_list, target_volts_list, data_volts_list, 
         for j in range(len(score_function_ordered_list)):
             curr_sf = score_function_ordered_list[j].decode('ascii')
             curr_weight = weights[len(score_function_ordered_list) * i + j]
-            if i == 1: 
-                print(curr_sf,curr_weight, "SF WEIGHTS")
+            
             transformation = h5py.File(scores_path + stim_name_list[i] + '_scores.hdf5', 'r')[
                                  'transformation_const_' + curr_sf][:]
             if curr_weight == 0:
@@ -91,8 +90,6 @@ def evaluate_score_function(stim_name_list, target_volts_list, data_volts_list, 
                 norm_score = 1
             total_score += norm_score * curr_weight
             stim_score += norm_score * curr_weight
-        print("STIM SCORE" +str(i), stim_score)
-    print("TOTAL: ",total_score)
     return total_score
 
 
@@ -105,12 +102,12 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         params_ = [params_[i] for i in self.opt_ind]
         self.orig_params = orig_params
         self.params = [bpop.parameters.Parameter(name, bounds=(minval, maxval)) for name, minval, maxval in params_]
-        print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
-        print("Orig params:", self.orig_params)
+        #print("Params to optimize:", [(name, minval, maxval) for name, minval, maxval in params_])
+        #print("Orig params:", self.orig_params)
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
         self.objectives = [bpop.objectives.Objective('Weighted score functions')]
-        print("Init target volts")
+        #print("Init target volts")
         #self.target_volts_list = run_model(orig_params, self.opt_stim_list)
         
     def evaluate_with_lists(self, param_values):
@@ -118,19 +115,10 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         for i in range(len(param_values)):
             curr_opt_ind = self.opt_ind[i]
             input_values[curr_opt_ind] = param_values[i]
-        print(np.array(input_values), "INPUT VALS")
-        input_values = [8.00000000e-05, 1.38893066e+00, 7.64035478e-02, 5.97506911e-03,
- 2.04550374e-03, 3.12783590e+02, 9.73612109e-01, 2.91000000e-03,
- 3.91669185e-01, 2.08113077e-02, 8.94854164e-02, 1.42583605e+01,
- 3.75469330e+00, 2.87198731e+02, 6.17154821e-01, 6.09000000e-04,
- 9.25592209e-01, 9.45025559e-02, 2.59075235e-04, 1.29531759e+00,
- 7.66411651e-03, 2.10485284e+02, 1.24331834e-02, 4.95669000e-04]
         data_volts_list = run_model(input_values, self.opt_stim_list) #np.genfromtxt("../gen_alg_GPU/Data/target_volts_BBP19.csv", delimiter=",")[:18]#
-        np.savetxt("best_ind.csv", data_volts_list, delimiter=",")
         self.opt_stim_list = self.opt_stim_list[:18]
         self.target_volts_list = data_volts_list
         score = evaluate_score_function(self.opt_stim_list, self.target_volts_list, data_volts_list, self.weights)
-        print(score)
         return [score]
 
 

@@ -22,33 +22,14 @@ import ap_tuner as tuner
 os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4
 os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULLCOPY
-from mpi4py import MPI
 
-comm = MPI.COMM_WORLD
-rank = comm.Get_rank()
+inputFile = open("../../input.txt","r") 
+for line in inputFile.readlines():
+    if "bbp" in line:
+        from config.bbp19_config import *
+    elif "allen" in line:
+        from config.allen_config import *
 
-
-############ REFACTOR ALL OF BELOW INTO CONFIG FILE #############################
-
-paramsCSV = '../params/params_bbp_full.csv'
-#orig_params = np.array(np.array(nrnUtils.readParamsCSV(paramsCSV))[:,1], dtype=np.float64)
-orig_params = h5py.File('../params/params_bbp_full.hdf5', 'r')['orig_full'][0]
-print(orig_params.shape)
-scores_path = '../scores/'
-objectives_file = h5py.File('../objectives/multi_stim_bbp_full.hdf5', 'r')
-opt_weight_list = objectives_file['opt_weight_list'][:]
-opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
-score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
-stims_path = '../stims/stims_full.hdf5'
-stim_file = h5py.File(stims_path, 'r')
-#target_volts_path = './target_volts/allen_data_target_volts_10000.hdf5'
-#target_volts_hdf5 = h5py.File(target_volts_path, 'r')
-#params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-params_opt_ind = np.arange(24) 
-model_dir = '..'
-data_dir = model_dir+'/Data/'
-run_dir = '../bin'
-vs_fn = '/tmp/Data/VHotP'
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()
 old_eval = algo._evaluate_invalid_fitness
@@ -395,7 +376,6 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.data_volts_list = np.array([])
         nstims = len(self.opt_stim_list)
         nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
-        #nstims = 4 # testing
         start_time_sim = time.time()
         p_objects = []
         score = []

@@ -6,8 +6,9 @@ import h5py
 import pickle as pkl
 import bluepyopt as bpop
 import nrnUtils
-from neuron import h
 import sys
+import matplotlib.backends.backend_pdf
+
 
 
 
@@ -39,7 +40,6 @@ scores_path = '../scores/'
 objectives_file = h5py.File('../objectives/multi_stim_bbp_full.hdf5', 'r')
 opt_weight_list = objectives_file['opt_weight_list'][:]
 opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
-opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
 score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
 stims_path = '../stims/stims_full.hdf5'
 stim_file = h5py.File(stims_path, 'r')
@@ -64,17 +64,17 @@ for param_idx in range(len(orig_params)):
         print(orig_params[param_idx], " idx : ", param_idx)
         fixed[param_idx] = orig_params[param_idx]
     else:
-        params.append(bpop.parameters.Parameter(orig_params[param_idx], bounds=(pmin[param_idx],pmax[param_idx])))
+        pass
+#         params.append(bpop.parameters.Parameter(orig_params[param_idx], bounds=(pmin[param_idx],pmax[param_idx])))
 
 for reinsert_idx in fixed.keys():
     best_params = np.insert(np.array(best_params), reinsert_idx, fixed[reinsert_idx], axis = 0)
 
+    
 os.chdir("../../genetic_alg2")
+sys.path.insert(0,"/global/cscratch1/sd/zladd/axonstandardized/playground/genetic_alg2")
+from neuron import h
 
-import subprocess
-
-g = subprocess.Popen("python optimize_parameters_genetic_alg.py", shell=True)
-g.wait()
 
 run_file = './run_model_cori.hoc'
 # run_volts_path = '../run_volts_bbp/'
@@ -84,6 +84,7 @@ scores_path = './scores/'
 objectives_file = h5py.File('./objectives/multi_stim_bbp_full.hdf5', 'r')
 opt_weight_list = objectives_file['opt_weight_list'][:]
 opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
+opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
 score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
 stims_path = './stims/stims_full.hdf5'
 params_opt_ind = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 14, 16, 17, 18, 19, 20, 22, 23]
@@ -99,26 +100,56 @@ custom_score_functions = [
 
 # Number of timesteps for the output volt.
 ntimestep = 10000
+dt = .02
 
-sys.path.insert(0,"/global/cscratch1/sd/zladd/axonstandardized/playground/genetic_alg2")
-print(sys.path)
 
 def run_model(param_set, stim_name_list):
     h.load_file(run_file)
     volts_list = []
     for elem in stim_name_list:
-        stims_hdf5 = h5py.File(stims_path, 'r')
-        curr_stim = stims_hdf5[elem][:]
+        curr_stim = h5py.File(stims_path, 'r')[elem][:]
         total_params_num = len(param_set)
-        dt = stims_hdf5[elem+'_dt']
         timestamps = np.array([dt for i in range(ntimestep)])
         h.curr_stim = h.Vector().from_python(curr_stim)
         h.transvec = h.Vector(total_params_num, 1).from_python(param_set)
         h.stimtime = h.Matrix(1, len(timestamps)).from_vector(h.Vector().from_python(timestamps))
         h.ntimestep = ntimestep
         h.runStim()
-        out = h.vecOut.to_python()        
+        out = h.vecOut.to_python()
         volts_list.append(out)
     return np.array(volts_list)
-print(best_params)
+
+
 data_volts_list = run_model(list(best_params), opt_stim_list)
+target_volts = np.genfromtxt("/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/Data/target_volts_BBP19.csv",delimiter = ',')
+
+
+
+# set output pdf name
+
+fig, axs = plt.subplots(nrows=8,ncols=1,figsize=(3,6))
+fig.tight_layout()
+plt.subplots_adjust(left=None, bottom=.1, right=None, top=1, wspace=None, hspace=None)
+for i in range(8):
+    axs[i].plot(data_volts_list[i], color="blue", label="NeuroGPU Optimization")
+    axs[i].plot(target_volts[i], color="red", label="NEURON target")
+    axs[i].legend(loc="upper right", prop={'size': 3})
+    axs[i].set_title(opt_stim_list[i], fontsize=8)
+    
+plt.savefig("/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/GUI/neuroGPU_results0.pdf")
+
+
+fig, axs = plt.subplots(nrows=10,ncols=1,figsize=(4,8))
+fig.tight_layout()
+plt.subplots_adjust(left=None, bottom=.1, right=None, top=1, wspace=None, hspace=None)
+for i in range(8,18):
+    idx = i - 8
+    axs[idx].plot(data_volts_list[i], color="blue", label="NeuroGPU Optimization")
+    axs[idx].plot(target_volts[i], color="red", label="NEURON target")
+    axs[idx].legend(loc="upper right", prop={'size': 3})
+    axs[idx].set_title(opt_stim_list[i], fontsize=8)
+    
+plt.savefig("/global/cscratch1/sd/zladd/axonstandardized/playground/gen_alg_GPU/GUI/neuroGPU_results1.pdf")
+
+
+
