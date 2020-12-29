@@ -197,8 +197,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         and timesi and removes previous ones. Using csv writer to write timesi so it reads well.
         """
         for i in range(len(opt_stim_name_list)):
-            old_stim = "../Data/Stim_raw{}.csv"
-            old_time = "../Data/times_{}.csv"
+            old_stim = "../Data/Stim_raw{}.csv".format(i)
+            old_time = "../Data/times{}.csv".format(i)
             if os.path.exists(old_stim) :
                 os.remove(old_stim)
                 os.remove(old_time)
@@ -210,10 +210,9 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             wtr = csv.writer(f, delimiter=',', lineterminator='\n')
             current_times = [dt for i in range(ntimestep)]
             wtr.writerow(current_times)
-            f.close()
-            np.savetxt("../Data/Stim_raw{}.csv".format(i), 
-                       stim_file[stim][:],
-                       delimiter=",")
+            writer = csv.writer(open("../Data/Stim_raw{}.csv".format(i), 'w'))
+            writer.writerow(stim_file[stim][:])
+            
 
         
     def eval_function(self,target, data, function, dt,i):

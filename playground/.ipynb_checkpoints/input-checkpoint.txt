@@ -1,5 +1,5 @@
 user=zladd
-model=bbp
+model=allen
 peeling=calcium
 nSubZones=100
 nPerSubZone=10

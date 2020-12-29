@@ -1,0 +1,61 @@
+strdef fitFile,timesFile,paramsFile,stimFile,outFile,modelFile,base
+objref st,stims,fin,fout,pmat,matOut,stimtime,somaref,secref,extVec,strFunc,most,root,transvec
+
+ntimestep = 3168 
+nparams = 14 
+psize = 1 
+ntraces = 1 
+//v_init = -80 
+calc_eca = 1 
+
+
+   stLoc = 0.41 
+base = "/global/cscratch1/sd/zladd/axonstandardized/playground/make_models_mappings/bbp19_mappings/NeuroGPU/NeuroGPU_Base" 
+paramsFile = "./params/params.csv" 
+stimFile = "./Stims/Step_8_.csv" 
+timesFile = "./Stims/times.csv" 
+
+modelFile = "./mosinit.hoc"
+load_file(modelFile)
+objref st,stims,fin,fout,pmat,vecOut,stimtime,curr_stim
+//ntimestep = 0
+v_init = -68
+
+root = new SectionRef()
+if (root.has_parent()){
+    print secname()
+    root = root.root()
+    }
+access cADpyr232_L5_TTPC1_0fb1ca4724[0].soma
+
+create Exts[1]
+objref recSites
+recSites = new SectionList()
+access root.sec
+print "**********************"
+print secname()
+root.sec recSites.append()
+
+
+ 
+secondorder=0
+
+//create soma
+proc runStim(){
+    //access soma
+    finitialize(v_init)
+    st = new IClamp(0.5)
+    st.del=0
+    st.dur=1e9
+    vecOut = new Vector(ntimestep)
+    tfunc()
+    counter = 0
+    for(timeSteps=0; timeSteps<stimtime.ncol; timeSteps+=1){
+        dt = stimtime.x(0,timeSteps)
+        st.amp = curr_stim.x(timeSteps)
+        vecOut.x(counter)=v(0.5)
+        counter+=1
+        fadvance()
+    }
+    printf("finshed run matrix\n")
+}

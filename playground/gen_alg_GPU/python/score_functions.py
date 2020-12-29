@@ -473,7 +473,7 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
         curr_trace_data['V'] = data[i,:]
         if len(data[i,:]) != 10000 or len(curr_trace_data['V']) != 10000:
             print(len(data[i,:]))
-            #print(data[i,9980:9990], 'at', i)
+            print(data[i,9980:9990], 'at', i)
             print(np.where(np.isnan(data[i,:])))
             #print(len(curr_trace_data['V']))
             print(1/0)

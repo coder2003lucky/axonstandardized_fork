@@ -15,3 +15,4 @@ gen_alg_GPU/Data/*
 *.hdf5
 *.dat
 *.csv
+*Data*
