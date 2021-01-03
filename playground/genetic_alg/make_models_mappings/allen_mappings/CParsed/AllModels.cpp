@@ -1,4 +1,4 @@
-// Automatically generated C for /global/cscratch1/sd/zladd/axonstandardized/playground/make_models_mappings/allen_mappings./runModel.hoc
+// Automatically generated C for /global/cscratch1/sd/zladd/axonstandardized/playground/genetic_alg/make_models_mappings/allen_mappings./runModel.hoc
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -20,7 +20,7 @@
 MYFTYPE gCa,gCa_LVAst,gIh,gIm,gK_Pst,gK_Tst,gNaTa_t,gNaTs2_t,gNap_Et2,gSK_E2,gSKv3_1,hAlpha,hBeta,hInf,hTau,ihcn,mAlpha,mBeta,mInf,mTau,zInf;
 
 // Ion currents as Locals:
-MYFTYPE ina,ica,ik;
+MYFTYPE ica,ik,ina;
 
 // NGlobals:
 
