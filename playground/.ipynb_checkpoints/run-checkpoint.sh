@@ -9,7 +9,7 @@ echo $gaGPU        #test               #test
 
 if [ "$gaGPU" = "True" ]
     then
-       cd gen_alg_GPU/
+       cd genetic_alg/GPU_genetic_alg/
        sbatch running_GA_GPU.sh
        exit 1
 fi
