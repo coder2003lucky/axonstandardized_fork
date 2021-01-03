@@ -9,5 +9,5 @@ tasks.db
 .ipynb_checkpoints
 */.ipynb_checkpoints/*
 **/.DS_Store
-
+*__pycache/*
 
