@@ -38,9 +38,20 @@ data_dir = '../Data/allenData/'
 run_dir = '../bin'
 vs_fn = '/tmp/Data/VHotP'
 stim_file = h5py.File(stims_path, 'r')
+target_volts_path = './target_volts/allen_data_target_volts_10000.hdf5'
+target_volts_hdf5 = h5py.File(target_volts_path, 'r')
 
 
 # Number of timesteps for the output volt.
 ntimestep = 10000
 
 stim_names = list([e.decode('ascii') for e in opt_stim_name_list])
+
+custom_score_functions = [
+                    'chi_square_normal',\
+                    'traj_score_1',\
+                    'traj_score_2',\
+                    'traj_score_3',\
+                    'isi',\
+                    'rev_dot_product',\
+                    'KL_divergence']

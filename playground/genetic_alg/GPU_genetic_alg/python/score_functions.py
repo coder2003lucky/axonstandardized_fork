@@ -309,8 +309,32 @@ def rev_dot_product (target, data, dt=0.02, stims=None, index=None):
 
     return score
 
+# # work if target & data are discrete probability distribution
+# def KL_divergence (target, data, dt=0.02, stims=None, index=None):
+#     def shift(v):
+#         base = np.absolute(np.amin(np.array(v)))
+#         return np.array(v) + base + 0.1
+
+#     def normalize (v):
+#         return np.array(v)/float(np.sum(np.array(v)))
+
+#     def divergence (v1, v2):
+#         v1_array = np.array(v1)
+#         v2_array = np.array(v2)
+#         d = 0
+        
+#         v1_masked = np.ma.masked_not_equal(v1_array, 0)
+#         v2_masked = np.ma.masked_not_equal(v2_array, 0)
+        
+#         d = np.sum(np.multiply(v2_masked.astype(float), np.log(np.divide(v2_masked.astype(float), v1_masked)))) 
+#         return d
+
+#     score = divergence(normalize(shift(target)), normalize(shift(data)))
+
+#     return score
+
 # work if target & data are discrete probability distribution
-def KL_divergence (target, data, dt=0.02, stims=None, index=None):
+def KL_divergence (target, data, dt=0.02, stims=None, index=None): 
     def shift(v):
         base = np.absolute(np.amin(np.array(v)))
         return np.array(v) + base + 0.1
@@ -322,11 +346,9 @@ def KL_divergence (target, data, dt=0.02, stims=None, index=None):
         v1_array = np.array(v1)
         v2_array = np.array(v2)
         d = 0
-        
-        v1_masked = np.ma.masked_not_equal(v1_array, 0)
-        v2_masked = np.ma.masked_not_equal(v2_array, 0)
-        
-        d = np.sum(np.multiply(v2_masked.astype(float), np.log(np.divide(v2_masked.astype(float), v1_masked)))) 
+        for i in range(0, len(v1_array)):
+            if (v1_array[i] != 0 and v2_array[i] != 0):
+                d += float(v2_array[i]) * np.log(float(v2_array[i]) / v1_array[i])
         return d
 
     score = divergence(normalize(shift(target)), normalize(shift(data)))

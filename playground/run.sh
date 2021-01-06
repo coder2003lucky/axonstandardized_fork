@@ -1,8 +1,4 @@
 #!/bin/bash
-
-
-#!/bin/bash
-
 echo `pwd`
 source ./input.txt
 echo $gaGPU        #test               #test
@@ -46,7 +42,6 @@ mkdir -p runs/${model}_${peeling}_${CURRENTDATE}${custom}/'slurm'
 # set sandbox array parameters in score_sandbox and volt_sandbox
 # to match those in input.txt
 python modifySandboxArray.py $num_volts
-
 #LOCAL, uses shell script for local imitation
 if [ ${makeVolts} == ${true} ]
   then

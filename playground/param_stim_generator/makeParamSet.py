@@ -71,13 +71,11 @@ params_nwb = h5py.File('params/params_' +model + '_' + peeling +'.hdf5', 'w') # 
 params_nwb.create_dataset('orig_' + peeling, data=orig)
 
 
-peeling_step_name = "sodium"
-params_nwb.create_dataset('pin_'+str(len(pSortedMatx))+'_'+peeling_step_name, data=pSortedMatx)
+params_nwb.create_dataset('pin_'+str(len(pSortedMatx))+'_'+peeling, data=pSortedMatx)
 # np.savetxt('./test_pin.csv', pSortedMatx)
 
 
 
-# who commented all this stuff out....
 dx_matrix = helper.shift_by_dx(pSortedSetsN, dx, params)
 final_p = helper.calculate_pmatx_dx(data, dx_matrix)
 param_num = len(params)
@@ -87,9 +85,9 @@ sampled_dx_matrix = []
         #sampled_dx_matrix.append(final_p[i*param_num+j])
 
 #params_nwb.create_dataset('pdx_'+str(len(sampled_dx_matrix))+'_'+str(dx)+'_'+peeling, data=np.array(sampled_dx_matrix))
-params_nwb.create_dataset('sample_ind', data=np.array(pin_sample_ind))
+#params_nwb.create_dataset('sample_ind', data=np.array(pin_sample_ind))
 params_nwb.create_dataset('param_num', data=np.array([param_num]))
-params_nwb.create_dataset('dx', data=np.array([dx]))
+#params_nwb.create_dataset('dx', data=np.array([dx]))
 # np.savetxt('./test_pdx.csv', sampled_dx_matrix)
 
 params_nwb.close()
