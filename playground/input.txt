@@ -1,19 +1,19 @@
 user=zladd
-model=allen
-peeling=calcium
+model=bbp
+peeling=passive
 nSubZones=100
 nPerSubZone=10
 norm=100
 dx=0.001
-num_volts=2
-params=5,7,12,13,17
+num_volts=1
+params=1,4,21,24
 OFFSPRING_SIZE=1000
 MAX_NGEN=100
 seed=1178
-makeVolts=False
+makeVolts=True
 makeScores=False
 makeOpt=False
 makeObj=False
 runGA=False
-gaGPU=True
+gaGPU=False
 

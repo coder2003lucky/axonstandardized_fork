@@ -31,7 +31,6 @@ for line in inputFile.readlines():
         from config.bbp19_config import *
     elif "allen" in line:
         from config.allen_config import *
-
 if not os.path.isdir("/tmp/Data"):
     os.mkdir("/tmp/Data")
 
@@ -65,13 +64,13 @@ def stim_swap(idx, i):
     and then deletes the one at 'idx' and replaces it with the stim at i so that 
     neuroGPU reads stims like 13 as stim_raw5 (13 % 8)
     """
-    old_stim = '../Data/Stim_raw' + str(idx) + '.csv'
-    old_time = '../Data/times' + str(idx) + '.csv'
+    old_stim = '../Data/allenData/Stim_raw' + str(idx) + '.csv'
+    old_time = '../Data/allenData/times' + str(idx) + '.csv'
     if os.path.exists(old_stim):
         os.remove(old_stim)
         os.remove(old_time)
-    os.rename(r'../Data/Stim_raw' + str(i) + '.csv', r'../Data/Stim_raw' + str(idx) + '.csv')
-    os.rename(r'../Data/times' + str(i) + '.csv', r'../Data/times' + str(idx) + '.csv')
+    os.rename(r'../Data/allenData/Stim_raw' + str(i) + '.csv', r'../Data/allenData/Stim_raw' + str(idx) + '.csv')
+    os.rename(r'../Data/allenData/times' + str(i) + '.csv', r'../Data/allenData/times' + str(idx) + '.csv')
 
 def get_first_zero(stim):
     """Kyung helper function to penalize AP where there should not be one"""
@@ -193,8 +192,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         and timesi and removes previous ones. Using csv writer to write timesi so it reads well.
         """
         for i in range(len(opt_stim_name_list)):
-            old_stim = "../Data/Stim_raw{}.csv"
-            old_time = "../Data/times_{}.csv"
+            old_stim = "../Data/allenData/Stim_raw{}.csv"
+            old_time = "../Data/allenData/times_{}.csv"
             if os.path.exists(old_stim) :
                 os.remove(old_stim)
                 os.remove(old_time)
@@ -202,17 +201,17 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             stim = opt_stim_name_list[i].decode("utf-8")
             dt = stim_file[stim+'_dt'][:][0]
             self.dts.append(dt)
-            f = open ("../Data/times{}.csv".format(i), 'w')
+            f = open ("../Data/allenData/times{}.csv".format(i), 'w')
             wtr = csv.writer(f, delimiter=',', lineterminator='\n')
             current_times = [dt for i in range(ntimestep)]
             wtr.writerow(current_times)
             f.close()
              # Fix this saving, loading and then saving at some point...
-            np.savetxt("../Data/Stim_raw{}.csv".format(i), 
+            np.savetxt("../Data/allenData/Stim_raw{}.csv".format(i), 
                        stim_file[stim][:],
                        delimiter=",")
-            file = np.genfromtxt("../Data/Stim_raw{}.csv".format(i))
-            writer = csv.writer(open("../Data/Stim_raw{}.csv".format(i), 'w'))
+            file = np.genfromtxt("../Data/allenData/Stim_raw{}.csv".format(i))
+            writer = csv.writer(open("../Data/allenData/Stim_raw{}.csv".format(i), 'w'))
             writer.writerow(file)
 
         
