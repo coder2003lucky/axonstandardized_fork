@@ -1,12 +1,13 @@
 #!/bin/bash
 #SBATCH --qos=regular
-#SBATCH --time=00:03:00
+#SBATCH --time=01:20:00
 #SBATCH --nodes=1
 #SBATCH --constraint=knl
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m3513
-#SBATCH --array 1-1
+#SBATCH --array 1-50
+
 
 # change array 1-n, where n is the number of stims
 CURRENTDATE=`date +%m_%d_%Y`
@@ -26,11 +27,16 @@ echo  'cscratch='${CSCRATCH}
 echo  'scratch='${SCRATCH}
 echo SLURM_ARRAY_TASK_ID=${SLURM_ARRAY_TASK_ID}
 echo SLURM_ARRAY_JOB_ID=${SLURM_ARRAY_JOB_ID}
+if [[ -z "$SLURM_ARRAY_TASK_ID" ]]
+then
+    echo Not running Slurm Array
+    SLURM_ARRAY_TASK_ID=0
+fi
 srcDir=`pwd`
 
 sleep 10
 
-coreN=${srcDir}/'runs'/${model}_${peeling}_${CURRENTDATE}${custom}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
+coreN=${srcDir}/'runs'/${model}_${peeling}_${runDate}${custom}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
 arrIdx=${SLURM_ARRAY_TASK_ID}
 wrkDir=${coreN}-${arrIdx}
 echo 'my wrkDir='${wrkDir}
@@ -49,10 +55,15 @@ ls -l *
 
 export OMP_NUM_THREADS=1
 
-srun -n 68 python run_stim_hdf5.py $arrIdx ${peeling}
+srun --mpi=pmi2 -n 64 python run_stim_hdf5.py $arrIdx ${peeling}
 
 # mv slurm log to final destination - it is alwasy a job-array
 echo slurm left at:
 pwd
 # mv slurm-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}.out ..
+
+#Y_TASK_ID}.out ..
+
+
+
 

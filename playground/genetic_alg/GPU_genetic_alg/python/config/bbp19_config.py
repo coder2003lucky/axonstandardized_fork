@@ -3,9 +3,10 @@ import pandas as pd
 import os
 import numpy as np
 import h5py
+import utils
 
 paramsCSV = '../params/params_bbp_full.csv'
-#orig_params = np.array(np.array(nrnUtils.readParamsCSV(paramsCSV))[:,1], dtype=np.float64)
+#orig_params = np.array(np.array(utils.readParamsCSV(paramsCSV))[:,1], dtype=np.float64)
 orig_params = h5py.File('../params/params_bbp_full.hdf5', 'r')['orig_full'][0]
 scores_path = '../scores/'
 objectives_file = h5py.File('../objectives/multi_stim_bbp_full.hdf5', 'r')

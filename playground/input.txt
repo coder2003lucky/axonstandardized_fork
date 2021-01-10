@@ -1,19 +1,22 @@
 user=zladd
-model=bbp
+model=allen
 peeling=passive
+runDate=01_06_2021
 nSubZones=100
 nPerSubZone=10
 norm=100
 dx=0.001
-num_volts=1
+num_volts=0
+num_nodes=50
 params=1,4,21,24
 OFFSPRING_SIZE=1000
 MAX_NGEN=100
 seed=1178
-makeVolts=True
+makeParams=False
+makeVolts=False
 makeScores=False
 makeOpt=False
-makeObj=False
+makeObj=True
 runGA=False
 gaGPU=False
 

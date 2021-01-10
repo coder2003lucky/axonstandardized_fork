@@ -10,7 +10,7 @@ if [ "$gaGPU" = "True" ]
        exit 1
 fi
 
-python param_stim_generator/makeParamSet.py
+
 
 CURRENTDATE=`date +%m_%d_%Y`
 startTIME=`date +%T`
@@ -26,12 +26,19 @@ done < "$input"
 true=True
 
 
+
+if [ ${makeParams} == ${true} ]
+  then
+    python param_stim_generator/makeParamSet.py
+  fi
+
+
 #making directory for the run
-mkdir -p runs/${model}_${peeling}_${CURRENTDATE}${custom}
-wrkDir=runs/${model}_${peeling}_${CURRENTDATE}${custom}
+mkdir -p runs/${model}_${peeling}_${runDate}${custom}
+wrkDir=runs/${model}_${peeling}_${runDate}${custom}
 mkdir -p ${wrkDir}/'volts'
 mkdir -p ${wrkDir}/'scores'
-mkdir -p runs/${model}_${peeling}_${CURRENTDATE}${custom}/'slurm'
+mkdir -p runs/${model}_${peeling}_${runDate}${custom}/'slurm'
 
 
 #module load tensorflow/intel-1.12.0-py36
@@ -41,7 +48,9 @@ mkdir -p runs/${model}_${peeling}_${CURRENTDATE}${custom}/'slurm'
 
 # set sandbox array parameters in score_sandbox and volt_sandbox
 # to match those in input.txt
-python modifySandboxArray.py $num_volts
+# if num_volts is 0 and num_nodes is 10 will split all stims between 10 nodes 
+python modifySandboxArray.py $num_volts $num_nodes
+
 #LOCAL, uses shell script for local imitation
 if [ ${makeVolts} == ${true} ]
   then
@@ -50,7 +59,6 @@ if [ ${makeVolts} == ${true} ]
 #sh passive/volts_sandbox_setup/sbatch_local_volts.sh
 
 echo making volts....
-
 
 #waits until slurm has put enough volts in directory
 shopt -s nullglob
@@ -78,7 +86,6 @@ if [ ${makeScores} == ${true} ]
 
 echo making scores....
 
-
 shopt -s nullglob
 found=0
 target_volts=$num_volts
@@ -92,11 +99,33 @@ echo made $num_volts scores successfully
 shopt -u nullglob
 
 #move slurm into runs
-mv slurm* runs/${model}_${peeling}_${CURRENTDATE}${custom}/'slurm'
+mv slurm* runs/${model}_${peeling}_${runDate}${custom}/'slurm'
 
 
-sbatch analyze_p_bbp_full/analyze_p.slr
+if [ ${makeOpt} == ${true} ] || [ ${makeObj} == ${true} ]
+  then
+    sbatch analyze_p_bbp_full/analyze_p.slr
+  fi
 
+shopt -s nullglob
+found=0
+target_files=1
+
+while [ $found -ne $target_files ]
+do
+        found=`ls -lR ${wrkDir}/genetic_alg/optimization_results/*.hdf5 | wc -l`
+done
+
+echo finished optimzation
+shopt -u nullglob
+
+if [ ${makeObj} == ${true} ]
+  then
+    srun python analyze_p_bbp_full/analyze_p_multistims.py --model ${model} --peeling ${peeling} \
+    --CURRENTDATE ${runDate}
+  fi
+
+echo DONE
 shopt -s nullglob
 found=0
 target_files=1
