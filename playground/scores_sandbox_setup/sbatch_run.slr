@@ -1,22 +1,18 @@
 #!/bin/bash
 #SBATCH --qos=regular
-#SBATCH --time=01:00:00
+#SBATCH --time=00:40:00
 #SBATCH --nodes=1
-#SBATCH --constraint=knl
+#SBATCH --constraint=haswell
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
-#SBATCH --array 1-1
-
+#SBATCH --account=m3513
+#SBATCH --array 1-50
 # change array 1-n, where n is the number of stims
-CURRENTDATE=`date +%m_%d_%Y`
-input="input.txt"
-while IFS= read -r line
-do
-    IFS='=' read -ra inputs <<< "$line"
-    name="${inputs[0]}"
-    data="${inputs[1]}"
-    printf -v $name "$data"
-done < "$input"
+
+
+# read and assn input text ver simply
+source ./input.txt
+
 
 
 echo "start-A "`hostname`" task="${job_sh}
@@ -24,27 +20,33 @@ echo  'cscratch='${CSCRATCH}
 echo  'scratch='${SCRATCH}
 echo SLURM_ARRAY_TASK_ID=${SLURM_ARRAY_TASK_ID}
 echo SLURM_ARRAY_JOB_ID=${SLURM_ARRAY_JOB_ID}
+if [[ -z "$SLURM_ARRAY_TASK_ID" ]]
+then
+    echo Not running Slurm Array
+    SLURM_ARRAY_TASK_ID=0
+fi
 srcDir=`pwd`
 
 
 sleep 10
 
-coreN=${srcDir}/'runs'/${model}_${peeling}_${CURRENTDATE}${custom}/'scores_sand'/${SLURM_ARRAY_JOB_ID}
+coreN=${srcDir}/'runs'/${model}_${peeling}_${runDate}${custom}/'scores_sand'/${SLURM_ARRAY_JOB_ID}
 arrIdx=${SLURM_ARRAY_TASK_ID}
 wrkDir=${coreN}-${arrIdx}
 echo 'my wrkDir='${wrkDir}
 mkdir -p ${wrkDir}
 
 dirToRun='score_volts_efficent_sandbox'
-
 cp -rp ${dirToRun} ${wrkDir}/
-
 cd ${wrkDir}/${dirToRun}
 
 echo inventore at start
 pwd
 ls -l *
-
 export OMP_NUM_THREADS=1
 
-srun -n 68 python score_volts_hdf5_efficent_sandbox.py $arrIdx ${model} ${peeling}
+echo $arrIdx ${model} ${peeling}
+
+srun --mpi=pmi2 -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx ${model} ${peeling}
+
+echo DONE

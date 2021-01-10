@@ -31,7 +31,8 @@ currentdate = args.CURRENTDATE
 wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
 opt_path = wrkDir + '/genetic_alg/optimization_results/opt_result_single_stim_' + model + '_' + peeling + '_full.hdf5'
 save_path = wrkDir + '/genetic_alg/objectives'
-
+if not os.path.isdir(save_path):
+    os.mkdir(save_path)
 params_path = 'params/params_' + model + '_' + peeling + '.hdf5'
 scores_path =  wrkDir + '/scores/'
 params_file = h5py.File(params_path, 'r')
@@ -48,7 +49,7 @@ proportionToTrain = 0.7
 # The number of top stims to use for multi-stim optimization.
 # If k = 1, then use the top stim only.
 #TODO: change k back to 20
-k = 1
+k = 20
 # random seed to use for train/validation on optimization
 seed = 500
 # Weights for optimization.
@@ -73,7 +74,8 @@ with open("analyze_p_bbp_full/params.pkl", 'wb') as f:
 #TODO what is this?
 #%run ./new_AnalyzeP.py
 #placeholder as sleep, need to just do this on one node and comm info out to other nodes?
-#time.sleep(180)
+# TODO fix monkeypatch
+time.sleep(180)
 from new_AnalyzeP import *
 
 ordered_stim_list, ordered_score_function_list, pin_score_dict = main()

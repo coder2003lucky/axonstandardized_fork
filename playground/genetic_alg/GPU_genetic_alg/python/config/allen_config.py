@@ -6,6 +6,7 @@ import h5py
 import nrnUtils
 import multiprocessing
 from mpi4py import MPI
+import utils
 
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()

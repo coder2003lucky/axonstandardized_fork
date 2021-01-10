@@ -85,9 +85,9 @@ sampled_dx_matrix = []
         #sampled_dx_matrix.append(final_p[i*param_num+j])
 
 #params_nwb.create_dataset('pdx_'+str(len(sampled_dx_matrix))+'_'+str(dx)+'_'+peeling, data=np.array(sampled_dx_matrix))
-#params_nwb.create_dataset('sample_ind', data=np.array(pin_sample_ind))
+params_nwb.create_dataset('sample_ind', data=np.array(pin_sample_ind))
 params_nwb.create_dataset('param_num', data=np.array([param_num]))
-#params_nwb.create_dataset('dx', data=np.array([dx]))
+params_nwb.create_dataset('dx', data=np.array([dx]))
 # np.savetxt('./test_pdx.csv', sampled_dx_matrix)
 
 params_nwb.close()
