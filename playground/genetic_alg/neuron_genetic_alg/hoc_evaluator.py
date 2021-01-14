@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 import os
-os.chdir("neuron_files/bbp19/")
+os.chdir("neuron_files/bbp/") # DO NOT keep this for when you want to run Allen
 from neuron import h
 os.chdir("../../")
 import bluepyopt as bpop
@@ -9,18 +9,44 @@ import nrnUtils
 import score_functions as sf
 import efel
 import pandas as pd
+# DO NOT keep this for when you want to run Allen
+run_file = './neuron_files/bbp/run_model_cori.hoc'
+# DO NOT run this from here, only use this from "runs/runs_model_peeling_date/"
+input_file = open('../../../../input.txt', "r")
+inputs = {}
+input_lines = input_file.readlines()
+for line in input_lines:
+    vals = line.split("=")
+    if len(vals) != 2 and "\n" not in vals:
+        raise Exception("Error in line:\n" + line + "\nPlease include only one = per line.")
+    if "\n" not in vals:
+        inputs[vals[0]] = vals[1][:len(vals[1])-1]
 
-run_file = './neuron_files/bbp19/run_model_cori.hoc'
-# run_volts_path = '../run_volts_bbp/'
-paramsCSV = './params/params_bbp_full.csv'
-orig_params = h5py.File('./params/params_bbp_full.hdf5', 'r')['orig_full'][0]
-scores_path = './scores/bbp19_scores/'
-objectives_file = h5py.File('./objectives/multi_stim_bbp_full.hdf5', 'r')
+assert 'params' in inputs, "No params specificed"
+assert 'user' in inputs, "No user specified"
+assert 'model' in inputs, "No model specificed"
+assert 'peeling' in inputs, "No peeling specificed"
+assert 'seed' in inputs, "No seed specificed"
+assert inputs['model'] in ['mainen', 'bbp'], "Model must be from: \'mainen\', \'bbp\'. Do not include quotes."
+assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'], "Model must be from: \'passive\', \'potassium\', \'sodium\', \'calcium\', \'full\'. Do not include quotes."
+assert "stim_file" in inputs, "provide stims file to use, neg_stims or stims_full?"
+
+model = inputs['model']
+peeling = inputs['peeling']
+user = inputs['user']
+params_opt_ind = [int(p) for p in inputs['params'].split(",")]
+date = inputs['runDate']
+stims_path = './stims/' + inputs['stim_file'] + 'hdf5'
+
+
+orig_params = h5py.File('./params/params_' + model + '_' + peeling + '.hdf5', 'r')['orig_passive'][0]
+paramsCSV = './params/params_' + model + '_' + peeling + '.csv'
+scores_path = '../../scores/'
+objectives_file = h5py.File('../objectives/multi_stim_without_sensitivity_'+ model + '_' + peeling + '_' + date + '_stims.hdf5', 'r')
 opt_weight_list = objectives_file['opt_weight_list'][:]
 opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
 score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
-stims_path = './stims/stims_full.hdf5'
-params_opt_ind = [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 14, 16, 17, 18, 19, 20, 22, 23]
+
 
 custom_score_functions = [
     'chi_square_normal', \

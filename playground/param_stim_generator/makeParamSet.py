@@ -23,6 +23,7 @@ assert 'peeling' in inputs, "No peeling specificed"
 assert 'seed' in inputs, "No seed specificed"
 assert inputs['model'] in ['mainen', 'bbp'], "Model must be from: \'mainen\', \'bbp\'. Do not include quotes."
 assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'], "Model must be from: \'passive\', \'potassium\', \'sodium\', \'calcium\', \'full\'. Do not include quotes."
+assert "stim_file" in inputs, "provide stims file to use, neg_stims or stims_full?"
 
 inputs['params'] = inputs['params'].split(',')
 
@@ -38,6 +39,7 @@ norm = float(inputs['norm']) if 'norm' in inputs else 100
 seed = int(inputs['seed'])
 # Set the value of dx here.
 dx = float(inputs['dx']) if 'dx' in inputs else 0.001
+
 # Set params to sample here. Other params will be kept at base value. The default below is to sample all params.
 
 model = inputs['model']
@@ -57,7 +59,6 @@ file_path = 'param_stim_generator/params_reference/params_' + model + '_' + peel
 data, orig = helper.parse_csv(file_path)
 pMatx, pSortedMatx, pSetsN, pSortedSetsN = helper.calculate_pmatx(data, nSubZones, nPerSubZone, params, norm, seed)
 print(pSortedSetsN.shape)
-
 '''
 pMatx is the final pin data after sampling in a range of [-4, 4] and applying the uniform function. Each param not in the params list will be kept at 0 and not sampled.
 pSortedMatx is calculated by sorting by the summed squared differences from the original param value after sampling in the range [-4, 4] and then applying the uniform function. This matrix was mainly used for plotting the sorted values vs unsorted values to look at the general relationship between the two.
