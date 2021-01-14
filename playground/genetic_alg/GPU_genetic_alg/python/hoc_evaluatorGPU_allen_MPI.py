@@ -27,11 +27,13 @@ os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULL
 from mpi4py import MPI
 from joblib import Parallel, delayed
 #from mpi4py.futures import MPIPoolExecutor
+from config.allen_config import *
 
 
 
 ####### set up environment variables ##############
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
+print([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 nCpus =  multiprocessing.cpu_count()
 comm = MPI.COMM_WORLD
 global_rank = comm.Get_rank()
@@ -43,41 +45,41 @@ CPU_name = MPI.Get_processor_name()
 print("CPU name", CPU_name)
 
 
-run_file = './run_model_cori.hoc'
-run_volts_path = '../run_volts_bbp_full_gpu_tuned/'
-#paramsCSV = run_volts_path+'params/params_bbp_full_gpu_tuned_10_based.csv'
-paramsCSV = run_volts_path+'params/params_bbp_full.csv'
-#orig_params = h5py.File(run_volts_path+'params/params_bbp_full_allen_gpu_tune.hdf5', 'r')['orig_full'][0]
-orig_params = np.array(np.array(nrnUtils.readParamsCSV(paramsCSV))[:,1], dtype=np.float64)
-scores_path = '../scores/'
-objectives_file = h5py.File('./objectives/multi_stim_bbp_full_allen_gpu_tune_18_stims.hdf5', 'r')
-opt_weight_list = objectives_file['opt_weight_list'][:]
-opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
-score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
-stims_path = run_volts_path+'/stims/allen_data_stims_10000.hdf5'
-target_volts_path = './target_volts/allen_data_target_volts_10000.hdf5'
-target_volts_hdf5 = h5py.File(target_volts_path, 'r')
-ap_tune_stim_name = '18'
-ap_tune_weight = 0
-#params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-params_opt_ind = np.arange(24)
-model_dir = '..'
-data_dir = model_dir+'/Data/'
-run_dir = '../bin'
-vs_fn = '/tmp/Data/VHotP'
-nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
-nCpus =  multiprocessing.cpu_count()
-allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
-old_eval = algo._evaluate_invalid_fitness
+# run_file = './run_model_cori.hoc'
+# run_volts_path = '../run_volts_bbp_full_gpu_tuned/'
+# #paramsCSV = run_volts_path+'params/params_bbp_full_gpu_tuned_10_based.csv'
+# paramsCSV = run_volts_path+'params/params_bbp_full.csv'
+# #orig_params = h5py.File(run_volts_path+'params/params_bbp_full_allen_gpu_tune.hdf5', 'r')['orig_full'][0]
+# orig_params = np.array(np.array(nrnUtils.readParamsCSV(paramsCSV))[:,1], dtype=np.float64)
+# scores_path = '../scores/'
+# objectives_file = h5py.File('./objectives/multi_stim_bbp_full_allen_gpu_tune_18_stims.hdf5', 'r')
+# opt_weight_list = objectives_file['opt_weight_list'][:]
+# opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
+# score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
+# stims_path = run_volts_path+'/stims/allen_data_stims_10000.hdf5'
+# target_volts_path = './target_volts/allen_data_target_volts_10000.hdf5'
+# target_volts_hdf5 = h5py.File(target_volts_path, 'r')
+# ap_tune_stim_name = '18'
+# ap_tune_weight = 0
+# #params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+# params_opt_ind = np.arange(24)
+# model_dir = '..'
+# data_dir = model_dir+'/Data/'
+# run_dir = '../bin'
+# vs_fn = '/tmp/Data/VHotP'
+# nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
+# nCpus =  multiprocessing.cpu_count()
+# allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
+# old_eval = algo._evaluate_invalid_fitness
 
-custom_score_functions = [
-                    'chi_square_normal',\
-                    'traj_score_1',\
-                    'traj_score_2',\
-                    'traj_score_3',\
-                    'isi',\
-                    'rev_dot_product',\
-                    'KL_divergence']
+# custom_score_functions = [
+#                     'chi_square_normal',\
+#                     'traj_score_1',\
+#                     'traj_score_2',\
+#                     'traj_score_3',\
+#                     'isi',\
+#                     'rev_dot_product',\
+#                     'KL_divergence']
 
 # Number of timesteps for the output volt.
 ntimestep = 10000
@@ -85,7 +87,7 @@ ntimestep = 10000
 stim_names = list([e.decode('ascii') for e in opt_stim_name_list])
 stims = []
 for stim_name in stim_names:
-    stims.append(allen_stim_file[stim_name][:])
+    stims.append(stim_file[stim_name][:])
     
 if not os.path.isdir("/tmp/Data"):
     os.mkdir("/tmp/Data")
@@ -233,12 +235,12 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             if os.path.exists(old_time) :
                 os.remove(old_time)
             stim = opt_stim_name_list[stim_num].decode("utf-8")
-            dt = allen_stim_file[stim+'_dt'][:][0]
+            dt = stim_file[stim+'_dt'][:][0]
             self.dts.append(dt)
             f = open ("../Data/times{}.csv".format(stim_num), 'w')
             current_times = [dt for i in range(ntimestep)]
             np.savetxt("../Data/Stim_raw{}.csv".format(stim_num), 
-                       allen_stim_file[stim][:],
+                       stim_file[stim][:],
                        delimiter=",")
             wtr = csv.writer(f, delimiter=',', lineterminator='\n')
             wtr.writerow(current_times)
@@ -383,7 +385,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         full_params = comm.bcast(full_params, root=0)
         allparams = allparams_from_mapping(list(full_params))
         
-        self.dts = [allen_stim_file[stim.decode("utf-8") + '_dt'][:][0] for stim in opt_stim_name_list]  
+        self.dts = [stim_file[stim.decode("utf-8") + '_dt'][:][0] for stim in opt_stim_name_list]  
         self.nindv = len(param_values)
         start_time_sim = time.time()
         p_objects = []

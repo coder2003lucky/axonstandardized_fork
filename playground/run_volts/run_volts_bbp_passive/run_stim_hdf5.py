@@ -7,11 +7,35 @@ import os, sys
 ##########################
 # Script PARAMETERS      #
 ##########################
+input_file = open('../../../../../input.txt', "r")
+inputs = {}
+input_lines = input_file.readlines()
+for line in input_lines:
+    vals = line.split("=")
+    if len(vals) != 2 and "\n" not in vals:
+        raise Exception("Error in line:\n" + line + "\nPlease include only one = per line.")
+    if "\n" not in vals:
+        inputs[vals[0]] = vals[1][:len(vals[1])-1]
+
+assert 'params' in inputs, "No params specificed"
+assert 'user' in inputs, "No user specified"
+assert 'model' in inputs, "No model specificed"
+assert 'peeling' in inputs, "No peeling specificed"
+assert 'seed' in inputs, "No seed specificed"
+assert inputs['model'] in ['mainen', 'bbp'], "Model must be from: \'mainen\', \'bbp\'. Do not include quotes."
+assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'], "Model must be from: \'passive\', \'potassium\', \'sodium\', \'calcium\', \'full\'. Do not include quotes."
+assert "stim_file" in inputs, "provide stims file to use, neg_stims or stims_full?"
+
+model = inputs['model']
+peeling = inputs['peeling']
+user = inputs['user']
+params_opt_ind = [int(p) for p in inputs['params'].split(",")]
+date = inputs['runDate']
+stims_file_path = './stims/' + inputs['stim_file'] + 'hdf5'
 
 # Relative path common to all other paths.
 run_file = './run_model_cori.hoc'
-params_file_path = './params/params_bbp_passive.hdf5'
-stims_file_path = './stims/stims_full.hdf5'
+params_file_path = './params/params_' + model + '_' + peeling + '.hdf5'
 
 # Number of timesteps for the output volt.
 ntimestep = 10000
