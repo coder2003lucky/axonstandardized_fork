@@ -23,7 +23,7 @@ os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4
 os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULLCOPY
 
-inputFile = open("../../../input.txt","r") 
+inputFile = open("../../../../../input.txt","r") 
 for line in inputFile.readlines():
     if "bbp" in line:
         from config.bbp19_config import *
@@ -112,7 +112,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         data = nrnUtils.readParamsCSV(paramsCSV)
         super(hoc_evaluator, self).__init__()
         self.orig_params = orig_params
-        self.opt_ind = params_opt_ind
+        self.opt_ind = np.array(params_opt_ind)
         data = np.array([data[i] for i in self.opt_ind])
         self.orig_params = orig_params
         self.pmin = np.array((data[:,2]), dtype=np.float64)
@@ -120,14 +120,18 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         # make this a function
         self.fixed = {}
         self.params = []
-        for param_idx in range(len(orig_params)):
-            if np.isclose(self.orig_params[param_idx],self.pmin[param_idx],rtol=.001) and np.isclose(self.pmin[param_idx],self.pmax[param_idx],rtol=.001):
+        for param_idx in range(len(self.orig_params)):
+            if param_idx in self.opt_ind:
+                idx = np.where(self.opt_ind == param_idx)
+                if np.isclose(self.orig_params[param_idx],self.pmin[idx],rtol=.001) and np.isclose(self.pmin[idx],self.pmax[idx],rtol=.001):
+                    print(self.orig_params[param_idx], " opt but fixed idx : ", self.pmin[idx])
+                    self.fixed[param_idx] = self.orig_params[param_idx]
+                else:
+                    print(idx,self.orig_params[param_idx], (self.pmin[idx],self.pmax[idx]))
+                    self.params.append(bpop.parameters.Parameter(self.orig_params[param_idx], bounds=(self.pmin[idx][0],self.pmax[idx][0]))) # this indexing is annoying... pmax and pmin weird shape because they are numpy arrays, see idx assignment on line 125... how can this be more clear
+            else:
                 print(self.orig_params[param_idx], " idx : ", param_idx)
                 self.fixed[param_idx] = self.orig_params[param_idx]
-            else:
-                self.params.append(bpop.parameters.Parameter(self.orig_params[param_idx], bounds=(self.pmin[param_idx],self.pmax[param_idx])))
-        
-
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
         self.objectives = [bpop.objectives.Objective('Weighted score functions')]
@@ -204,7 +208,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                 os.remove(old_time)
         for i in range(len(opt_stim_name_list)):
             stim = opt_stim_name_list[i].decode("utf-8")
-            dt = .2 # refactor this later to be read or set to .02 if not configured
+            dt = .02 # refactor this later to be read or set to .02 if not configured
             self.dts.append(dt)
             f = open ("../Data/times{}.csv".format(i), 'w')
             wtr = csv.writer(f, delimiter=',', lineterminator='\n')
@@ -366,6 +370,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.dts = []
         self.convert_allen_data() # reintialize allen stuff for clean run
         self.nindv = len(param_values)
+
         # insert negative param value back in to each set
         #full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)
         #np.savetxt("generatedBBPfull_params_50indv.csv", full_params)

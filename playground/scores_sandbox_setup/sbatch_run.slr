@@ -6,7 +6,7 @@
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m3513
-#SBATCH --array 1-50
+#SBATCH --array 1-1
 # change array 1-n, where n is the number of stims
 
 
@@ -49,4 +49,4 @@ echo $arrIdx ${model} ${peeling}
 
 srun --mpi=pmi2 -n 64 python score_volts_hdf5_efficent_sandbox.py $arrIdx ${model} ${peeling}
 
-echo DONE
+echo DONEEE

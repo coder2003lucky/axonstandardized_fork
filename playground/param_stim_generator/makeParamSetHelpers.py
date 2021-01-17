@@ -80,7 +80,6 @@ def calculate_pmatx(data, nSubZones, nPerSubZone, sample_params, norm, seed):
         # sample_params are the params to be sampled. Other params are set to the mapped base value to [-4, 4].
         for p in range(1, nParams+1):
             if p in sample_params:
-                print(p, ": SAMPLE PARAM")
                 #pSetsN[counter:counter + nPerSubZone, p - 1] = (np.random.rand(nPerSubZone) * 2.0 - 1.0) * (4.0 * (i + 1.0) / float(nSubZones))
                 raw_sample = np.random.rand(nPerSubZone) * [1 if np.random.rand() >= 0.5 else -1 for i in range(nPerSubZone)]
                 for j in range(len(raw_sample)):
@@ -124,6 +123,7 @@ def calculate_pmatx(data, nSubZones, nPerSubZone, sample_params, norm, seed):
         lastParam = data[freeParams + i, 6]
         lb = data[freeParams + i, 1]
         ub = data[freeParams + i, 2]
+
         adjustedND = pCurrND
         adjustedSortedND = pSortedCurrND
         

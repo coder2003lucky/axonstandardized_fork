@@ -3,7 +3,7 @@
 #SBATCH --qos=regular
 #SBATCH --time=01:20:00
 #SBATCH --nodes=1
-#SBATCH --constraint=knl
+#SBATCH --constraint=haswell
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m3513

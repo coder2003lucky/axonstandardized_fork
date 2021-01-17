@@ -94,11 +94,9 @@ def evaluate_score_function(stim_name_list, target_volts_list, data_volts_list, 
         curr_data_volt = data_volts_list[i]
         curr_target_volt = target_volts_list[i]
         stims_hdf5 = h5py.File(stims_path, 'r')
-        print(stim_name_list[i], " STIM")
         dt = stims_hdf5[stim_name_list[i]+'_dt'][0]
         curr_stim = stims_hdf5[stim_name_list[i]][:]
         total_score += check_ap_at_zero(curr_stim, curr_data_volt)
-        print(check_ap_at_zero(curr_stim, curr_data_volt), "AP check")
         for j in range(len(score_function_ordered_list)):
             curr_sf = score_function_ordered_list[j].decode('ascii')
             curr_weight = weights[len(score_function_ordered_list)*i + j]
@@ -144,9 +142,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         for i in range(len(param_values)):
             curr_opt_ind = self.opt_ind[i]
             input_values[curr_opt_ind] = param_values[i]
-        #data_volts_list = run_model(input_values, self.opt_stim_list)
-        data_volts_list = self.target_volts_list[:19] #np.genfromtxt("volts4compare.csv",delimiter=",")#run_model(input_values, self.opt_stim_list)
-        score = evaluate_score_function(self.opt_stim_list, self.target_volts_list[:19], data_volts_list[:19], self.weights)
+        data_volts_list = run_model(input_values, self.opt_stim_list)
+        score = evaluate_score_function(self.opt_stim_list, self.target_volts_list, data_volts_list, self.weights)
 #         ap_tune_score = ap_tune(input_values, self.ap_tune_target, self.ap_tune_stim_name, self.ap_tune_weight)
         return [score] #+ ap_tune_score] NOT USING AP TUNE
 

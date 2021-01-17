@@ -25,7 +25,10 @@ with open('../../../../../input.txt', 'r') as f:
                 num_nodes = int(value)
             if name == "num_volts":
                 num_volts = int(value)
-
+            if name == "stim_file":
+                stim_file = value.replace('\n','')
+                
+stims_file_path = '../../../../../stims/' + stim_file + '.hdf5'
 # Number of timesteps for the output volt.
 ntimestep = 10000
 
