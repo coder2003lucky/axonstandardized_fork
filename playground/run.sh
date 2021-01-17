@@ -1,15 +1,6 @@
 #!/bin/bash
 echo `pwd`
 source ./input.txt
-echo $gaGPU        #test               #test
-
-if [ "$gaGPU" = "True" ]
-    then
-       cd genetic_alg/GPU_genetic_alg/
-       sbatch running_GA_GPU.sh
-       exit 1
-fi
-
 
 
 CURRENTDATE=`date +%m_%d_%Y`
@@ -52,29 +43,30 @@ mkdir -p runs/${model}_${peeling}_${runDate}${custom}/'slurm'
 python modifySandboxArray.py $num_volts $num_nodes
 
 #LOCAL, uses shell script for local imitation
-if [ ${makeVolts} == ${true} ]
-  then
-    sbatch volts_sandbox_setup/sbatch_run.slr
-  fi
+# if [ ${makeVolts} == ${true} ]
+#   then
+#     sbatch volts_sandbox_setup/sbatch_run.slr
+#   fi
 #sh passive/volts_sandbox_setup/sbatch_local_volts.sh
 
 echo making volts....
-
 #waits until slurm has put enough volts in directory
 shopt -s nullglob
-found=0
-target_volts=$num_volts
-
-while [ $found -ne $target_volts ]
-do
-        found=`ls -lR ${wrkDir}/volts/*.hdf5 | wc -l`
+STIMFILE="stims/${stim_file}.hdf5"
+VOLT_PREFIX="runs/${model}_${peeling}_${runDate}${custom}/volts"
+h5dump --header $STIMFILE | head -n $(expr 2 + ${#num_volts} \* 4) | while read line; do
+    if [[ "$line" == *"DATASET"* ]]; then
+        INPUT="$line"
+        fileName=$(echo "${INPUT}" | cut -d '"' -f 2)
+        fileName="${VOLT_PREFIX}/${fileName}_volts.hdf5"
+        while [ ! -f "${fileName}" ]; do sleep 1; done
+        echo found "${fileName}"
+    fi
 done
-
-echo made $num_volts volts successfully
 shopt -u nullglob
 
 #move the slurm into runs
-mv slurm* runs/${model}_${peeling}_${CURRENTDATE}${custom}/'slurm'
+mv slurm* runs/${model}_${peeling}_${runDate}${custom}/'slurm'
 
 
 
@@ -85,17 +77,18 @@ if [ ${makeScores} == ${true} ]
 
 
 echo making scores....
-
 shopt -s nullglob
-found=0
-target_volts=$num_volts
-
-while [ $found -ne $target_volts ]
-do
-        found=`ls -lR ${wrkDir}/scores/*.hdf5 | wc -l`
+STIMFILE="stims/${stim_file}.hdf5"
+VOLT_PREFIX="runs/${model}_${peeling}_${runDate}${custom}/scores"
+h5dump --header $STIMFILE | head -n $(expr 2 + ${#num_volts} \* 4) | while read line; do
+    if [[ "$line" == *"DATASET"* ]]; then
+        INPUT="$line"
+        fileName=$(echo "${INPUT}" | cut -d '"' -f 2)
+        fileName="${VOLT_PREFIX}/${fileName}_scores.hdf5"
+        while [ ! -f "${fileName}" ]; do sleep 1; done
+        echo found "${fileName}"
+    fi
 done
-
-echo made $num_volts scores successfully
 shopt -u nullglob
 
 #move slurm into runs
@@ -110,12 +103,10 @@ if [ ${makeOpt} == ${true} ] || [ ${makeObj} == ${true} ]
 shopt -s nullglob
 found=0
 target_files=1
-
 while [ $found -ne $target_files ]
 do
-        found=`ls -lR ${wrkDir}/genetic_alg/optimization_results/*.hdf5 | wc -l`
+        found=`ls -lR ${wrkDir}/genetic_alg/optimization_results/*${model}_${peeling}_full.hdf5 | wc -l`
 done
-
 echo finished optimzation
 shopt -u nullglob
 
@@ -129,18 +120,27 @@ echo DONE
 shopt -s nullglob
 found=0
 target_files=1
-
 while [ $found -ne $target_files ]
 do
-        found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
+        found=`ls -lR ${wrkDir}/genetic_alg/objectives/*${model}_${peeling}_${runDate}.hdf5 | wc -l`
 done
-
 echo finished creating objectives file
 shopt -u nullglob
 
+wrkDir=runs/${model}_${peeling}_${runDate}${custom}/genetic_alg
+cp -r stims wrkDir/
+cp -r params wrkDir/
+
+
+if [ "$gaGPU" = ${true} ]
+    then
+        module load esslurm
+        sbatch ${wrkDir}/GPU_genetic_alg/GaGPU.slr
+fi
+
 if [ ${runGA} == ${true} ]
   then
-    sbatch genetic_alg/running_GA_parallel.sh
+    sbatch ${wrkDir}/neuron_genetic_alg/runGA.slr
   fi
 
 

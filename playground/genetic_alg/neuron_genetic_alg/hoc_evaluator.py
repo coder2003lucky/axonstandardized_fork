@@ -34,13 +34,13 @@ assert "stim_file" in inputs, "provide stims file to use, neg_stims or stims_ful
 model = inputs['model']
 peeling = inputs['peeling']
 user = inputs['user']
-params_opt_ind = [int(p) for p in inputs['params'].split(",")]
+params_opt_ind = [int(p)-1 for p in inputs['params'].split(",")]
 date = inputs['runDate']
-stims_path = './stims/' + inputs['stim_file'] + 'hdf5'
+stims_path = '../stims/' + inputs['stim_file'] + '.hdf5'
 
 
 orig_params = h5py.File('./params/params_' + model + '_' + peeling + '.hdf5', 'r')['orig_passive'][0]
-paramsCSV = './params/params_' + model + '_' + peeling + '.csv'
+paramsCSV = '../params/params_' + model + '_' + peeling + '.csv'
 scores_path = '../../scores/'
 objectives_file = h5py.File('../objectives/multi_stim_without_sensitivity_'+ model + '_' + peeling + '_' + date + '_stims.hdf5', 'r')
 opt_weight_list = objectives_file['opt_weight_list'][:]
