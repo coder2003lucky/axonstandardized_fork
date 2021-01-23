@@ -1,7 +1,7 @@
 user=zladd
 model=bbp
 peeling=passive
-runDate=01_15_2021
+runDate=01_13_2021
 nSubZones=100
 nPerSubZone=10
 norm=100
@@ -14,10 +14,10 @@ OFFSPRING_SIZE=1000
 MAX_NGEN=100
 seed=1178
 makeParams=False
-makeVolts=True
-makeScores=True
-makeOpt=True
-makeObj=True
+makeVolts=False
+makeScores=False
+makeOpt=False
+makeObj=False
 runGA=True
 gaGPU=False
 

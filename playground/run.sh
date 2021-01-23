@@ -95,7 +95,7 @@ shopt -u nullglob
 mv slurm* runs/${model}_${peeling}_${runDate}${custom}/'slurm'
 
 
-if [ ${makeOpt} == ${true} ] || [ ${makeObj} == ${true} ]
+if [ ${makeOpt} == ${true} ]
   then
     sbatch analyze_p_bbp_full/analyze_p.slr
   fi
@@ -112,17 +112,18 @@ shopt -u nullglob
 
 if [ ${makeObj} == ${true} ]
   then
-    srun python analyze_p_bbp_full/analyze_p_multistims.py --model ${model} --peeling ${peeling} \
+    python analyze_p_bbp_full/analyze_p_multistims.py --model ${model} --peeling ${peeling} \
     --CURRENTDATE ${runDate}
   fi
 
-echo DONE
+echo objectives are Done
 shopt -s nullglob
 found=0
 target_files=1
+wrkDir=runs/${model}_${peeling}_${runDate}${custom}
 while [ $found -ne $target_files ]
 do
-        found=`ls -lR ${wrkDir}/genetic_alg/objectives/*${model}_${peeling}_${runDate}.hdf5 | wc -l`
+        found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
 done
 echo finished creating objectives file
 shopt -u nullglob
@@ -132,7 +133,7 @@ cp -r stims wrkDir/
 cp -r params wrkDir/
 
 
-if [ "$gaGPU" = ${true} ]
+if [ ${gaGPU} =  == ${true} ]
     then
         module load esslurm
         sbatch ${wrkDir}/GPU_genetic_alg/GaGPU.slr
@@ -145,6 +146,8 @@ if [ ${runGA} == ${true} ]
 
 
 
-
-endTIME =`date +%T`
-python log.py $CURRENTDATE $startTIME $user $model $peeling $nSubZones $nPerSubZone $norm $seed $wrkDir
+# TODO: what to log when we are done?? later in the road we will a spreadsheet or something
+# human interpretable...  maybe put a script doing all the plotting here along with logging this info
+# in a meta file
+# endTIME =`date +%T`
+# python log.py $CURRENTDATE $startTIME $user $model $peeling $nSubZones $nPerSubZone $norm $seed $wrkDir
