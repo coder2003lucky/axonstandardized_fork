@@ -1,5 +1,9 @@
-module purge && module load cgpu cuda pgi mvapich2
+module purge
+module load cgpu 
+module load gcc cuda openmpi
+module load mvapich2/2.3.3
+module load pmi openmpi 
 module load hdf5-parallel
-module load PrgEnv-gnu/6.0.5 pmi openmpi
-module load openmpi 
+
+
 

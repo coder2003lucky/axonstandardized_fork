@@ -52,8 +52,12 @@ print(params)
 pin_sample_ind = list(range(1000))
 
 # Set the file path for the params csv here.
+if inputs['usePrevParams']:
+    file_path = 'param_stim_generator/params_reference/params_' + model + '_' + peeling + '_prev.csv'
+else:
+    file_path = 'param_stim_generator/params_reference/params_' + model + '_' + peeling + '.csv'
 
-file_path = 'param_stim_generator/params_reference/params_' + model + '_' + peeling + '.csv'
+
 
 # data is the parsed csv, orig is a row vector of base values for each param (1 x 12)
 data, orig = helper.parse_csv(file_path)

@@ -1,11 +1,6 @@
 #!/bin/bash
 echo `pwd`
 source ./input.txt
-
-
-CURRENTDATE=`date +%m_%d_%Y`
-startTIME=`date +%T`
-custom=''
 input="input.txt"
 while IFS= read -r line
 do
@@ -16,6 +11,7 @@ done < "$input"
 
 true=True
 
+if  [ $num_volts == 0 ]; then num_volts=300; fi
 
 
 if [ ${makeParams} == ${true} ]
@@ -43,10 +39,10 @@ mkdir -p runs/${model}_${peeling}_${runDate}${custom}/'slurm'
 python modifySandboxArray.py $num_volts $num_nodes
 
 #LOCAL, uses shell script for local imitation
-# if [ ${makeVolts} == ${true} ]
-#   then
-#     sbatch volts_sandbox_setup/sbatch_run.slr
-#   fi
+if [ ${makeVolts} == ${true} ]
+  then
+    sbatch volts_sandbox_setup/sbatch_run.slr
+  fi
 #sh passive/volts_sandbox_setup/sbatch_local_volts.sh
 
 echo making volts....
@@ -54,7 +50,7 @@ echo making volts....
 shopt -s nullglob
 STIMFILE="stims/${stim_file}.hdf5"
 VOLT_PREFIX="runs/${model}_${peeling}_${runDate}${custom}/volts"
-h5dump --header $STIMFILE | head -n $(expr 2 + ${#num_volts} \* 4) | while read line; do
+h5dump --header $STIMFILE | head -n $(expr 2 + ${num_volts} \* 4) | while read line; do
     if [[ "$line" == *"DATASET"* ]]; then
         INPUT="$line"
         fileName=$(echo "${INPUT}" | cut -d '"' -f 2)
@@ -80,7 +76,7 @@ echo making scores....
 shopt -s nullglob
 STIMFILE="stims/${stim_file}.hdf5"
 VOLT_PREFIX="runs/${model}_${peeling}_${runDate}${custom}/scores"
-h5dump --header $STIMFILE | head -n $(expr 2 + ${#num_volts} \* 4) | while read line; do
+h5dump --header $STIMFILE | head -n $(expr 2 + ${num_volts} \* 4) | while read line; do
     if [[ "$line" == *"DATASET"* ]]; then
         INPUT="$line"
         fileName=$(echo "${INPUT}" | cut -d '"' -f 2)
@@ -129,8 +125,8 @@ echo finished creating objectives file
 shopt -u nullglob
 
 wrkDir=runs/${model}_${peeling}_${runDate}${custom}/genetic_alg
-cp -r stims wrkDir/
-cp -r params wrkDir/
+cp -r stims $wrkDir/
+cp -r params $wrkDir/
 
 
 if [ ${gaGPU} =  == ${true} ]
