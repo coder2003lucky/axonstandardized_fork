@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --qos=regular
-#SBATCH --time=01:20:00
-#SBATCH --nodes=1
+#SBATCH --time=03:00:00
+#SBATCH --nodes=10
 #SBATCH --constraint=haswell
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
@@ -21,11 +21,12 @@ export OMP_NUM_THREADS=1
 export IPYTHONDIR=${PWD}/.ipython
 export IPYTHON_PROFILE=benchmark.${SLURM_JOBID}
 
-cd neuron_files/${model}/nrnivmodl
+cd neuron_files/${model}/
+nrnivmodl
 cd ../../
 ipcontroller --init --ip='*' --sqlitedb --ping=30000 --profile=${IPYTHON_PROFILE} &
 sleep 600
-srun -n 120 ipengine --timeout=3000 --profile=${IPYTHON_PROFILE} &
+srun -n 640 ipengine --timeout=3000 --profile=${IPYTHON_PROFILE} &
 sleep 600
 CHECKPOINTS_DIR="checkpoints"
 mkdir -p ${CHECKPOINTS_DIR}

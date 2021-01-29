@@ -127,11 +127,14 @@ shopt -u nullglob
 wrkDir=runs/${model}_${peeling}_${runDate}${custom}/genetic_alg
 cp -r stims $wrkDir/
 cp -r params $wrkDir/
+cp param_stim_generator/params_reference/* $wrkDir/params/
 
 
-if [ ${gaGPU} =  == ${true} ]
+
+if [ ${gaGPU} == ${true} ]
     then
-        module load esslurm
+        module purge
+        module load cgpu
         sbatch ${wrkDir}/GPU_genetic_alg/GaGPU.slr
 fi
 

@@ -28,11 +28,11 @@ peeling = inputs['peeling']
 user = inputs['user']
 params_opt_ind = [int(p)-1 for p in inputs['params'].split(",")]
 date = inputs['runDate']
-
-orig_params = h5py.File('../../params/params_' + model + '_' + peeling + '.hdf5', 'r')['orig_passive'][0]
+orig_name = "orig_" + peeling
+orig_params = h5py.File('../../params/params_' + model + '_' + peeling + '.hdf5', 'r')[orig_name][0]
 paramsCSV = '../../params/params_' + model + '_' + peeling + '.csv'
 scores_path = '../../../scores/'
-objectives_file = h5py.File('../../objectives/multi_stim_without_sensitivity_bbp_passive_01_13_2021_stims.hdf5', 'r')
+objectives_file = h5py.File('../../objectives/multi_stim_without_sensitivity_bbp_' + peeling + "_" + date + '_stims.hdf5', 'r')
 opt_weight_list = objectives_file['opt_weight_list'][:]
 opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
 score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
