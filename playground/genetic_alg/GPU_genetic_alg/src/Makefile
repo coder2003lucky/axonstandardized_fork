@@ -253,11 +253,10 @@ ALL_LDFLAGS += $(addprefix -Xlinker ,$(EXTRA_LDFLAGS))
 # Common includes and paths for CUDA
 INCLUDES  :=  -I../../common/inc
 
-# HDF5
-HDF5 := -I/usr/common/software/hdf5-parallel/1.10.5/pgi/include -I/usr/common/software/cuda/10.2.89/include -I/usr/common/software/cuda/10.2.89/include -I/usr/common/software/mvapich2/2.3.2/pgi/19.10/cuda/10.2.89/include
 
-HDF52 :=  -L/usr/common/software/hdf5-parallel/1.10.5/pgi/lib -lhdf5_hl_cpp -lhdf5_cpp -lhdf5_hl -lhdf5 -L/opt/esslurm/lib64 -lz -ldl -lm -I/usr/common/software/mvapich2/2.3.2/pgi/19.10/cuda/10.2.89/include -L/usr/common/software/mvapich2/2.3.2/pgi/19.10/cuda/10.2.89/lib -lmpicxx -lmpi 
+HDF5 := -I/usr/common/software/sles15_cgpu/openmpi/4.0.3/gcc/include -I/usr/common/software/sles15_cgpu/hdf5-parallel/1.10.5/pgi/mvapich2/include  -I/usr/common/software/sles15_cgpu/cuda/10.2.89/include -I/usr/common/software/mvapich2/2.3.3/pgi/19.10/cuda/10.2.89/include
 
+HDF52 := -L/usr/common/software/sles15_cgpu/openmpi/4.0.3/gcc/lib -L/usr/common/software/sles15_cgpu/hdf5-parallel/1.10.5/pgi/mvapich2/lib -lhdf5_hl_cpp -lhdf5_cpp -lhdf5_hl -lhdf5 -L/opt/esslurm/lib64 -lz -ldl -lm  -L/usr/common/software/mvapich2/2.3.3/pgi/19.10/cuda/10.2.89/lib 
 
 
 ################################################################################

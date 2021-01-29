@@ -19,6 +19,10 @@ from concurrent.futures import ProcessPoolExecutor as Pool
 import multiprocessing
 import csv
 import ap_tuner as tuner
+os.chdir("../../neuron_genetic_alg/neuron_files/bbp/") # DO NOT keep this for when you want to run Allen
+from neuron import h
+os.chdir("../../../GPU_genetic_alg/python")
+
 os.environ["OMP_NUM_THREADS"] = "1" # export OMP_NUM_THREADS=4
 os.environ["OPENBLAS_NUM_THREADS"] = "1" # export OPENBLAS_NUM_THREADS=4
 os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULLCOPY
@@ -62,6 +66,21 @@ def nrnMreadH5(fileName):
     dat = f['Data'][:][0]
     return np.array(dat)
 
+def neuron_run_model(param_set, stim_name_list):
+    h.load_file(run_file)
+    volts_list = []
+    for elem in stim_name_list:
+        curr_stim = h5py.File(stims_path, 'r')[elem][:]
+        total_params_num = len(param_set)
+        timestamps = np.array([dt for i in range(ntimestep)])
+        h.curr_stim = h.Vector().from_python(curr_stim)
+        h.transvec = h.Vector(total_params_num, 1).from_python(param_set)
+        h.stimtime = h.Matrix(1, len(timestamps)).from_vector(h.Vector().from_python(timestamps))
+        h.ntimestep = ntimestep
+        h.runStim()
+        out = h.vecOut.to_python()
+        volts_list.append(out)
+    return np.array(volts_list)
 
 def stim_swap(idx, i):
     """
@@ -135,8 +154,37 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
         self.objectives = [bpop.objectives.Objective('Weighted score functions')]
-        self.target_volts_list = np.genfromtxt("../Data/target_volts_BBP19.csv",delimiter = ',')
+        self.target_volts_list = self.make_target_volts(orig_params, self.opt_stim_list)
         self.dts = []
+        
+    def make_target_volts(self, orig_params, opt_stim_list):
+        self.dts = []
+        self.convert_allen_data()
+        params = orig_params.reshape(-1,1).T
+        #params = np.repeat(params, 5 ,axis=0)
+        data_volts_list = np.array([])
+        allparams = allparams_from_mapping(list(params)) 
+        for stimset in range(0,len(opt_stim_list), nGpus):
+            p_objects = []
+            for gpuId in range(nGpus): 
+                if  (gpuId + stimset) >= len(opt_stim_list):
+                    break
+                if stimset != 0:
+                    print("Swapping ", gpuId, gpuId + stimset)
+                    stim_swap(gpuId, gpuId + stimset)
+                p_objects.append(self.run_model(gpuId, []))
+            for gpuId in range(nGpus):
+                if  (gpuId + stimset) >= len(opt_stim_list):
+                    break 
+                p_objects[gpuId].wait()
+                if len(data_volts_list) < 1:
+                    data_volts_list  = self.getVolts(gpuId)
+                else:
+                    data_volts_list = np.append(data_volts_list, self.getVolts(gpuId),axis=0)
+                print(data_volts_list.shape)
+        np.savetxt("targetVolts.csv", data_volts_list, delimiter=",")
+        return data_volts_list
+
         
 
     def my_evaluate_invalid_fitness(toolbox, population):
@@ -169,7 +217,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             sf_len = len(score_function_ordered_list)
             curr_weights = self.weights[sf_len*i: sf_len*i + sf_len] #get range of sfs for this stim
             #top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
-            top_inds = np.where(curr_weights > 50)[0] # weights bigger than 50
+            top_inds = np.where(curr_weights > 0)[0] # weights bigger than 50
             pairs = list(zip(np.repeat(i,len(top_inds)), [ind for ind in top_inds])) #zips up indices with corresponding stim # to make sure it is refrencing a relevant stim
             all_pairs.append(pairs)
         flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
