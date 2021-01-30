@@ -11,7 +11,6 @@ done < "$input"
 
 true=True
 
-if  [ $num_volts == 0 ]; then num_volts=300; fi
 
 
 if [ ${makeParams} == ${true} ]
@@ -44,6 +43,8 @@ if [ ${makeVolts} == ${true} ]
     sbatch volts_sandbox_setup/sbatch_run.slr
   fi
 #sh passive/volts_sandbox_setup/sbatch_local_volts.sh
+
+if  [ $num_volts == 0 ]; then num_volts=300; fi
 
 echo making volts....
 #waits until slurm has put enough volts in directory
