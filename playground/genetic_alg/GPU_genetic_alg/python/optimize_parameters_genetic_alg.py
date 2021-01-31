@@ -18,10 +18,9 @@ global_rank = comm.Get_rank()
 size = comm.Get_size()
 
 if size > 1:
-    import hoc_evaluatorGPU_allen_MPI as hoc_ev
+    import hoc_evaluatorGPU_MPI as hoc_ev
 else:
     import hoc_evaluatorGPU_BBP_par as hoc_ev
-    #import hoc_evaluatorGPU_allen_parNEW as hoc_ev
 
     #testing
     nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])

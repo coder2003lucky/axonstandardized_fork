@@ -27,9 +27,6 @@ os.environ["MPICH_GNI_FORK_MODE"] = "FULLCOPY" # export MPICH_GNI_FORK_MODE=FULL
 from mpi4py import MPI
 from joblib import Parallel, delayed
 #from mpi4py.futures import MPIPoolExecutor
-from config.allen_config import *
-
-
 
 ####### set up environment variables ##############
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
@@ -39,58 +36,34 @@ comm = MPI.COMM_WORLD
 global_rank = comm.Get_rank()
 size = comm.Get_size()
 
+inputFile = open("../../../../../input.txt","r") 
+for line in inputFile.readlines():
+    if "bbp" in line:
+        from config.bbp19_config import *
+    elif "allen" in line:
+        from config.allen_config import *
+
+nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
+nCpus =  multiprocessing.cpu_count()
+old_eval = algo._evaluate_invalid_fitness
+
 print("USING nGPUS: ", nGpus, " and USING nCPUS: ", nCpus)
-print("Rank: ", global_rank)
-CPU_name = MPI.Get_processor_name()
-print("CPU name", CPU_name)
 
-
-# run_file = './run_model_cori.hoc'
-# run_volts_path = '../run_volts_bbp_full_gpu_tuned/'
-# #paramsCSV = run_volts_path+'params/params_bbp_full_gpu_tuned_10_based.csv'
-# paramsCSV = run_volts_path+'params/params_bbp_full.csv'
-# #orig_params = h5py.File(run_volts_path+'params/params_bbp_full_allen_gpu_tune.hdf5', 'r')['orig_full'][0]
-# orig_params = np.array(np.array(nrnUtils.readParamsCSV(paramsCSV))[:,1], dtype=np.float64)
-# scores_path = '../scores/'
-# objectives_file = h5py.File('./objectives/multi_stim_bbp_full_allen_gpu_tune_18_stims.hdf5', 'r')
-# opt_weight_list = objectives_file['opt_weight_list'][:]
-# opt_stim_name_list = objectives_file['opt_stim_name_list'][:]
-# score_function_ordered_list = objectives_file['ordered_score_function_list'][:]
-# stims_path = run_volts_path+'/stims/allen_data_stims_10000.hdf5'
-# target_volts_path = './target_volts/allen_data_target_volts_10000.hdf5'
-# target_volts_hdf5 = h5py.File(target_volts_path, 'r')
-# ap_tune_stim_name = '18'
-# ap_tune_weight = 0
-# #params_opt_ind = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-# params_opt_ind = np.arange(24)
-# model_dir = '..'
-# data_dir = model_dir+'/Data/'
-# run_dir = '../bin'
-# vs_fn = '/tmp/Data/VHotP'
-# nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
-# nCpus =  multiprocessing.cpu_count()
-# allen_stim_file = h5py.File('../run_volts_bbp_full_gpu_tuned/stims/allen_data_stims_10000.hdf5', 'r')
-# old_eval = algo._evaluate_invalid_fitness
-
-# custom_score_functions = [
-#                     'chi_square_normal',\
-#                     'traj_score_1',\
-#                     'traj_score_2',\
-#                     'traj_score_3',\
-#                     'isi',\
-#                     'rev_dot_product',\
-#                     'KL_divergence']
+custom_score_functions = [
+                    'chi_square_normal',\
+                    'traj_score_1',\
+                    'traj_score_2',\
+                    'traj_score_3',\
+                    'isi',\
+                    'rev_dot_product',\
+                    'KL_divergence']
 
 # Number of timesteps for the output volt.
 ntimestep = 10000
 
-stim_names = list([e.decode('ascii') for e in opt_stim_name_list])
-stims = []
-for stim_name in stim_names:
-    stims.append(stim_file[stim_name][:])
-    
 if not os.path.isdir("/tmp/Data"):
     os.mkdir("/tmp/Data")
+
 
 def nrnMread(fileName):
     f = open(fileName, "rb")
@@ -102,7 +75,6 @@ def nrnMreadH5(fileName):
     f = h5py.File(fileName,'r')
     dat = f['Data'][:][0]
     return np.array(dat)
-
 
 
 def get_first_zero(stim):
@@ -117,7 +89,8 @@ def check_ap_at_zero(stim_ind, volts):
     Kyung function to check if a volt should be penalized for having an AP before there 
     should be one. Modified to take in "volts" as a list of individuals instead of "volt"
     """
-    stim = stims[stim_ind]
+    stim_name = list([e.decode('ascii') for e in opt_stim_name_list])[int(stim_ind)]
+    stim = stim_file[stim_name][:]
     first_zero_ind = get_first_zero(stim)
     nindv =volts.shape[0]
     checks = np.zeros(nindv)
@@ -129,9 +102,23 @@ def check_ap_at_zero(stim_ind, volts):
                 APs = [True if v > 0 else False for v in volt[first_ind_to_check:]]
                 if True in APs:
                     #return 400 # threshold parameter that I am still tuning
-                    #print("indv:",i, "stim ind: ", stim_ind)
-                    checks[i] = 0
+                    print("indv:",i, "stim ind: ", stim_ind)
+                    checks[i] = 250
     return checks    
+
+def stim_swap(idx, i):
+    """
+    Stim swap takes 'idx' which is the stim index % 8 and 'i' which is the actual stim idx
+    and then deletes the one at 'idx' and replaces it with the stim at i so that 
+    neuroGPU reads stims like 13 as stim_raw5 (13 % 8)
+    """
+    old_stim = '../Data/Stim_raw' + str(idx) + '.csv'
+    old_time = '../Data/times' + str(idx) + '.csv'
+    if os.path.exists(old_stim):
+        os.remove(old_stim)
+        os.remove(old_time)
+    os.rename(r'../Data/Stim_raw' + str(i) + '.csv', r'../Data/Stim_raw' + str(idx) + '.csv')
+    os.rename(r'../Data/times' + str(i) + '.csv', r'../Data/times' + str(idx) + '.csv')
 
 class hoc_evaluator(bpop.evaluators.Evaluator):
     def __init__(self):
@@ -139,32 +126,65 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         data = nrnUtils.readParamsCSV(paramsCSV)
         super(hoc_evaluator, self).__init__()
         self.orig_params = orig_params
-        self.opt_ind = params_opt_ind
+        self.opt_ind = np.array(params_opt_ind)
         data = np.array([data[i] for i in self.opt_ind])
         self.orig_params = orig_params
         self.pmin = np.array((data[:,2]), dtype=np.float64)
         self.pmax = np.array((data[:,3]), dtype=np.float64)
         # make this a function
-        for param_idx in range(len(orig_params)):
-            if self.orig_params[param_idx] == self.pmin[param_idx] and self.pmin[param_idx] == self.pmax[param_idx]:
-                self.pmin[param_idx] = self.pmin[param_idx] * .9999
-                self.pmax[param_idx] = self.pmax[param_idx] * 1.0001
-#         self.pmax = np.delete(self.pmax, 1, 0) # need to delete second parameter because it is negative and BPOP cannot take negative params, we will add it back to every set of params in eval_list before allParams
-#         self.pmin = np.delete(self.pmin, 1, 0)
-        #self.ptarget = self.orig_params
-        params = [] 
-        for i in range(len(self.pmin)):
-            params.append(bpop.parameters.Parameter(data[i][0], bounds=(self.pmin[i],self.pmax[i])))
-        self.params = params
+        self.fixed = {}
+        self.params = []
+        for param_idx in range(len(self.orig_params)):
+            if param_idx in self.opt_ind:
+                idx = np.where(self.opt_ind == param_idx)
+                if np.isclose(self.orig_params[param_idx],self.pmin[idx],rtol=.001) and np.isclose(self.pmin[idx],self.pmax[idx],rtol=.001):
+                    print(self.orig_params[param_idx], " opt but fixed idx : ", self.pmin[idx])
+                    self.fixed[param_idx] = self.orig_params[param_idx]
+                else:
+                    print("OPTIM @", param_idx,self.orig_params[param_idx], (self.pmin[idx],self.pmax[idx]))
+                    self.params.append(bpop.parameters.Parameter(self.orig_params[param_idx], bounds=(self.pmin[idx][0],self.pmax[idx][0]))) # this indexing is annoying... pmax and pmin weird shape because they are numpy arrays, see idx assignment on line 125... how can this be more clear
+            else:
+                print(self.orig_params[param_idx], " idx : ", param_idx)
+                self.fixed[param_idx] = self.orig_params[param_idx]
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
-        self.target_volts_list = np.array([target_volts_hdf5[s][:] for s in self.opt_stim_list])
         self.objectives = [bpop.objectives.Objective('Weighted score functions')]
-        # AP tune stuff not currently being used
-        self.ap_tune_stim_name = ap_tune_stim_name
-        self.ap_tune_weight = ap_tune_weight
-        self.ap_tune_target = target_volts_hdf5[self.ap_tune_stim_name][:]
+        if global_rank == 0:
+            self.target_volts_list = self.make_target_volts(orig_params, self.opt_stim_list)
+        else:
+            self.target_volts_list = None
+        self.target_volts_list = comm.bcast(self.target_volts_list, root=0)
         self.dts = []
+        
+    def make_target_volts(self, orig_params, opt_stim_list):
+        self.dts = []
+        self.convert_allen_data()
+        print(orig_params)
+        params = orig_params.reshape(-1,1).T
+        #params = np.repeat(params, 5 ,axis=0)
+        data_volts_list = np.array([])
+        allparams = allparams_from_mapping(list(params)) 
+        for stimset in range(0,len(opt_stim_list), nGpus):
+            p_objects = []
+            for gpuId in range(nGpus): 
+                if  (gpuId + stimset) >= len(opt_stim_list):
+                    break
+                if stimset != 0:
+                    print("Swapping ", gpuId, gpuId + stimset)
+                    stim_swap(gpuId, gpuId + stimset)
+                p_objects.append(self.run_model(gpuId, []))
+            for gpuId in range(nGpus):
+                if  (gpuId + stimset) >= len(opt_stim_list):
+                    break 
+                p_objects[gpuId].wait()
+                if len(data_volts_list) < 1:
+                    data_volts_list  = self.getVolts(gpuId)
+                else:
+                    data_volts_list = np.append(data_volts_list, self.getVolts(gpuId),axis=0)
+                print(data_volts_list.shape)
+        np.savetxt("targetVolts.csv", data_volts_list, delimiter=",")
+        return data_volts_list
+
         
 
     def my_evaluate_invalid_fitness(toolbox, population):
@@ -193,7 +213,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             sf_len = len(score_function_ordered_list)
             curr_weights = self.weights[sf_len*i: sf_len*i + sf_len] #get range of sfs for this stim
             #top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
-            top_inds = np.where(curr_weights > 40)[0] # weights bigger than 50 #TODO: maybe this can help glitch
+            top_inds = np.where(curr_weights > 0)[0] # weights bigger than 50 #TODO: maybe this can help glitch
             pairs = list(zip(np.repeat(i,len(top_inds)), [ind for ind in top_inds])) #zips up indices with corresponding stim # to make sure it is refrencing a relevant stim
             all_pairs.append(pairs)
         flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
@@ -216,35 +236,34 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             #print("removing ", volts_fn, " from ", global_rank)
             os.remove(volts_fn)
         if nGpus != 2:
+            print(str(global_rank),str(stim_ind))
             p_object = subprocess.Popen(['../bin/neuroGPU'+str(global_rank),str(stim_ind), str(global_rank)])
         else:
             p_object = subprocess.Popen(['../bigbin/neuroGPU'+str(global_rank),str(stim_ind), str(global_rank)])
         return p_object
     
     # convert the allen data and save as csv
-    def convert_allen_data(self, stim_range):
+    def convert_allen_data(self):
         """
         Function that sets up our new allen data every run. It reads and writes every stimi
         and timesi and removes previous ones. Using csv writer to write timesi so it reads well.
         """
-        for stim_num in range(stim_range):
-            old_stim = "../Data/Stim_raw{}.csv".format(stim_num)
-            old_time = "../Data/times_{}.csv".format(stim_num)
+        for i in range(len(opt_stim_name_list)):
+            old_stim = "../Data/Stim_raw{}.csv".format(i)
+            old_time = "../Data/times{}.csv".format(i)
             if os.path.exists(old_stim) :
                 os.remove(old_stim)
-            if os.path.exists(old_time) :
                 os.remove(old_time)
-            stim = opt_stim_name_list[stim_num].decode("utf-8")
-            dt = stim_file[stim+'_dt'][:][0]
+        for i in range(len(opt_stim_name_list)):
+            stim = opt_stim_name_list[i].decode("utf-8")
+            dt = .02 # refactor this later to be read or set to .02 if not configured
             self.dts.append(dt)
-            f = open ("../Data/times{}.csv".format(stim_num), 'w')
-            current_times = [dt for i in range(ntimestep)]
-            np.savetxt("../Data/Stim_raw{}.csv".format(stim_num), 
-                       stim_file[stim][:],
-                       delimiter=",")
+            f = open ("../Data/times{}.csv".format(i), 'w')
             wtr = csv.writer(f, delimiter=',', lineterminator='\n')
+            current_times = [dt for i in range(ntimestep)]
             wtr.writerow(current_times)
-            f.close()
+            writer = csv.writer(open("../Data/Stim_raw{}.csv".format(i), 'w'))
+            writer.writerow(stim_file[stim][:])
     
     def normalize_scores(self,curr_scores, transformation,i):
         '''changed from hoc eval so that it returns normalized score for list of indvs, not just one
@@ -374,19 +393,24 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         
         if global_rank == 0:
             ##### TODO: write a function to check for missing data?
-            self.convert_allen_data(total_stims) # reintialize allen stuff for clean run
             self.dts = []
+            self.convert_allen_data() # reintialize allen stuff for clean run
             # insert negative param value back in to each set
             #full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)
-            full_params = param_values
+            for reinsert_idx in self.fixed.keys():
+                param_values = np.insert(np.array(param_values), reinsert_idx, self.fixed[reinsert_idx], axis = 1)
+                full_params = param_values
         else:
             full_params = None
+            self.dts = None
         ## with MPI we can have different populations so here we sync them up ##
         full_params = comm.bcast(full_params, root=0)
+        self.dts = comm.bcast(self.dts, root=0)
+
         allparams = allparams_from_mapping(list(full_params))
         
-        self.dts = [stim_file[stim.decode("utf-8") + '_dt'][:][0] for stim in opt_stim_name_list]  
-        self.nindv = len(param_values)
+    
+        self.nindv = len(full_params)
         start_time_sim = time.time()
         p_objects = []
         score = []

@@ -1,6 +1,6 @@
 #!/bin/bash
 #SBATCH --qos=regular
-#SBATCH --time=02:30:00
+#SBATCH --time=01:30:00
 #SBATCH --nodes=1
 #SBATCH --constraint=knl
 #SBATCH --mail-user=zladd@berkeley.edu
