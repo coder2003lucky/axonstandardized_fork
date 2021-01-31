@@ -55,6 +55,9 @@ elif num_nodes > 1 and num_volts == 0:
     print(len(curr_stim_name_list))
 else:
     curr_stim_name_list = stims_name_list[(i-1)*num_stims_to_run:(i)*num_stims_to_run]
+    
+curr_stim_name_list.reverse()
+curr_stim_name_list = curr_stim_name_list[:1]
 
 print("params names list",params_name_list)
 print("stim name list", curr_stim_name_list)
