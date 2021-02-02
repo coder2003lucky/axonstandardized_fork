@@ -11,10 +11,10 @@
 
 
 
-
-CURRENTDATE=`date +%m_%d_%Y`
-startTIME=`date +%T`
-source ../../../../input.txt
+echo `pwd`
+source ./input.txt
+wrkDir=runs/${model}_${peeling}_${runDate}${custom}/genetic_alg/GPU_genetic_alg
+cd $wrkDir
 
 
 echo running GA

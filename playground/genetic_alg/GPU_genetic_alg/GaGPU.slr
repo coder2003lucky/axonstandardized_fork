@@ -12,9 +12,10 @@
 
 
 
-CURRENTDATE=`date +%m_%d_%Y`
-startTIME=`date +%T`
-source ../../../../input.txt
+echo `pwd`
+source ./input.txt
+wrkDir=runs/${model}_${peeling}_${runDate}${custom}/genetic_alg/GPU_genetic_alg
+cd $wrkDir
 
 
 echo running GA
@@ -26,10 +27,15 @@ export OMP_NUM_THREADS=1
 rm Data/* 
 cp Data/${model}Data/* Data/
 
+export OMP_NUM_THREADS=1
+rm Data/* 
+cp Data/${model}Data/* Data/
+
 cd python/
 
 module purge all
 source load_env
+
 
 srun python optimize_parameters_genetic_alg.py --offspring_size $OFFSPRING_SIZE --max_ngen $MAX_NGEN 
 
