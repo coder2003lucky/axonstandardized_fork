@@ -38,7 +38,7 @@ sleep 200
 
 if [ ${makeOpt} == ${true} ]
   then
-    srun --mpi=pmi2 -n 64 python analyze_p_bbp_full/analyze_p_parallel.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate}
+    srun --mpi=pmi2 -n 64 python analyze_p_bbp_full/analyze_p_parallel.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}
   fi
 
 
