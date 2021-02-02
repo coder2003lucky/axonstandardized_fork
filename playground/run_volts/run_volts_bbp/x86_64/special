@@ -10,4 +10,4 @@ if test "" = "yes" ; then
 else
 	NRNIV="${NRNBIN}nrniv"
 fi
-"${NRNIV}" -dll "/global/cscratch1/sd/zladd/genetic_alg/genetic_alg/bbp_sodium_with_subzones_data/run_volts_bbp/x86_64/.libs/libnrnmech.so" "$@"
+"${NRNIV}" -dll "/global/cscratch1/sd/zladd/axonstandardized/playground/runs/bbp_passive_01_30_2021base2/volts_sand/38511539-1/run_volts_bbp/x86_64/.libs/libnrnmech.so" "$@"

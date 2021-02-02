@@ -17,18 +17,23 @@ import h5py
 import time
 
 
-parser = argparse.ArgumentParser(description='Analyze P Parllel Multistim')
-parser.add_argument('--model', type=str, required=True, help='specifies model for AnalyzeP Multi Stim')
-parser.add_argument('--peeling', type=str, required=True, help='specifies peeling for AnalyzeP Multistim')
+parser = argparse.ArgumentParser(description='Analyze P Parllel')
+parser.add_argument('--model', type=str, required=True, help='specifies model for AnalyzeP')
+parser.add_argument('--peeling', type=str, required=True, help='specifies peeling for AnalyzeP')
 parser.add_argument('--CURRENTDATE', type=str, required=True, help='specifies date')
+parser.add_argument('--custom', type=str, required=False, help='specifies custom postfix')
+
 args = parser.parse_args()
 model = args.model
 peeling = args.peeling
 currentdate = args.CURRENTDATE
-
+custom = args.custom
 
 # Data Files
-wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
+if custom is not None:
+    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + custom
+else:
+    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
 opt_path = wrkDir + '/genetic_alg/optimization_results/opt_result_single_stim_' + model + '_' + peeling + '_full.hdf5'
 save_path = wrkDir + '/genetic_alg/objectives'
 if not os.path.isdir(save_path):
