@@ -13,13 +13,19 @@ parser = argparse.ArgumentParser(description='Analyze P Parllel')
 parser.add_argument('--model', type=str, required=True, help='specifies model for AnalyzeP')
 parser.add_argument('--peeling', type=str, required=True, help='specifies peeling for AnalyzeP')
 parser.add_argument('--CURRENTDATE', type=str, required=True, help='specifies date')
+parser.add_argument('--custom', type=str, required=False, help='specifies custom postfix')
+
 args = parser.parse_args()
 model = args.model
 peeling = args.peeling
 currentdate = args.CURRENTDATE
+custom = args.custom
 
 
-wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
+if custom is not None:
+    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + custom
+else:
+    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
 score_path =  wrkDir + '/scores/'
 optimization_results_path = wrkDir + '/genetic_alg/optimization_results/'
 if not os.path.isdir(optimization_results_path):

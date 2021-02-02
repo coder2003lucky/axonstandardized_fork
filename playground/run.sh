@@ -11,7 +11,9 @@ done < "$input"
 
 true=True
 
-
+module unload darshan
+module load mvapich2/2.3.3
+module load hdf5-parallel
 
 if [ ${makeParams} == ${true} ]
   then
@@ -41,6 +43,11 @@ python modifySandboxArray.py $num_volts $num_nodes
 if [ ${makeVolts} == ${true} ]
   then
     sbatch volts_sandbox_setup/sbatch_run.slr
+  fi
+  
+if [ ${makeVoltsGPU} == ${true} ]
+  then
+    sbatch volts_sandbox_setup/voltsGPU.slr
   fi
 #sh passive/volts_sandbox_setup/sbatch_local_volts.sh
 
@@ -90,7 +97,8 @@ shopt -u nullglob
 
 #move slurm into runs
 mv slurm* runs/${model}_${peeling}_${runDate}${custom}/'slurm'
-
+mkdir ${wrkDir}/genetic_alg/optimization_results/
+mkdir ${wrkDir}/genetic_alg/objectives/
 
 if [ ${makeOpt} == ${true} ]
   then
@@ -110,10 +118,9 @@ shopt -u nullglob
 if [ ${makeObj} == ${true} ]
   then
     python analyze_p_bbp_full/analyze_p_multistims.py --model ${model} --peeling ${peeling} \
-    --CURRENTDATE ${runDate}
+    --CURRENTDATE ${runDate} --custom ${custom}
   fi
 
-echo objectives are Done
 shopt -s nullglob
 found=0
 target_files=1
@@ -136,7 +143,7 @@ if [ ${gaGPU} == ${true} ]
     then
         module purge
         module load cgpu
-        sbatch ${wrkDir}/GPU_genetic_alg/GaGPU.slr
+        sbatch ${wrkDir}/GPU_genetic_alg/BigGaGPU.slr
 fi
 
 if [ ${runGA} == ${true} ]
