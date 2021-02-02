@@ -11,9 +11,7 @@ done < "$input"
 
 true=True
 
-module unload darshan
-module load mvapich2/2.3.3
-module load hdf5-parallel
+
 
 if [ ${makeParams} == ${true} ]
   then
