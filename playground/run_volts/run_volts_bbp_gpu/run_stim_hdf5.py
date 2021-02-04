@@ -18,11 +18,11 @@ import time
 peeling=sys.argv[2]
 nGpus = len([devicenum for devicenum in os.environ['CUDA_VISIBLE_DEVICES'] if devicenum != ","])
 run_file = './run_model_cori.hoc'
-params_file_path = '../../../../../params/params_bbp_' + peeling+ '.hdf5'
-stims_file_path = '../../../../../stims/stims_full.hdf5'
+params_file_path = '../../../../params/params_bbp_' + peeling+ '.hdf5'
+stims_file_path = '../../../../stims/stims_full.hdf5'
 
 # modification to run stims 10 Nodes X 30 stims = 300stims
-with open('../../../../../input.txt', 'r') as f:
+with open('../../../../input.txt', 'r') as f:
     for line in f:
         if "=" in line:
             name, value = line.split("=")
@@ -33,7 +33,7 @@ with open('../../../../../input.txt', 'r') as f:
             if name == "stim_file":
                 stim_file = value.replace('\n','')
                 
-stims_file_path = '../../../../../stims/' + stim_file + '.hdf5'
+stims_file_path = '../../../../stims/' + stim_file + '.hdf5'
 # Number of timesteps for the output volt.
 ntimestep = 10000
 
@@ -43,7 +43,7 @@ if not os.path.isdir("/tmp/Data"):
     os.mkdir("/tmp/Data")
 
 # Output destination.
-volts_path = '../../../volts/'
+volts_path = '../../volts/'
 
 # Required variables. Some should be updated at rank 0
 prefix_list = ['orig', 'pin', 'pdx']
@@ -161,55 +161,54 @@ def getVolts(idx):
 convert_allen_data()
 
 for first_stim_ind in range(0,len(curr_stim_name_list), nGpus):
-
+    
     curr_stim_names = [curr_stim_name_list[stim_ind] \
-                       for stim_ind in range(first_stim_ind, first_stim_ind + nGpus)]
-    volts_hdf5s = [h5py.File(volts_path+stim_name+'_volts.hdf5', 'w') for stim_name in curr_stim_names]
+                       for stim_ind in range(first_stim_ind, first_stim_ind + nGpus) if stim_ind < len(curr_stim_name_list)]
+    
+    volts_hdf5s = [h5py.File(volts_path+stim_name+'_volts.hdf5', 'w') for stim_name in curr_stim_names\
+                   if not os.path.exists(volts_path+stim_name+'_volts.hdf5')]
     start_time_sim = time.time()
-    
-    if first_stim_ind > 0:
-        for i in range(nGpus):
-            stim_swap(i % nGpus, first_stim_ind + i)
-    
-    for params_name in params_name_list:
-        if 'orig' in params_name:
-            params_data = params_hdf5[params_name]
-            print("updating all params...")
-            allparams = allparams_from_mapping(list(params_data)) 
-            print("updated")
-            processObjs = []
-            for i in range(nGpus):
-                processObjs.append(run_model_gpu(i))
-            for i in range(nGpus):
-                processObjs[i].wait()
-                currOrigVolts = getVolts(i)
-                name_to_write = 'orig' + '_' + curr_stim_names[i]
-                print("writing :" , name_to_write, "VOLTAGE SHAPE : ", currOrigVolts.shape)
-                volts_hdf5s[i].create_dataset(name_to_write, data=currOrigVolts)
-                
-        elif 'pin' in params_name:
-            params_data = params_hdf5[params_name]
-            params_data = np.concatenate((params_data,params_data))
 
-            print("updating all params...")
-            allparams = allparams_from_mapping(list(params_data)) 
-            print("updated")
-            processObjs = []
-            for i in range(nGpus):
-                processObjs.append(run_model_gpu(i))
-            for i in range(nGpus):
-                processObjs[i].wait()
-                currPinVolts = getVolts(i)
-                name_to_write = 'pin' + '_' + curr_stim_names[i]
-                print("writing :" , name_to_write, "VOLTAGE SHAPE : ", currPinVolts.shape)
-                volts_hdf5s[i].create_dataset(name_to_write, data=currPinVolts)
-        else:
-            continue
-        # Split into however many cores are available.
-    
-    end_time_stim = time.time()
-    print("STIM TOOK :", end_time_stim - start_time_sim)
-    print(1/0)
-    for i in range(nGpus):
-        volts_hdf5s[i].close()
+    if first_stim_ind > 0:
+        for i in range(len(volts_hdf5s)):
+            stim_swap(i % nGpus, first_stim_ind + i)
+    if len(volts_hdf5s) > 0:
+        for params_name in params_name_list:
+            if 'orig' in params_name:
+                params_data = params_hdf5[params_name]
+                print("updating all params...")
+                allparams = allparams_from_mapping(list(params_data)) 
+                print("updated")
+                processObjs = []
+                for i in range(len(volts_hdf5s)):
+                    processObjs.append(run_model_gpu(i))
+                for i in range(len(volts_hdf5s)):
+                    processObjs[i].wait()
+                    currOrigVolts = getVolts(i)
+                    name_to_write = 'orig' + '_' + curr_stim_names[i]
+                    print("writing :" , name_to_write, "VOLTAGE SHAPE : ", currOrigVolts.shape)
+                    volts_hdf5s[i].create_dataset(name_to_write, data=currOrigVolts)
+
+            elif 'pin' in params_name:
+                params_data = params_hdf5[params_name]
+                print("updating all params...")
+                allparams = allparams_from_mapping(list(params_data)) 
+                print("updated")
+                processObjs = []
+                for i in range(len(volts_hdf5s)):
+                    processObjs.append(run_model_gpu(i))
+                for i in range(len(volts_hdf5s)):
+                    processObjs[i].wait()
+                    currPinVolts = getVolts(i)
+                    name_to_write = 'pin' + '_' + curr_stim_names[i]
+                    print("writing :" , name_to_write, "VOLTAGE SHAPE : ", currPinVolts.shape)
+                    volts_hdf5s[i].create_dataset(name_to_write, data=currPinVolts)
+            else:
+                continue
+            # Split into however many cores are available.
+
+        end_time_stim = time.time()
+        print("STIM TOOK :", end_time_stim - start_time_sim)
+        for i in range(len(volts_hdf5s)):
+            volts_hdf5s[i].close()
    

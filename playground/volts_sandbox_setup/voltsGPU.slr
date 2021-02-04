@@ -51,7 +51,7 @@ ls -l *
 
 export OMP_NUM_THREADS=1
 source load_env
-srun --mpi=pmi2 python run_stim_hdf5.py $arrIdx ${peeling}
+srun python run_stim_hdf5.py $arrIdx ${peeling}
 
 # mv slurm log to final destination - it is alwasy a job-array
 echo slurm left at:
