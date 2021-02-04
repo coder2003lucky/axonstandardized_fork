@@ -184,7 +184,7 @@ for first_stim_ind in range(0,len(curr_stim_name_list), nGpus):
                     processObjs.append(run_model_gpu(i))
                 for i in range(len(volts_hdf5s)):
                     processObjs[i].wait()
-                    currOrigVolts = getVolts(i)
+                    currOrigVolts = getVolts(i)[0]
                     name_to_write = 'orig' + '_' + curr_stim_names[i]
                     print("writing :" , name_to_write, "VOLTAGE SHAPE : ", currOrigVolts.shape)
                     volts_hdf5s[i].create_dataset(name_to_write, data=currOrigVolts)
