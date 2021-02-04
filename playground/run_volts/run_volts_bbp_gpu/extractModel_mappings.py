@@ -8,7 +8,7 @@ import time
 import importlib
 import os
 
-inputFile = open("../../../../../input.txt","r") 
+inputFile = open("../../../../input.txt","r") 
 for line in inputFile.readlines():
     if "bbp" in line:
         data_dir = '../Data/allenData'

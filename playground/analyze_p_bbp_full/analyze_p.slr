@@ -32,7 +32,7 @@ echo 'my wrkDir='${wrkDir}
 
 dirToRun="genetic_alg"
 cp -rp ${dirToRun} ${wrkDir}
-sleep 200
+#sleep 200
 
 
 

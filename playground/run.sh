@@ -45,7 +45,9 @@ if [ ${makeVolts} == ${true} ]
   
 if [ ${makeVoltsGPU} == ${true} ]
   then
+    module load cgpu
     sbatch volts_sandbox_setup/voltsGPU.slr
+    module unload cgpu
   fi
 #sh passive/volts_sandbox_setup/sbatch_local_volts.sh
 
@@ -95,6 +97,7 @@ shopt -u nullglob
 
 #move slurm into runs
 mv slurm* runs/${model}_${peeling}_${runDate}${custom}/'slurm'
+mkdir ${wrkDir}/genetic_alg
 mkdir ${wrkDir}/genetic_alg/optimization_results/
 mkdir ${wrkDir}/genetic_alg/objectives/
 
@@ -103,6 +106,7 @@ if [ ${makeOpt} == ${true} ]
     sbatch analyze_p_bbp_full/analyze_p.slr
   fi
 
+echo waiting on optimzation...
 shopt -s nullglob
 found=0
 target_files=1
@@ -119,16 +123,16 @@ if [ ${makeObj} == ${true} ]
     --CURRENTDATE ${runDate} --custom ${custom}
   fi
 
-shopt -s nullglob
-found=0
-target_files=1
-wrkDir=runs/${model}_${peeling}_${runDate}${custom}
-while [ $found -ne $target_files ]
-do
-        found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
-done
-echo finished creating objectives file
-shopt -u nullglob
+# shopt -s nullglob
+# found=0
+# target_files=1
+# wrkDir=runs/${model}_${peeling}_${runDate}${custom}
+# while [ $found -ne $target_files ]
+# do
+#         found=`ls -lR ${wrkDir}/genetic_alg/objectives/*.hdf5 | wc -l`
+# done
+# echo finished creating objectives file
+# shopt -u nullglob
 
 wrkDir=runs/${model}_${peeling}_${runDate}${custom}/genetic_alg
 cp -r stims $wrkDir/

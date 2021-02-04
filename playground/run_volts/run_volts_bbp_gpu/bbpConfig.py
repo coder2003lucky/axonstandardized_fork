@@ -4,7 +4,7 @@ import os
 import numpy as np
 import h5py
 import utils
-input_file = open('../../../../../input.txt', "r")
+input_file = open('../../../../input.txt', "r")
 inputs = {}
 input_lines = input_file.readlines()
 for line in input_lines:

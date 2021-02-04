@@ -2,7 +2,7 @@ Param name,Base value,Lower bound,Upper bound,Unit,Unit type,Const,Base variatio
 gIhbar_Ih_basal,8e-05,8e-05,8e-05,,Uniform,Open,2,,1,0,Constant
 gNaTs2_tbar_NaTs2_t_apical,0.0,0.0,0.0,,Uniform,Open,3,,2,0,Sodium
 gSKv3_1bar_SKv3_1_apical,0.004226,4.226e-05,0.4226,,Uniform,Open,2,,3,0,Potassium
-gIhbar_Ih_apical,0.00055697194,0.00027848597,0.0011139439,,Uniform,Open,3,,4,0,Passive
+gIhbar_Ih_apical,8.032504e-05,4.016252e-05,0.00016065007,,Uniform,Open,3,,4,0,Passive
 gImbar_Im_apical,0.000143,1.43e-06,0.0143,,Uniform,Open,3,,5,0,Potassium
 gNaTa_tbar_NaTa_t_axonal,0.0,0.0,0.0,,Uniform,Open,3,,6,0,Sodium
 gK_Tstbar_K_Tst_axonal,0.089259,0.00089259,8.9259,,Uniform,Open,3,,7,0,Potassium
@@ -19,7 +19,7 @@ gSKv3_1bar_SKv3_1_somatic,0.303472,0.00303472,30.3472,,Uniform,Open,3,,17,0,Pota
 gSK_E2bar_SK_E2_somatic,0.0,0.0,0.0,,Uniform,Open,3,,18,0,Calcium
 gCa_HVAbar_Ca_HVA_somatic,0.0,0.0,0.0,,Uniform,Open,3,,19,0,Calcium
 gNaTs2_tbar_NaTs2_t_somatic,0.0,0.0,0.0,,Uniform,Open,3,,20,0,Sodium
-gIhbar_Ih_somatic,0.0013741476,0.0006870738,0.0027482952,,Uniform,Open,3,,21,0,Passive
+gIhbar_Ih_somatic,7.793897e-05,3.8969483e-05,0.00015587793,,Uniform,Open,3,,21,0,Passive
 decay_CaDynamics_E2_somatic,210.48529,210.48529,210.48529,,Uniform,Open,3,,22,0,Constant
 gCa_LVAstbar_Ca_LVAst_somatic,0.0,0.0,0.0,,Uniform,Open,3,,23,0,Calcium
-g_pas,4.561585e-05,2.2807924e-05,9.12317e-05,,Uniform,Open,3,,24,0,Passive
+g_pas,3.0015512e-05,1.5007756e-05,6.0031023e-05,,Uniform,Open,3,,24,0,Passive

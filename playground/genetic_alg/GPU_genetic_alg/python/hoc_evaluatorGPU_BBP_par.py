@@ -142,14 +142,17 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         for param_idx in range(len(self.orig_params)):
             if param_idx in self.opt_ind:
                 idx = np.where(self.opt_ind == param_idx)
-                if np.isclose(self.orig_params[param_idx],self.pmin[idx],rtol=.001) and np.isclose(self.pmin[idx],self.pmax[idx],rtol=.001):
-                    print(self.orig_params[param_idx], " opt but fixed idx : ", self.pmin[idx])
-                    self.fixed[param_idx] = self.orig_params[param_idx]
+                if np.isclose(self.orig_params[param_idx],self.pmin[idx],rtol=.000001) and np.isclose(self.pmin[idx],self.pmax[idx],rtol=.000001):
+                    #self.fixed[param_idx] = self.orig_params[param_idx]
+                    self.params.append(bpop.parameters.Parameter(self.orig_params[param_idx], bounds=(self.pmin[idx][0]*.999999,self.pmax[idx][0]*1.00001)))
+                    print(" opt but fixed idx : ", (self.orig_params[param_idx], self.pmin[idx][0]*.999999,self.pmax[idx][0]*1.00001))
+
                 else:
-                    print(idx,self.orig_params[param_idx], (self.pmin[idx],self.pmax[idx]))
+                    print("USING: ", self.opt_ind[idx[0]],self.orig_params[param_idx], (self.pmin[idx],self.pmax[idx]))
+                    counter +=1
                     self.params.append(bpop.parameters.Parameter(self.orig_params[param_idx], bounds=(self.pmin[idx][0],self.pmax[idx][0]))) # this indexing is annoying... pmax and pmin weird shape because they are numpy arrays, see idx assignment on line 125... how can this be more clear
             else:
-                print(self.orig_params[param_idx], " idx : ", param_idx)
+                print("FIXED: ", self.orig_params[param_idx], " idx : ", param_idx)
                 self.fixed[param_idx] = self.orig_params[param_idx]
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
