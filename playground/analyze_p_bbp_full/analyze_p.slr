@@ -2,7 +2,7 @@
 
 #SBATCH -q regular
 #SBATCH -N 1
-#SBATCH -t 00:20:00
+#SBATCH -t 01:00:00
 #SBATCH -C haswell
 #SBATCH -L SCRATCH
 #SBATCH --mail-user=zladd@berkeley.edu

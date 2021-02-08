@@ -8,6 +8,7 @@ from extractModel_mappings import   allparams_from_mapping
 from bbpConfig import *
 import subprocess
 import time
+import struct
  
 
 ##########################
@@ -53,7 +54,6 @@ params_name_list = list(params_hdf5.keys())
 stims_name_list = sorted(list(stims_hdf5.keys()))
 
 curr_stim_name_list = stims_name_list
-
 print("params names list",params_name_list)
 print("stim name list", len(curr_stim_name_list))
 
@@ -77,6 +77,13 @@ def nrnMreadH5(fileName):
     f = h5py.File(fileName,'r')
     dat = f['Data'][:][0]
     return np.array(dat)
+
+def nrnMread(fileName):
+    f = open(fileName, "rb")
+    nparam = struct.unpack('i', f.read(4))[0]
+    typeFlg = struct.unpack('i', f.read(4))[0]
+    return np.fromfile(f,np.double)
+
 
 def run_model(run_file, param_set, stim_name, ntimestep):
     h.load_file(run_file)
@@ -104,7 +111,7 @@ def run_model_gpu(stim_ind):
     ---------------------------------------------------------
     p_object: process object that stops when neuroGPU done
     """
-    volts_fn = vs_fn + str(stim_ind) + '.h5'
+    volts_fn = vs_fn + str(stim_ind) + '.dat'
     if os.path.exists(volts_fn):
         os.remove(volts_fn)
     p_object = subprocess.Popen(['./bin/neuroGPU',str(stim_ind)])
@@ -148,10 +155,10 @@ def stim_swap(idx, i):
 
 def getVolts(idx):
     '''Helper function that gets volts from data and shapes them for a given stim index'''
-    fn = vs_fn + str(idx) +  '.h5'    #'.h5' 
-    curr_volts =  nrnMreadH5(fn)
+    fn = vs_fn + str(idx) +  '.dat'    #'.h5' 
+    #curr_volts =  nrnMreadH5(fn)
     #fn = vs_fn + str(idx) +  '.dat'    #'.h5'
-    #curr_volts =  nrnMread(fn)
+    curr_volts =  nrnMread(fn)
     Nt = int(len(curr_volts)/ntimestep)
     shaped_volts = np.reshape(curr_volts, [Nt,ntimestep])
     return shaped_volts
@@ -164,9 +171,19 @@ for first_stim_ind in range(0,len(curr_stim_name_list), nGpus):
     
     curr_stim_names = [curr_stim_name_list[stim_ind] \
                        for stim_ind in range(first_stim_ind, first_stim_ind + nGpus) if stim_ind < len(curr_stim_name_list)]
-    
-    volts_hdf5s = [h5py.File(volts_path+stim_name+'_volts.hdf5', 'w') for stim_name in curr_stim_names\
-                   if not os.path.exists(volts_path+stim_name+'_volts.hdf5')]
+    volts_hdf5s = []
+    for stim_name in curr_stim_names: 
+        if not os.path.exists(volts_path+stim_name+'_volts.hdf5'):
+            volts_hdf5s.append(h5py.File(volts_path+stim_name+'_volts.hdf5', 'w'))
+        else:
+            vFile = h5py.File(volts_path+stim_name+'_volts.hdf5', 'r')
+            if len(vFile.keys()) < 2:
+                print("removing EMPTY VOLTS")
+                os.remove(volts_path+stim_name+'_volts.hdf5')
+                volts_hdf5s.append(h5py.File(volts_path+stim_name+'_volts.hdf5', 'w'))
+            else:
+                print("not empy volts")
+               
     start_time_sim = time.time()
 
     if first_stim_ind > 0:

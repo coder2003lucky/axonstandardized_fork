@@ -252,12 +252,7 @@ ALL_LDFLAGS += $(addprefix -Xlinker ,$(EXTRA_LDFLAGS))
 
 # Common includes and paths for CUDA
 INCLUDES  :=  -I../../common/inc
-
-
-HDF5 := -I/usr/common/software/sles15_cgpu/openmpi/4.0.3/gcc/include -I/usr/common/software/sles15_cgpu/hdf5-parallel/1.10.5/pgi/mvapich2/include  -I/usr/common/software/sles15_cgpu/cuda/10.2.89/include -I/usr/common/software/mvapich2/2.3.3/pgi/19.10/cuda/10.2.89/include
-
-HDF52 := -L/usr/common/software/sles15_cgpu/openmpi/4.0.3/gcc/lib -L/usr/common/software/sles15_cgpu/hdf5-parallel/1.10.5/pgi/mvapich2/lib -lhdf5_hl_cpp -lhdf5_cpp -lhdf5_hl -lhdf5 -L/opt/esslurm/lib64 -lz -ldl -lm  -L/usr/common/software/mvapich2/2.3.3/pgi/19.10/cuda/10.2.89/lib 
-
+LIBRARIES :=
 
 ################################################################################
 
@@ -307,7 +302,7 @@ CudaStuff.o:CudaStuff.cu AllModels.cuh
 AllModels.o:AllModels.cu 
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 Util.o:Util.cu Util.h
-	$(EXEC) $(NVCC) $(INCLUDES) $(HDF5) $(ALL_CCFLAGS) -o $@ -c $<
+	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
 
 MainC.o:MainC.cu Util.h
 	$(EXEC) $(NVCC) $(INCLUDES) $(ALL_CCFLAGS) $(GENCODE_FLAGS) -o $@ -c $<
@@ -317,9 +312,9 @@ kernel.o:kernel.cu
 
 neuroGPU: AllModels.o kernel.o MainC.o  Util.o CudaStuff.o
 #neuroGPU: kernel.o MainC.o  Util.o CudaStuff.o
-	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+  $(HDF52)
+	$(EXEC) $(NVCC) $(ALL_LDFLAGS) $(GENCODE_FLAGS) -o $@ $+ $(LIBRARIES)
 	$(EXEC) mkdir -p ../bin/
-	$(EXEC) cp $@ ../bin/
+	$(EXEC) cp $@ ../bin/neuroGPU
 $(info "printing ccflags")
 $(info ALLCCFLAGS is  $(ALL_CCFLAGS))
 

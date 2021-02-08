@@ -10,6 +10,7 @@ from scipy import stats
 import h5py
 import pickle
 import bluepyopt
+import re
 import os
 
 
@@ -43,8 +44,8 @@ peeling = inputs['peeling']
 user = inputs['user']
 params_opt_ind = [int(p)-1 for p in inputs['params'].split(",")]
 date = inputs['runDate']
+usePrev = inputs['usePrevParams']
 stims_path = '../stims/' + inputs['stim_file'] + '.hdf5'
-peeling = "sodium"
 
 if peeling == "passive":
     next_peeling_step_name = "potassium"
@@ -53,9 +54,17 @@ elif peeling == "potassium":
 elif peeling == "sodium":
     next_peeling_step_name = "calcium"
     
-    
-GA_result_path = './neuron_genetic_alg/best_indv_logs/best_indvs_gen_1.pkl'
+indvLogs = [f for f in os.listdir("./GPU_genetic_alg/python/best_indv_logs/") if os.path.isfile(os.path.join("./GPU_genetic_alg/python/best_indv_logs/", f))]
+indvLogNums = []
+for log in indvLogs:
+    indvLogNums.append(int(re.findall(r'\d+', log)[0]))
+
+lastInd = max(indvLogNums)
+print("USING ", lastInd, " AS LAST IND")
+GA_result_path = './GPU_genetic_alg/python/best_indv_logs/best_indvs_gen_' \
+                    + str(lastInd) + '.pkl'
 params_path = './params/params_bbp_'+peeling+'.hdf5'
+print(GA_result_path)
 base_passive = h5py.File(params_path, 'r')['orig_'+peeling][0]
 base = [base_passive[i] for i in params_opt_ind]
 lbs = [0.01*p for p in base]

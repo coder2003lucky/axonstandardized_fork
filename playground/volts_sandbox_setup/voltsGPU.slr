@@ -31,7 +31,6 @@ then
 fi
 srcDir=`pwd`
 
-sleep 10
 
 coreN=${srcDir}/'runs'/${model}_${peeling}_${runDate}${custom}/'volts_sand'/${SLURM_ARRAY_JOB_ID}
 arrIdx=0
