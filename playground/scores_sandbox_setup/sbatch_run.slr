@@ -6,14 +6,12 @@
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m3513
-#SBATCH --array 1-50
+#SBATCH --array 160-165
 # change array 1-n, where n is the number of stims
 
 
 # read and assn input text ver simply
 source ./input.txt
-
-
 
 echo "start-A "`hostname`" task="${job_sh}
 echo  'cscratch='${CSCRATCH}
@@ -27,9 +25,6 @@ then
 fi
 srcDir=`pwd`
 
-
-sleep 10
-
 coreN=${srcDir}/'runs'/${model}_${peeling}_${runDate}${custom}/'scores_sand'/${SLURM_ARRAY_JOB_ID}
 arrIdx=${SLURM_ARRAY_TASK_ID}
 wrkDir=${coreN}-${arrIdx}
@@ -38,6 +33,8 @@ mkdir -p ${wrkDir}
 
 dirToRun='score_volts_efficent_sandbox'
 cp -rp ${dirToRun} ${wrkDir}/
+cp -rp params ${wrkDir}/${dirToRun}/
+cp input.txt ${wrkDir}/${dirToRun}/
 cd ${wrkDir}/${dirToRun}
 
 echo inventore at start

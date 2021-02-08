@@ -139,6 +139,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         # make this a function
         self.fixed = {}
         self.params = []
+        counter = 0
         for param_idx in range(len(self.orig_params)):
             if param_idx in self.opt_ind:
                 idx = np.where(self.opt_ind == param_idx)
@@ -146,14 +147,19 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                     #self.fixed[param_idx] = self.orig_params[param_idx]
                     self.params.append(bpop.parameters.Parameter(self.orig_params[param_idx], bounds=(self.pmin[idx][0]*.999999,self.pmax[idx][0]*1.00001)))
                     print(" opt but fixed idx : ", (self.orig_params[param_idx], self.pmin[idx][0]*.999999,self.pmax[idx][0]*1.00001))
+                    counter  +=1 
 
                 else:
                     print("USING: ", self.opt_ind[idx[0]],self.orig_params[param_idx], (self.pmin[idx],self.pmax[idx]))
+                    print(param_idx, idx)
+
                     counter +=1
                     self.params.append(bpop.parameters.Parameter(self.orig_params[param_idx], bounds=(self.pmin[idx][0],self.pmax[idx][0]))) # this indexing is annoying... pmax and pmin weird shape because they are numpy arrays, see idx assignment on line 125... how can this be more clear
             else:
                 print("FIXED: ", self.orig_params[param_idx], " idx : ", param_idx)
                 self.fixed[param_idx] = self.orig_params[param_idx]
+        print("NUM FREE PARAMS :", counter )
+
         self.weights = opt_weight_list
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
         self.objectives = [bpop.objectives.Objective('Weighted score functions')]
@@ -238,8 +244,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         ---------------------------------------------------------
         p_object: process object that stops when neuroGPU done
         """
-        #volts_fn = vs_fn + str(stim_ind) + '.dat'
-        volts_fn = vs_fn + str(stim_ind) + '.h5'
+        volts_fn = vs_fn + str(stim_ind) + '.dat'
+        #volts_fn = vs_fn + str(stim_ind) + '.h5'
         if os.path.exists(volts_fn):
             os.remove(volts_fn)
         p_object = subprocess.Popen(['../bin/neuroGPU',str(stim_ind)])
@@ -398,8 +404,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
     
     def getVolts(self,idx):
         '''Helper function that gets volts from data and shapes them for a given stim index'''
-        fn = vs_fn + str(idx) +  '.h5'    #'.h5' 
-        curr_volts =  nrnMreadH5(fn)
+        fn = vs_fn + str(idx) +  '.dat'    #'.h5' 
+        curr_volts =  nrnMread(fn)
         #fn = vs_fn + str(idx) +  '.dat'    #'.h5'
         #curr_volts =  nrnMread(fn)
         Nt = int(len(curr_volts)/ntimestep)

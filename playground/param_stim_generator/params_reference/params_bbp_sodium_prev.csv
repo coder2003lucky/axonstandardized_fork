@@ -1,0 +1,25 @@
+Param name,Base value,Lower bound,Upper bound,Unit,Unit type,Const,Base variation estimation,Description,index in vector,,Peeling Step
+gIhbar_Ih_basal,8e-05,8e-05,8e-05,,Uniform,Open,2,,1,0,Constant
+gNaTs2_tbar_NaTs2_t_apical,0.026145,0.00026145,2.6145,,Uniform,Open,3,,2,0,Sodium
+gSKv3_1bar_SKv3_1_apical,0.0035463427,0.0017731714,0.0070926854,,Uniform,Open,2,,3,0,Potassium
+gIhbar_Ih_apical,7.307545e-05,3.6537724e-05,0.0001461509,,Uniform,Open,3,,4,0,Passive
+gImbar_Im_apical,0.000185949,9.29745e-05,0.000371898,,Uniform,Open,3,,5,0,Potassium
+gNaTa_tbar_NaTa_t_axonal,3.137968,0.03137968,313.7968,,Uniform,Open,3,,6,0,Sodium
+gK_Tstbar_K_Tst_axonal,9.798537,4.8992686,19.597075,,Uniform,Open,3,,7,0,Potassium
+gamma_CaDynamics_E2_axonal,0.00291,0.00291,0.00291,,Uniform,Open,3,,8,0,Constant
+gNap_Et2bar_Nap_Et2_axonal,0.006827,6.827e-05,0.6827,,Uniform,Open,3,,9,0,Sodium
+gSK_E2bar_SK_E2_axonal,0.04747946,0.02373973,0.09495892,,Uniform,Open,3,,10,0,Calcium
+gCa_HVAbar_Ca_HVA_axonal,0.016643463,0.008321731,0.033286925,,Uniform,Open,3,,11,0,Calcium
+gK_Pstbar_K_Pst_axonal,2.35463,1.177315,4.70926,,Uniform,Open,3,,12,0,Potassium
+gSKv3_1bar_SKv3_1_axonal,0.5994472,0.2997236,1.1988944,,Uniform,Open,3,,13,0,Potassium
+decay_CaDynamics_E2_axonal,287.19873,287.19873,287.19873,,Uniform,Open,3,,14,0,Constant
+gCa_LVAstbar_Ca_LVAst_axonal,0.0014424735,0.00072123675,0.002884947,,Uniform,Open,3,,15,0,Calcium
+gamma_CaDynamics_E2_somatic,0.000609,0.000609,0.000609,,Uniform,Open,3,,16,0,Constant
+gSKv3_1bar_SKv3_1_somatic,0.2940182,0.1470091,0.5880364,,Uniform,Open,3,,17,0,Potassium
+gSK_E2bar_SK_E2_somatic,0.00015735465,7.867732e-05,0.0003147093,,Uniform,Open,3,,18,0,Calcium
+gCa_HVAbar_Ca_HVA_somatic,6.284902e-05,3.142451e-05,0.00012569805,,Uniform,Open,3,,19,0,Calcium
+gNaTs2_tbar_NaTs2_t_somatic,0.983955,0.00983955,98.3955,,Uniform,Open,3,,20,0,Sodium
+gIhbar_Ih_somatic,0.00014450993,7.225497e-05,0.00028901987,,Uniform,Open,3,,21,0,Passive
+decay_CaDynamics_E2_somatic,210.48529,210.48529,210.48529,,Uniform,Open,3,,22,0,Constant
+gCa_LVAstbar_Ca_LVAst_somatic,0.003008208,0.001504104,0.006016416,,Uniform,Open,3,,23,0,Calcium
+g_pas,2.9762356e-05,1.4881178e-05,5.952471e-05,,Uniform,Open,3,,24,0,Passive

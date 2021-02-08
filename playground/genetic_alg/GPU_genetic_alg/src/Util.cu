@@ -2,20 +2,9 @@
 //#include "CudaStuff.cuh"
 #define checkCudaErrors(val)           check ( (val), #val, __FILE__, __LINE__ )
 
-#include <iostream>
 
-#include "H5Cpp.h"
 
-#if defined(unix) || defined(__unix__) || defined(__unix)
-#define UNIX_VERSION true
-#else
-#define UNIX_VERSION false
-#endif
 
-using namespace H5;
-using std::endl;
-using std::cout;
-const H5std_string  datasetname( "Data" ); // dataset key for HDF5
 
 MYFTYPE  maxf(MYFTYPE  a, MYFTYPE  b) {
     if (a>b)
@@ -356,7 +345,7 @@ void ReadCSVStim(Stim &stim) {
     //MPI_Init(NULL, NULL);
     //MPI_Comm_rank(MPI_COMM_WORLD, &myrank);
     //printf("my rank in csv reader : %d", myrank);
-    int global_rank = 0;
+    int global_rank = 3;
 
     char FileName[300];
     sprintf(FileName, "%s", Stim_csv_meta);
@@ -380,7 +369,7 @@ void ReadCSVStim(Stim &stim) {
     ReadFloatFromCSV(line, &stim.area, 1);
     int stim_ind;
     cudaGetDevice(&stim_ind);
-    sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind+(global_rank*6));
+    sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind+(global_rank*5));
     //sprintf(FileName, "../Data/Stim_raw%d.csv", stim_ind);
 
     FILE *f2 = fopen(FileName, "r");
@@ -398,7 +387,7 @@ void ReadCSVStim(Stim &stim) {
 
     //sprintf(FileName, "%s%d.csv", Time_steps_FN,stim_ind);
     //sprintf(FileName,"%s%d.dat",FN,MUL32*32);
-    sprintf(FileName, "../Data/times%d.csv", stim_ind+(global_rank*6));
+    sprintf(FileName, "../Data/times%d.csv", stim_ind+(global_rank*5));
     FILE *f3 = fopen(FileName, "r"); // YYY add FILE*
     if (!f3) {
         printf("Failed to read SimData3\n");
@@ -468,34 +457,21 @@ double diffclock(clock_t clock1, clock_t clock2)
 
 void SaveArrayToFile(const char* FN, const int N, const double* Arr) {
     const int prec = 3;
-
-    if (UNIX_VERSION) {
-        printf("SaveArrayToFile UNIX Version\n");
-		const H5std_string  FILE_NAME( FN );
-        H5File file( FILE_NAME, H5F_ACC_TRUNC );
-        int RANK = 2;
-        hsize_t dimsf[2] = {1, N};
-
-        DataSpace dataspace(RANK, dimsf);
-        FloatType datatype(PredType::NATIVE_DOUBLE);
-        datatype.setOrder(H5T_ORDER_LE);
-        DataSet dataset = file.createDataSet(datasetname, datatype, dataspace);
-        dataset.write(Arr, PredType::NATIVE_DOUBLE );
-    } else {
-        printf("SaveArrayToFile w/o HDF5\n");
-        FILE *file = fopen(FN, "wb");
-        if (file) {
-            fwrite(&N, sizeof(int), 1, file);
-            fwrite(&prec, sizeof(int), 1, file);
-            fwrite(Arr, sizeof(double), N, file);
-        }
-        else {
-            printf("ERR SaveArrayToFile %s %d\n", FN, N);
-        }
-        fclose(file);
+    printf("printing %s size is %d\n", FN, N);
+    
+    FILE *file = fopen(FN, "wb");
+    if (file) {
+        fwrite(&N, sizeof(int), 1, file);
+        fwrite(&prec, sizeof(int), 1, file);
+        fwrite(Arr, sizeof(double), N, file);
     }
-
+    else {
+        printf("ERR SaveArrayToFile %s %d\n", FN, N);
+    }
+    fclose(file);
 }
+
+    
 void SaveArrayToFile(const char* FN, const int N, const float* Arr) {
     printf("converting %s to double\n", FN);
     double* arr_dbl = (double*) malloc(N * sizeof(double));

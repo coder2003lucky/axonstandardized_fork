@@ -37,12 +37,14 @@ peeling = sys.argv[3]
 
 # path setting required
 params = "/params/params_" + model + "_" + peeling + ".hdf5"
-params_file_name = '../../../../..' + params
+params_file_name = "./params/params_" + model + "_" + peeling + ".hdf5"
+
+
 volts_path = '../../../volts/'
 output_path = '../../../scores/'
 
 # modification to run stims 10 Nodes X 30 stims = 300stims
-with open('../../../../../input.txt', 'r') as f:
+with open('./input.txt', 'r') as f:
     for line in f:
         if "=" in line:
             name, value = line.split("=")
@@ -50,6 +52,8 @@ with open('../../../../../input.txt', 'r') as f:
                 num_nodes = int(value)
             if name == "num_volts":
                 num_volts = int(value)
+            if name == "stim_file":
+                stim_file = value.replace('\n','')
 
 volts_name_list = sorted(os.listdir(volts_path))
 volts_name_list = [volt_name for volt_name in volts_name_list if "hdf5" in volt_name]
@@ -66,40 +70,6 @@ elif num_nodes > 1 and num_volts == 0:
 else:
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
 print("looking at volts: ",volts_name_list)
-custom_score_functions = [
-                    sf.chi_square_normal,\
-                    #sf.abs_cumsum_diff,\
-                    #sf.comp_rest_potential,\
-                    #sf.comp_width,\
-                    #sf.comp_width_avg,\
-                    #sf.comp_height,\
-                    #sf.comp_height_avg,\
-                    sf.traj_score_1,\
-                    sf.traj_score_2,\
-                    sf.traj_score_3,\
-                    sf.isi,\
-                    sf.rev_dot_product,\
-                    sf.KL_divergence]
-
-efel_score_functions = sorted([
-                    'time_constant',\
-                    'voltage_deflection',\
-                    'voltage_deflection_vb_ssse',\
-                    'ohmic_input_resistance',\
-                    'ohmic_input_resistance_vb_ssse',\
-                    'maximum_voltage',\
-                    'minimum_voltage',\
-                    'steady_state_voltage',\
-                    'steady_state_hyper',\
-                    'voltage_deflection_begin',\
-                    'voltage_after_stim',\
-                    'steady_state_voltage_stimend',\
-                    'voltage_base',\
-                    'decay_time_constant_after_stim',\
-                    'maximum_voltage_from_voltagebase',\
-                    'sag_amplitude',\
-                    'sag_ratio1',\
-                    'sag_ratio2'])
 
 custom_score_functions = [
                     sf.chi_square_normal,\
@@ -116,81 +86,199 @@ custom_score_functions = [
                     sf.rev_dot_product,\
                     sf.KL_divergence]
 
-# efel_score_functions = sorted([
-#                     'peak_indices',\
-#                     'ISI_values',\
-#                     'peak_voltage',\
-#                     'mean_frequency',\
-#                     'peak_time',\
-#                     'time_to_first_spike',\
-#                     'adaptation_index',\
-#                     'adaptation_index2',\
-#                     'spike_width2',\
-#                     'AP_width',\
-#                     'burst_mean_freq',\
-#                     'burst_number',\
-#                     'interburst_voltage',\
-#                     'AP_height',\
-#                     'AP_amplitude',\
-#                     'AHP_depth_abs_slow',\
-#                     'AHP_slow_time',\
-#                     'depolarized_base',\
-#                     'Spikecount',\
-#                     'AHP_depth',\
-#                     'AP_rise_indices',\
-#                     'AP_end_indices',\
-#                     'AP_fall_indices',\
-#                     'AP_duration',\
-#                     'AP_duration_half_width',\
-#                     'AP_rise_time',\
-#                     'AP_fall_time',\
-#                     'AP_rise_rate',\
-#                     'AP_fall_rate',\
-#                     'fast_AHP',\
-#                     'AP_amplitude_change',\
-#                     'AP_duration_change',\
-#                     'AP_rise_rate_change',\
-#                     'AP_fall_rate_change',\
-#                     'fast_AHP_change',\
-#                     'AP_duration_half_width_change',\
-#                     'amp_drop_first_second',\
-#                     'amp_drop_first_last',\
-#                     'amp_drop_second_last',\
-#                     'max_amp_difference',\
-#                     'AP_amplitude_diff',\
-#                     'irregularity_index',\
-#                     'AP1_amp',\
-#                     'APlast_amp',\
-#                     'AP2_amp',\
-#                     'AP1_peak',\
-#                     'AP2_peak',\
-#                     'AP2_AP1_diff',\
-#                     'AP2_AP1_peak_diff',\
-#                     'AP1_width',\
-#                     'AP2_width',\
-#                     'AHP_depth_from_peak',\
-#                     'AHP_time_from_peak',\
-#                     'AHP1_depth_from_peak',\
-#                     'AHP2_depth_from_peak',\
-#                     'time_to_second_spike',\
-#                     'time_to_last_spike',\
-#                     'spike_half_width',\
-#                     'AP_begin_indices',\
-#                     'AHP_depth_abs',\
-#                     'AP_begin_width',\
-#                     'AP_begin_voltage',\
-#                     'AP_begin_time',\
-#                     'AP1_begin_voltage',\
-#                     'AP2_begin_voltage',\
-#                     'AP1_begin_width',\
-#                     'AP2_begin_width',\
-#                     'is_not_stuck',\
-#                     'mean_AP_amplitude',\
-#                     'voltage_after_stim',\
-#                     'AP_amplitude_from_voltagebase',\
-#                     'min_voltage_between_spikes'])
+
+if stim_file == "neg_stims":
+    efel_score_functions = sorted([
+                        'time_constant',\
+                        'voltage_deflection',\
+                        'voltage_deflection_vb_ssse',\
+                        'ohmic_input_resistance',\
+                        'ohmic_input_resistance_vb_ssse',\
+                        'maximum_voltage',\
+                        'minimum_voltage',\
+                        'steady_state_voltage',\
+                        'steady_state_hyper',\
+                        'voltage_deflection_begin',\
+                        'voltage_after_stim',\
+                        'steady_state_voltage_stimend',\
+                        'voltage_base',\
+                        'decay_time_constant_after_stim',\
+                        'maximum_voltage_from_voltagebase',\
+                        'sag_amplitude',\
+                        'sag_ratio1',\
+                        'sag_ratio2'])
+elif stim_file == "both_stims":
+    print("BOTH STIMS SO BOTH SFS")
+    efel_score_functions1 = sorted([
+                        'time_constant',\
+                        'voltage_deflection',\
+                        'voltage_deflection_vb_ssse',\
+                        'ohmic_input_resistance',\
+                        'ohmic_input_resistance_vb_ssse',\
+                        'maximum_voltage',\
+                        'minimum_voltage',\
+                        'steady_state_voltage',\
+                        'steady_state_hyper',\
+                        'voltage_deflection_begin',\
+                        'voltage_after_stim',\
+                        'steady_state_voltage_stimend',\
+                        'voltage_base',\
+                        'decay_time_constant_after_stim',\
+                        'maximum_voltage_from_voltagebase',\
+                        'sag_amplitude',\
+                        'sag_ratio1',\
+                        'sag_ratio2'])
+    efel_score_functions2 = sorted([
+                        'peak_indices',\
+                        'ISI_values',\
+                        'peak_voltage',\
+                        'mean_frequency',\
+                        'peak_time',\
+                        'time_to_first_spike',\
+                        'adaptation_index',\
+                        'adaptation_index2',\
+                        'spike_width2',\
+                        'AP_width',\
+                        'burst_mean_freq',\
+                        'burst_number',\
+                        'interburst_voltage',\
+                        'AP_height',\
+                        'AP_amplitude',\
+                        'AHP_depth_abs_slow',\
+                        'AHP_slow_time',\
+                        'depolarized_base',\
+                        'Spikecount',\
+                        'AHP_depth',\
+                        'AP_rise_indices',\
+                        'AP_end_indices',\
+                        'AP_fall_indices',\
+                        'AP_duration',\
+                        'AP_duration_half_width',\
+                        'AP_rise_time',\
+                        'AP_fall_time',\
+                        'AP_rise_rate',\
+                        'AP_fall_rate',\
+                        'fast_AHP',\
+                        'AP_amplitude_change',\
+                        'AP_duration_change',\
+                        'AP_rise_rate_change',\
+                        'AP_fall_rate_change',\
+                        'fast_AHP_change',\
+                        'AP_duration_half_width_change',\
+                        'amp_drop_first_second',\
+                        'amp_drop_first_last',\
+                        'amp_drop_second_last',\
+                        'max_amp_difference',\
+                        'AP_amplitude_diff',\
+                        'irregularity_index',\
+                        'AP1_amp',\
+                        'APlast_amp',\
+                        'AP2_amp',\
+                        'AP1_peak',\
+                        'AP2_peak',\
+                        'AP2_AP1_diff',\
+                        'AP2_AP1_peak_diff',\
+                        'AP1_width',\
+                        'AP2_width',\
+                        'AHP_depth_from_peak',\
+                        'AHP_time_from_peak',\
+                        'AHP1_depth_from_peak',\
+                        'AHP2_depth_from_peak',\
+                        'time_to_second_spike',\
+                        'time_to_last_spike',\
+                        'spike_half_width',\
+                        'AP_begin_indices',\
+                        'AHP_depth_abs',\
+                        'AP_begin_width',\
+                        'AP_begin_voltage',\
+                        'AP_begin_time',\
+                        'AP1_begin_voltage',\
+                        'AP2_begin_voltage',\
+                        'AP1_begin_width',\
+                        'AP2_begin_width',\
+                        'is_not_stuck',\
+                        'mean_AP_amplitude',\
+                        'voltage_after_stim',\
+                        'AP_amplitude_from_voltagebase',\
+                        'min_voltage_between_spikes'])
+    efel_score_functions = sorted(efel_score_functions1 + efel_score_functions2)
+    
+else:
+    efel_score_functions = sorted([
+                        'peak_indices',\
+                        'ISI_values',\
+                        'peak_voltage',\
+                        'mean_frequency',\
+                        'peak_time',\
+                        'time_to_first_spike',\
+                        'adaptation_index',\
+                        'adaptation_index2',\
+                        'spike_width2',\
+                        'AP_width',\
+                        'burst_mean_freq',\
+                        'burst_number',\
+                        'interburst_voltage',\
+                        'AP_height',\
+                        'AP_amplitude',\
+                        'AHP_depth_abs_slow',\
+                        'AHP_slow_time',\
+                        'depolarized_base',\
+                        'Spikecount',\
+                        'AHP_depth',\
+                        'AP_rise_indices',\
+                        'AP_end_indices',\
+                        'AP_fall_indices',\
+                        'AP_duration',\
+                        'AP_duration_half_width',\
+                        'AP_rise_time',\
+                        'AP_fall_time',\
+                        'AP_rise_rate',\
+                        'AP_fall_rate',\
+                        'fast_AHP',\
+                        'AP_amplitude_change',\
+                        'AP_duration_change',\
+                        'AP_rise_rate_change',\
+                        'AP_fall_rate_change',\
+                        'fast_AHP_change',\
+                        'AP_duration_half_width_change',\
+                        'amp_drop_first_second',\
+                        'amp_drop_first_last',\
+                        'amp_drop_second_last',\
+                        'max_amp_difference',\
+                        'AP_amplitude_diff',\
+                        'irregularity_index',\
+                        'AP1_amp',\
+                        'APlast_amp',\
+                        'AP2_amp',\
+                        'AP1_peak',\
+                        'AP2_peak',\
+                        'AP2_AP1_diff',\
+                        'AP2_AP1_peak_diff',\
+                        'AP1_width',\
+                        'AP2_width',\
+                        'AHP_depth_from_peak',\
+                        'AHP_time_from_peak',\
+                        'AHP1_depth_from_peak',\
+                        'AHP2_depth_from_peak',\
+                        'time_to_second_spike',\
+                        'time_to_last_spike',\
+                        'spike_half_width',\
+                        'AP_begin_indices',\
+                        'AHP_depth_abs',\
+                        'AP_begin_width',\
+                        'AP_begin_voltage',\
+                        'AP_begin_time',\
+                        'AP1_begin_voltage',\
+                        'AP2_begin_voltage',\
+                        'AP1_begin_width',\
+                        'AP2_begin_width',\
+                        'is_not_stuck',\
+                        'mean_AP_amplitude',\
+                        'voltage_after_stim',\
+                        'AP_amplitude_from_voltagebase',\
+                        'min_voltage_between_spikes'])
 score_functions = custom_score_functions + efel_score_functions
-
+print("USING : ", score_functions)
 COMM = MPI.COMM_WORLD
 print(COMM.size, "COM SIZE")
 for k in range(len(volts_name_list)):
@@ -233,7 +321,8 @@ for k in range(len(volts_name_list)):
             curr_volts_data = volts[pin_volts_name][volts_ind]
         #elif prefix == 'pdx':
             #curr_volts_data = volts[pdx_volts_name][volts_ind]
-        print('Working on', prefix, curr_stim_name, get_name(curr_function), str(volts_ind)+'/'+str(n))
+        if volts_ind % 1000 == 0:
+            print('Working on', prefix, curr_stim_name, get_name(curr_function), str(volts_ind)+'/'+str(n))
         score = eval_function(orig_volts_data, curr_volts_data, curr_function, dt)
         results[(prefix, function_ind, volts_ind)] = score
 
