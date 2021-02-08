@@ -323,6 +323,7 @@ for k in range(len(volts_name_list)):
             #curr_volts_data = volts[pdx_volts_name][volts_ind]
         if volts_ind % 1000 == 0:
             print('Working on', prefix, curr_stim_name, get_name(curr_function), str(volts_ind)+'/'+str(n))
+
         score = eval_function(orig_volts_data, curr_volts_data, curr_function, dt)
         results[(prefix, function_ind, volts_ind)] = score
 
