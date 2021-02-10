@@ -40,8 +40,9 @@ def main():
 
     for line in fileinput.input( score_sandbox ):
         if re.match(r'.*?#SBATCH --array 1-.',line):
-             print('Match Found')
-             tempFile2.write(line.replace(line, textToReplace))
+            print('Match Found')
+            textToReplaceThrottle = '#SBATCH --array 1-' + str(num_trials) + '%40\n'
+            tempFile2.write(line.replace(line, textToReplaceThrottle))
             #print(line.replace(line, textToReplace))
         else:
             tempFile2.write(line)
