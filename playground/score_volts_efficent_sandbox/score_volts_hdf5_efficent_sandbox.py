@@ -120,7 +120,6 @@ elif stim_file == "both_stims":
                         'steady_state_voltage',\
                         'steady_state_hyper',\
                         'voltage_deflection_begin',\
-                        'voltage_after_stim',\
                         'steady_state_voltage_stimend',\
                         'voltage_base',\
                         'decay_time_constant_after_stim',\
@@ -279,6 +278,7 @@ else:
                         'min_voltage_between_spikes'])
 score_functions = custom_score_functions + efel_score_functions
 print("USING : ", score_functions)
+
 COMM = MPI.COMM_WORLD
 print(COMM.size, "COM SIZE")
 for k in range(len(volts_name_list)):

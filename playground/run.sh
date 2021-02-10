@@ -36,7 +36,6 @@ mkdir -p runs/${model}_${peeling}_${runDate}${custom}/'slurm'
 # to match those in input.txt
 # if num_volts is 0 and num_nodes is 10 will split all stims between 10 nodes 
 python modifySandboxArray.py $num_volts $num_nodes
-
 #LOCAL, uses shell script for local imitation
 if [ ${makeVolts} == ${true} ]
   then
