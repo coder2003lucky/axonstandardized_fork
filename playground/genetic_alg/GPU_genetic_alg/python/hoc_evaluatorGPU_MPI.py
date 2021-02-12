@@ -128,6 +128,8 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.orig_params = orig_params
         self.opt_ind = np.array(params_opt_ind)
         data = np.array([data[i] for i in self.opt_ind])
+        realData = nrnUtils.readParamsCSV("../../params/params_bbp_peeling_description.csv")
+        realOrig = np.array((np.array(realData)[:,1]), dtype=np.float64)
         self.orig_params = orig_params
         self.pmin = np.array((data[:,2]), dtype=np.float64)
         self.pmax = np.array((data[:,3]), dtype=np.float64)
@@ -157,7 +159,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         self.opt_stim_list = [e.decode('ascii') for e in opt_stim_name_list]
         self.objectives = [bpop.objectives.Objective('Weighted score functions')]
         if global_rank == 0:
-            self.target_volts_list = self.make_target_volts(orig_params, self.opt_stim_list)
+            self.target_volts_list = self.make_target_volts(realOrig, self.opt_stim_list)
         else:
             self.target_volts_list = None
         self.target_volts_list = comm.bcast(self.target_volts_list, root=0)
@@ -220,7 +222,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             sf_len = len(score_function_ordered_list)
             curr_weights = self.weights[sf_len*i: sf_len*i + sf_len] #get range of sfs for this stim
             #top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
-            top_inds = np.where(curr_weights > 0)[0] # weights bigger than 50 #TODO: maybe this can help glitch
+            top_inds = np.where(curr_weights > 50)[0] # weights bigger than 50 #TODO: maybe this can help glitch
             pairs = list(zip(np.repeat(i,len(top_inds)), [ind for ind in top_inds])) #zips up indices with corresponding stim # to make sure it is refrencing a relevant stim
             all_pairs.append(pairs)
         flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
