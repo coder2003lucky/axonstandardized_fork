@@ -78,15 +78,37 @@ for i in range(len(params_opt_ind)):
     best_passive[params_opt_ind[i]] = best_indvs_passive_bbp[-1][i]
 
 best = [best_passive[i] for i in params_opt_ind]
-lbs = [0.5*p for p in best]
-ubs = [2*p for p in best]
-
+quartiles = [0,.25,.5,.75,1]
+log_lbs = []
+log_ubs = []
+for i in range(len(ubs)):
+    bins = [np.quantile(np.log([lbs[i],ubs[i]]),q) for q in quartiles]
+    dataQ = 1 - (np.log(ubs[i]) - np.log(best)[i]) / (np.log(ubs[i]) -  np.log(lbs[i]) )
+    lowerQ = max(0.01,dataQ - .125)
+    upperQ = min(1,dataQ + .125)
+    # base case where we hit edges of percentile ranges
+    if lowerQ == .01:
+        # UNTESTED
+        upperQ += abs(dataQ - .125)
+    if upperQ == 1:
+        lowerQ -= (dataQ + .125) - 1
+    logBounds = (np.quantile(np.log([lbs[i],ubs[i]]),lowerQ), \
+              np.quantile(np.log([lbs[i],ubs[i]]),upperQ))
+    bounds = (np.exp(logBounds[0]), np.exp(logBounds[1]))
+    log_lbs.append(bounds[0])
+    log_ubs.append(bounds[1])
+    
+print("+/- 25% of range")
+for i in range(len(log_lbs)):
+    print("log lower bound: ", log_lbs[i], "log upper bound: ",\
+          log_ubs[i], "best: " ,best[i], "\n")
 paramsCSV = './params/params_' + model + '_' + peeling + '.csv'
 params = readParamsCSVToDF(paramsCSV)
 
 params['Base value'] = best_passive
-params['Lower bound'][params_opt_ind] = lbs
-params['Upper bound'][params_opt_ind] = ubs
+params['Lower bound'][params_opt_ind] = log_lbs
+params['Upper bound'][params_opt_ind] = log_ubs
+
 params = params.set_index("Param name").astype({'Base value': 'float32','Lower bound': 'float32','Upper bound': 'float32'})
 print(params)
 params.rename( columns={'Unnamed: 10':''}, inplace=True )

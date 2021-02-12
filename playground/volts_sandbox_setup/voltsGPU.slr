@@ -1,7 +1,8 @@
 #!/bin/bash
 #SBATCH -N 1
-#SBATCH -t 005:00:00
+#SBATCH -t 003:45:00
 #SBATCH -C gpu
+#SBATCH --gres=gpu:8
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m3513
