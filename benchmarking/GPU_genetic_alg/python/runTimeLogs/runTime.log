@@ -1,0 +1,68 @@
+INFO:root:absolute start : 1612944374.317985 from rank2
+INFO:root:absolute start : 1612944374.3180137 from rank1
+INFO:root:absolute start : 1612944374.3181014 from rank0
+INFO:root:absolute start : 1612944374.3182318 from rank3
+INFO:root:USING MPI : TRUE
+INFO:root:USING MPI : TRUE
+INFO:root:USING MPI : TRUE
+INFO:root:USING MPI : TRUE
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 7 to 5
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 5 to 7
+DEBUG:h5py._conv:Creating converter from 5 to 7
+INFO:root:So should this
+INFO:root:So should this
+INFO:root:So should this
+INFO:root:So should this
+WARNING:root:And this, too
+WARNING:root:And this, too
+WARNING:root:And this, too
+WARNING:root:And this, too
+INFO:root:using nCpus: 80
+INFO:root:using nCpus: 80
+INFO:root:using nCpus: 80
+INFO:root:using nCpus: 80
+INFO:root:######## USING HARDCODE POTASSIUM in CONFIG #######
+INFO:root:######## USING HARDCODE POTASSIUM in CONFIG #######
+INFO:root:######## USING HARDCODE POTASSIUM in CONFIG #######
+INFO:root:######## USING HARDCODE POTASSIUM in CONFIG #######
+INFO:root:and a lot of other HARDCODED PARAMS
+INFO:root:and a lot of other HARDCODED PARAMS
+INFO:root:and a lot of other HARDCODED PARAMS
+INFO:root:and a lot of other HARDCODED PARAMS
+INFO:root:params opt ind = [2, 3, 4, 6, 11, 12, 16, 20, 23]
+INFO:root:params opt ind = [2, 3, 4, 6, 11, 12, 16, 20, 23]
+INFO:root:params opt ind = [2, 3, 4, 6, 11, 12, 16, 20, 23]
+INFO:root:params opt ind = [2, 3, 4, 6, 11, 12, 16, 20, 23]
+INFO:root:DATE: 02_04_2021
+INFO:root:DATE: 02_04_2021
+INFO:root:DATE: 02_04_2021
+INFO:root:DATE: 02_04_2021
+INFO:root:stims : neg stims
+INFO:root:stims : neg stims
+INFO:root:stims : neg stims
+INFO:root:stims : neg stims
+INFO:root:gen size : 1001
+INFO:root:MPI gen 1 took: 45.96208071708679 from rank3
+INFO:root:gen size : 1001
+INFO:root:gen size : 1001
+INFO:root:gen size : 1001
+INFO:root:MPI gen 1 took: 50.4207546710968 from rank0
+INFO:root:MPI gen 1 took: 49.00272512435913 from rank2
+INFO:root:MPI gen 1 took: 45.95061540603638 from rank1
+INFO:root:absolute end : 1612944465.7684877
+INFO:root:absolute end : 1612944465.7686357
+INFO:root:absolute end : 1612944465.7685702
+INFO:root:absolute end : 1612944465.797171

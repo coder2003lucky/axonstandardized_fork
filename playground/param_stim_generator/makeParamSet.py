@@ -3,6 +3,15 @@ import makeParamSetHelpers as helper
 import numpy as np
 import h5py
 import os
+import sys
+
+test_text = input("Are you SURE you want to create a new param set \
+(only do this if you are at the start of a peeling step) (y/n) :  ")
+while test_text != "y" and test_text != "n":
+    test_text = input("please type 'y' or 'n' :  ")
+    
+if test_text == "n":
+    sys.exit(0)
 
 FILEPATH =  'input.txt'
 

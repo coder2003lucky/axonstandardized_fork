@@ -16,7 +16,15 @@ true=True
 if [ ${makeParams} == ${true} ]
   then
     python param_stim_generator/makeParamSet.py
+    if [ $? != 0 ];
+    then
+        echo "failed making params... exiting"
+        exit 1
+    fi
+    echo "Params made"
   fi
+  
+
 
 
 #making directory for the run
@@ -50,7 +58,7 @@ if [ ${makeVoltsGPU} == ${true} ]
   fi
 #sh passive/volts_sandbox_setup/sbatch_local_volts.sh
 
-if  [ $num_volts == 0 ]; then num_volts=300; fi
+if  [ $num_volts == 0 ]; then num_volts=400; fi
 
 echo making volts....
 #waits until slurm has put enough volts in directory
