@@ -1,0 +1,27 @@
+Param name,Base value
+gNaTa_tbar_NaTa_t_axonal,3.959764
+gK_Tstbar_K_Tst_axonal,0.098908
+gCa_LVAstbar_Ca_LVAst_axonal,1.5E-05
+gSK_E2bar_SK_E2_axonal,0.003442
+gK_Pstbar_K_Pst_axonal,0.004729
+gSKv3_1bar_SKv3_1_axonal,0.317363
+gImbar_Im_axonal,0.000999
+gCabar_Ca_axonal,3E-06
+gK_Tstbar_K_Tst_somatic,0.092965
+gNap_Et2bar_Nap_Et2_somatic,1E-06
+gCa_LVAstbar_Ca_LVAst_somatic,0.001067
+gSK_E2bar_SK_E2_somatic,0.019726
+gkbar_KdShu2007_somatic,0.000425
+gK_Pstbar_K_Pst_somatic,0.156376
+gSKv3_1bar_SKv3_1_somatic,0.297559
+gImbar_Im_somatic,8E-06
+gNaTs2_tbar_NaTs2_t_somatic,0.197999
+gCabar_Ca_somatic,3.2E-05
+gK_Tstbar_K_Tst_dend,0.0095
+gSKv3_1bar_SKv3_1_dend,0.004399
+gNap_Et2bar_Nap_Et2_dend,1E-06
+gkbar_KdShu2007_dend,0.000483
+gNaTs2_tbar_NaTs2_t_dend,1E-05
+gIhbar_Ih_dend,5.2E-05
+gImbar_Im_dend,8E-06
+g_pas,1E-06

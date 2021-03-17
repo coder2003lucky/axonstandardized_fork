@@ -1,4 +1,4 @@
-// Automatically generated CUH for /global/cscratch1/sd/zladd/axonstandardized/playground/make_models_mappings/bbp19_mappings./runModel.hoc
+// Automatically generated CUH for /global/cscratch1/sd/zladd/axonstandardized/playground/genetic_alg/make_models_mappings/bbp19_mappings./runModel.hoc
 
 #ifndef __ALLMODELSCU__
 #define __ALLMODELSCU__
