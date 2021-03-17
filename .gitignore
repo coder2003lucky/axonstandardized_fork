@@ -10,4 +10,5 @@ tasks.db
 */.ipynb_checkpoints/*
 **/.DS_Store
 *__pycache/*
+pipeline_extraction*
 

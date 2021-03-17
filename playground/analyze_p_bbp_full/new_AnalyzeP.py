@@ -94,5 +94,8 @@ try:
 except FileNotFoundError:
     warnings.warn("Warning: Dictionaries not created because required files not found.\nSee the `~/analyzeP` directory for sample required files.",
         RuntimeWarning)
+    
+
+
 def main():
     return ordered_stim_list, ordered_score_function_list, pin_score_dict

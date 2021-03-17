@@ -69,6 +69,7 @@ else:
 
 # data is the parsed csv, orig is a row vector of base values for each param (1 x 12)
 data, orig = helper.parse_csv(file_path)
+print(orig[0], "     < --  are base params")
 pMatx, pSortedMatx, pSetsN, pSortedSetsN = helper.calculate_pmatx(data, nSubZones, nPerSubZone, params, norm, seed)
 print(pSortedSetsN.shape)
 '''

@@ -1,3 +1,4 @@
+import time
 import numpy as np
 import argparse
 import scipy.stats as stat
@@ -10,11 +11,10 @@ import operator
 import pickle
 from operator import itemgetter
 import ipywidgets as widgets
-from IPython.display import display
-from IPython.display import clear_output
+#from IPython.display import display
+#from IPython.display import clear_output
 import csv
 import h5py
-import time
 
 
 parser = argparse.ArgumentParser(description='Analyze P Parllel')
@@ -80,7 +80,7 @@ with open("analyze_p_bbp_full/params.pkl", 'wb') as f:
 #%run ./new_AnalyzeP.py
 #placeholder as sleep, need to just do this on one node and comm info out to other nodes?
 # TODO fix monkeypatch
-time.sleep(180)
+time.sleep(5)
 from new_AnalyzeP import *
 
 ordered_stim_list, ordered_score_function_list, pin_score_dict = main()
@@ -93,9 +93,9 @@ def fix_shuffled_subset_list(length):
     shuffle_pattern = np.arange(length)
     np.random.shuffle(shuffle_pattern)
     def subset_list(subset=None):
-        if subset is 'train':
+        if subset == 'train':
             return sorted(shuffle_pattern[:int(length*proportionToTrain)])
-        elif subset is 'test':
+        elif subset == 'test':
             return sorted(shuffle_pattern[int(length*proportionToTrain):])
         else:
             return shuffle_pattern
@@ -222,7 +222,6 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
     return np.array(test_result.reshape([1, test_result.shape[0]])), np.array(stims_optimal_order)
 
 stimsInOrder = [e.decode('ascii') for e in opt_file['stims_optimal_order'][:]]
-
 weight_list, stim_list = trainAndValidateScoreOptimization(stimsInOrder[:k], True, seed=seed, saveToFile=True)
 opt_result_hdf5 = h5py.File(save_path +'/multi_stim_without_sensitivity_' + model \
 + '_' + peeling +'_'+ currentdate + '_stims.hdf5', 'w')
