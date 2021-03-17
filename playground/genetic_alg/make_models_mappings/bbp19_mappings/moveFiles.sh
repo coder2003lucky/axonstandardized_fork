@@ -2,10 +2,10 @@
 #python extractModel_Mappings.py
 mkdir pyNeuroGPU_unix2/python
 cp runBBP.py pyNeuroGPU_unix2/python/
-#cp -r ../gen_alg_GPU_debug/params pyNeuroGPU_unix2
+#cp -r ../../gen_alg_GPU/params pyNeuroGPU_unix2
 cp -r params pyNeuroGPU_unix2/
 
-cp -r ../gen_alg_GPU_debug/objectives pyNeuroGPU_unix2
+cp -r ../../gen_alg_GPU/objectives pyNeuroGPU_unix2
 
 # why these two?
 cp ./Data/ParamTemplate.csv pyNeuroGPU_unix2/Data
@@ -15,9 +15,9 @@ cp ./Data/AllParams_reference.csv pyNeuroGPU_unix2/Data
 
 
 
-cp -r ../gen_alg_GPU_debug/stims pyNeuroGPU_unix2
-cp -r ../gen_alg_GPU_debug/Data/target_volts_BBP19.csv pyNeuroGPU_unix2/Data
-cp -r ../gen_alg_GPU_debug/Data/AllParams_for_params.csv pyNeuroGPU_unix2/Data
+cp -r ../../gen_alg_GPU/stims pyNeuroGPU_unix2
+cp -r ../../gen_alg_GPU/Data//target_volts_BBP19.csv pyNeuroGPU_unix2/Data
+cp -r ../../gen_alg_GPU/Data/AllParams_for_params.csv pyNeuroGPU_unix2/Data
 cp pyNeuroGPU_unix2/Data/Stim_raw.csv pyNeuroGPU_unix2/Data/Stim_raw.csv
 cp pyNeuroGPU_unix2/Data/times.csv pyNeuroGPU_unix2/Data/times0.csv
 

@@ -3,11 +3,14 @@ transvec = new Vector()
 
 proc distribute2(){local x localobj sl
 
+        print x
+        print "TBHERES X"
+        
         strdef stmp,distfunc,mech
         sl = $o1
         mech = $s2
         distfunc = $s3
-		//print distfunc
+		print distfunc
         sprint(distfunc,"%%s %s(%%f) = %s",mech, distfunc)
 		//print distfunc
         forsec sl for(x) {
@@ -142,6 +145,8 @@ proc tfunc(){local dumm
 	//print transvec.x(22)
 	sprint(tmp_str,"%s%f",const_str,transvec.x(22))
 	distribute2(cell.somatic,"gCa_LVAstbar_Ca_LVAst",tmp_str)
+
+
 
 	forsec "soma" {
 		g_pas = transvec.x(23)
