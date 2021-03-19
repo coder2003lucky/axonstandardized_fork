@@ -37,6 +37,10 @@ if usePrev == "True":
 else:
     paramsCSV = '../../params/params_' + model + '_' + peeling + '.csv'
 
+if peeling == "sodium":
+    templateCSV = "../../params/params_bbp_peeling_description.csv"
+else:
+    templateCSV = "../../params/params_bbp_{}.csv".format(peeling)
 scores_path = '../../../scores/'
 objectives_file = h5py.File('../../objectives/multi_stim_without_sensitivity_bbp_' + peeling + "_" + date + '_stims.hdf5', 'r')
 opt_weight_list = objectives_file['opt_weight_list'][:]
