@@ -99,11 +99,11 @@ def check_ap_at_zero(stim_ind, volts):
         if first_zero_ind:
             if np.mean(stim[first_zero_ind:]) == 0:
                 first_ind_to_check = first_zero_ind + 1000
-                APs = [True if v > 0 else False for v in volt[first_ind_to_check:]]
+                APs = [True if v > -50 else False for v in volt[first_ind_to_check:]]
                 if True in APs:
                     #return 400 # threshold parameter that I am still tuning
                     #print("indv:",i, "stim ind: ", stim_ind)
-                    checks[i] = 250
+                    checks[i] = 400
     return checks    
 
 def stim_swap(idx, i):
@@ -222,7 +222,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             sf_len = len(score_function_ordered_list)
             curr_weights = self.weights[sf_len*i: sf_len*i + sf_len] #get range of sfs for this stim
             #top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
-            top_inds = np.where(curr_weights > 0)[0] # weights bigger than 50 #TODO: maybe this can help glitch
+            top_inds = np.where(curr_weights > 30)[0] # weights bigger than 50 #TODO: maybe this can help glitch
             pairs = list(zip(np.repeat(i,len(top_inds)), [ind for ind in top_inds])) #zips up indices with corresponding stim # to make sure it is refrencing a relevant stim
             all_pairs.append(pairs)
         flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
@@ -274,62 +274,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             writer = csv.writer(open("../Data/Stim_raw{}.csv".format(i), 'w'))
             writer.writerow(stim_file[stim][:])
     
-    def normalize_scores(self,curr_scores, transformation,i):
-        '''changed from hoc eval so that it returns normalized score for list of indvs, not just one
-        TODO: not sure what transformation[6] does but I changed return statement to fit our 
-        dimensions'''
-        # transformation contains: [bottomFraction, numStds, newMean, std, newMax, addFactor, divideFactor]
-        # indices for reference:   [      0       ,    1   ,    2   ,  3 ,    4  ,     5    ,      6      ]
-        for i in range(len(curr_scores)):
-            if curr_scores[i] > transformation[4]:
-                curr_scores[i] = transformation[4]        # Cap newValue to newMax if it is too large
-        normalized_single_score = (curr_scores + transformation[5])/transformation[6]  # Normalize the new score
-        if transformation[6] == 0:
-            #return 1
-            return np.ones(len(self.nindv)) #verify w/ Kyung
-        return normalized_single_score
 
-    def eval_stim_sf_pair(self,perm):
-        """ 
-        function that evaluates a stim and score function pair on line 252. Sets i as stim # and sets j as 
-        score function #. Evaluates volts for that score function in efel or custom. Normalize scores
-         then SENT BACK to MAPPER.
-        
-        Arguments
-        --------------------------------------------------------------------
-        perm: pair of ints where first is the stim and second is the score function label index
-        to run
-        
-        Returns
-        ---------------------------------------------------------------------
-        scores: normalized+weighted scores with the shape (nindv, 1), and sends them back to map
-        to be stacked then summed.
-        
-        """
-        i = perm[0]
-        j = perm[1]
-        counter = 0
-        curr_data_volt = self.getVolts(i)#[:,:] 
-        curr_target_volt = self.target_volts_list[i]
-        curr_sf = score_function_ordered_list[j].decode('ascii')
-        curr_weight = self.weights[len(score_function_ordered_list)*i + j]
-        transformation = h5py.File(scores_path+self.opt_stim_list[i]+'_scores.hdf5', 'r')['transformation_const_'+curr_sf][:]
-        if curr_weight == 0:
-            print("BAD WEIGHTS")
-            curr_scores = np.zeros(self.nindv)
-        else:
-            num_indvs = curr_data_volt.shape[0]
-            if curr_sf in custom_score_functions:
-                score = [getattr(sf, curr_sf)(curr_target_volt, curr_data_volt[indv,:], self.dts[i]) for indv in range(num_indvs)]
-            else:
-                score = sf.eval_efel(curr_sf, curr_target_volt, curr_data_volt, self.dts[i])
-            curr_scores =  score 
-        norm_scores = self.normalize_scores(curr_scores, transformation, i)
-        for k in range(len(norm_scores)):
-            if np.isnan(norm_scores[k]):
-                norm_scores[k] = 1
-        return norm_scores * curr_weight
-    
     
     def map_par(self):
         ''' 

@@ -38,6 +38,7 @@ cp pyNeuroGPU_unix2/Data/times.csv pyNeuroGPU_unix2/Data/times0.csv
 
 
 cp extractModel_mappings.py pyNeuroGPU_unix2/python/
+cp get_distances.py pyNeuroGPU_unix2/python/
 cp stim_converter.py pyNeuroGPU_unix2/python/
 
 cp extractModel.py pyNeuroGPU_unix2/python/

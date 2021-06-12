@@ -33,18 +33,30 @@ San Francisco, California, 94105, USA.
 begintemplate cADpyr232_biophys
 public biophys, distribute
 
-proc distribute(){local x localobj sl
+proc distribute(){local x localobj sl, strobj
 
-        strdef stmp,distfunc,mech
+        strdef stmp,distfunc,mech,stmp2
         sl = $o1
         mech = $s2
         distfunc = $s3
-        //sprint(distfunc,"%%s %s(%%f) = %s",mech, distfunc)
-        //print distfunc
+        
+        sprint(distfunc,"%%s %s(%%f) = %s", mech, distfunc)
+        
+        strobj = new StringFunctions()
+        exp_index = strobj.substr(distfunc,"exp")
+
         forsec sl for(x) {
             secname()
-            //sprint (stmp,distfunc,secname(),x,distance(x))
-            //print stmp
+            sprint (stmp,distfunc,secname(),x,distance(x))
+            sprint (stmp2,distfunc,secname(),x,distance(x))
+            if (exp_index != -1) {
+                equals_index = strobj.substr(stmp2, "=")+1
+                strobj.right(stmp2,equals_index)
+                sprint(stmp2,"print %s",stmp2)
+                execute(stmp2)
+                print stmp
+                print stmp2
+            }
             execute(stmp)
         }
     }
@@ -141,8 +153,8 @@ proc biophys() {
         distribute($o1.basal,"gIhbar_Ih","(0.0 * %g + 1.0)*0.000080")
         distribute($o1.apical,"gNaTs2_tbar_NaTs2_t","(0.0 * %g + 1.0)*0.026145")
         distribute($o1.apical,"gSKv3_1bar_SKv3_1","(0.0 * %g + 1.0)*0.004226")
-        //distribute($o1.apical,"gIhbar_Ih","(-0.869600 + 2.087000*exp((%g-0.000000)*0.003100))*0.000080")
-        distribute($o1.apical,"gIhbar_Ih","(0.0 * %g + 1.0)*0.000080")
+        distribute($o1.apical,"gIhbar_Ih","(-0.869600 + 2.087000*exp((%g-0.000000)*0.003100))*0.000080")
+        //distribute($o1.apical,"gIhbar_Ih","(0.0 * %g + 1.0)*0.000080")
 
         distribute($o1.apical,"gImbar_Im","(0.0 * %g + 1.0)*0.000143")
         distribute($o1.axonal,"gNaTa_tbar_NaTa_t","(0.0 * %g + 1.0)*3.137968")
