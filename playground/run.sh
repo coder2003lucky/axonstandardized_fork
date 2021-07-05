@@ -9,7 +9,7 @@ do
     data="${inputs[1]}"
 done < "$input"
 
-true=True
+true=True # bash script pro lol
 
 
 

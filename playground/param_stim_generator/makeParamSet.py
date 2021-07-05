@@ -30,7 +30,7 @@ assert 'user' in inputs, "No user specified"
 assert 'model' in inputs, "No model specificed"
 assert 'peeling' in inputs, "No peeling specificed"
 assert 'seed' in inputs, "No seed specificed"
-assert inputs['model'] in ['mainen', 'bbp'], "Model must be from: \'mainen\', \'bbp\'. Do not include quotes."
+assert inputs['model'] in ['mainen', 'bbp', 'allen'], "Model must be from: \'allen\' \'mainen\', \'bbp\'. Do not include quotes."
 assert inputs['peeling'] in ['passive', 'potassium', 'sodium', 'calcium', 'full'], "Model must be from: \'passive\', \'potassium\', \'sodium\', \'calcium\', \'full\'. Do not include quotes."
 assert "stim_file" in inputs, "provide stims file to use, neg_stims or stims_full?"
 
@@ -55,6 +55,7 @@ model = inputs['model']
 peeling = inputs['peeling']
 user = inputs['user']
 params = [int(p) for p in inputs['params']]
+opt_ind = np.array(params) - 1
 print(params)
 
 # Sample pdx to keep the size not too large. The list must be indicies of pin.
@@ -68,8 +69,33 @@ else:
 
 
 # data is the parsed csv, orig is a row vector of base values for each param (1 x 12)
-data, orig = helper.parse_csv(file_path)
-print(orig[0], "     < --  are base params")
+data, orig, ch_names = helper.parse_csv(file_path)
+
+
+
+
+#xander 6/26
+count = 0
+for best, lb, ub, name in zip(orig.reshape(-1,1), data[:,1], data[:,2], ch_names):
+    best = best[0]
+    if count in opt_ind:
+        print(count, "(optimized)", "name :", name, " | best: ", np.round(best,9) , " | lb: ", np.round(lb,8), " | ub: ", round(ub,8))
+        
+
+    else:
+        print(count, "name :", name, " | best: ", np.round(best,9) , " | lb: ", np.round(lb,8), " | ub: ", np.round(ub,8))
+    print("------------------------------------------------------------")
+    if name == 'e_pas_all':
+        data[count,:3] = - np.abs(data[count,:3])
+        print("turned {} negative".format(name) )
+        orig[:,count] =  - np.abs(orig[:,count])
+        print(data[count], orig[:,count])
+    count += 1
+
+   
+    
+    
+
 pMatx, pSortedMatx, pSetsN, pSortedSetsN = helper.calculate_pmatx(data, nSubZones, nPerSubZone, params, norm, seed)
 print(pSortedSetsN.shape)
 '''

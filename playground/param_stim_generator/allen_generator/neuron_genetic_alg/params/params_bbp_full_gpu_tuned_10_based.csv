@@ -1,0 +1,17 @@
+Param name,Base value,Lower bound,Upper bound,Unit,Unit type,Const,Base variation estimation,Description,index in vector,
+g_pas_all,1.29e-05,0.00000000035600,0.00003560000,,Uniform,Open,2,n/a,1,0
+e_pas_all,90,40,100,,Uniform,Open,3,n/a,2,0
+gNaTa_tbar_NaTa_t_axonal,3.1379680000,0.3137968000,31.3796800000,,Uniform,Open,2,n/a,3,0
+gK_Tstbar_K_Tst_axonal,0.0892590000,0.0089259000,0.8925900000,,Uniform,Open,3,n/a,4,0
+gNap_Et2bar_Nap_Et2_axonal,0.0068270000,0.0006827000,0.0682700000,,Uniform,Open,3,n/a,5,0
+gK_Pstbar_K_Pst_axonal,0.9735380000,0.0973538000,9.7353800000,,Uniform,Open,3,n/a,6,0
+gSKv3_1bar_SKv3_1_axonal,5.0219450000,0.0001021945000,10.2194500000,,Uniform,Open,3,n/a,7,0
+gCa_LVAstbar_Ca_LVAst_axonal,0.0087520000,0.0008752000,0.0875200000,,Uniform,Open,3,n/a,8,0
+gCa_HVAbar_Ca_HVA_axonal,0.0009900000,0.0000990000,0.0099000000,,Uniform,Open,3,n/a,9,0
+gSKv3_1bar_SKv3_1_somatic,0.03234720000,0.000303472000,3.0347200000,,Uniform,Open,3,n/a,10,0
+gCa_HVAbar_Ca_HVA_somatic,0.0009940000,0.0000994000,0.0099400000,,Uniform,Open,3,n/a,11,0
+gNaTs2_tbar_NaTs2_t_somatic,0.9839550000,0.0983955000,9.8395500000,,Uniform,Open,3,n/a,12,0
+gCa_LVAstbar_Ca_LVAst_somatic,0.0003330000,0.0000333000,0.0033300000,,Uniform,Open,3,n/a,13,0
+gIh_dend,0.000200000,0.000000080000,0.0008000000,,Uniform,Open,3,n/a,14,0
+cm_all,2.3200000000,0.5000000000,3,,Uniform,Open,,n/a,15,0
+cm_apical_basal,0.5000000000,0.5000000000,3.0000000000,,Uniform,Open,,n/a,16,0

@@ -23,7 +23,7 @@ custom = args.custom
 
 
 if custom is not None:
-    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + custom
+    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + '_' + custom
 else:
     wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
 score_path =  wrkDir + '/scores/'

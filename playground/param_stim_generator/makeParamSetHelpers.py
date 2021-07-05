@@ -27,8 +27,10 @@ def parse_csv(file_name):
         next(reader)
         m = np.zeros((numRows - 1, 7)) # numRows - 1 because ignoring header
         i = 0
+        ch_names = []
 
         for row in reader:
+            ch_names.append(row[0])
             for k in range(3):
                 m[i, k] = float(row[k+1])
             m[i, 3] = float(row[7])
@@ -45,7 +47,7 @@ def parse_csv(file_name):
             else:
                 m[i, 6] = float(row[10])
             i += 1
-    return m, m[:,0].reshape((1, m.shape[0]))
+    return m, m[:,0].reshape((1, m.shape[0])), ch_names
 
 def calculate_pmatx(data, nSubZones, nPerSubZone, sample_params, norm, seed):
     ''' 

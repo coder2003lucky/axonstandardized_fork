@@ -25,9 +25,9 @@ echo running analyze p parallel
 export OMP_NUM_THREADS=1
 srcDir=`pwd`
 
-wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}${custom}
+wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}
 mkdir ${wrkDir}/'genetic_alg'
-wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}${custom}/
+wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}/
 echo 'my wrkDir='${wrkDir}
 
 dirToRun="genetic_alg"

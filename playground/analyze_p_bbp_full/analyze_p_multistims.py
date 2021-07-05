@@ -31,7 +31,7 @@ custom = args.custom
 
 # Data Files
 if custom is not None:
-    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + custom
+    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + '_' + custom
 else:
     wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
 opt_path = wrkDir + '/genetic_alg/optimization_results/opt_result_single_stim_' + model + '_' + peeling + '_full.hdf5'
