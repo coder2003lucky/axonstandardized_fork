@@ -28,7 +28,7 @@ To run neurogpu interactively
 ===================================
 1. go into neuroGPU directory (axonstandardized/playground/gen_algGPU/python/)
 2. run command: source load_env
-3. salloc -C gpu -N 1 -t 20 --gres=gpu:8 -c 80  -A m2043 (note: can lower cores or gpus to get node faster)
+3. salloc -C gpu -N 1 -t 20 --gres=gpu:8 -c 80  -A #### (note: can lower cores or gpus to get node faster)
 4. run command: source load_env (yes twice)
 7. srun python optimize_parameters_genetic_alg.py --offspring_size 2 --max_ngen 1
     **you can also run srun python test_neuroGPU.py to run my unit tests**
