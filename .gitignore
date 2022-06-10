@@ -14,3 +14,4 @@ tasks.db
 pipeline_extraction*
 !*py
 playground/runs/*
+*.nwb
