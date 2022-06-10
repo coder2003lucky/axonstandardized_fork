@@ -466,14 +466,18 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
         if len2 > len1:
             lis1 = np.concatenate((lis1, np.zeros(len2 - len1)), axis=0)
         return np.sqrt(safe_mean((lis1 - lis2)**2))
-    time = np.cumsum([dt for i in range(time_stamps)])
+    curr_time_stamps = len(target)
+    time = np.cumsum([dt for i in range(curr_time_stamps)])
     curr_trace_target, curr_trace_data = {}, {}
-    stim_start, stim_end = starting_time_stamp*dt, ending_time_stamp*dt
+    duplicates = [trg for trg in target if trg == target[-1]]
+    stim_start, stim_end = 0, curr_time_stamps - len(duplicates) 
+    #PREVIOUSLY : #starting_time_stamp*dt, ending_time_stamp*dt
     curr_trace_target['T'], curr_trace_data['T'] = time, time
     curr_trace_target['V'], curr_trace_data['V'] = target, data
     curr_trace_target['stim_start'], curr_trace_data['stim_start'] = [stim_start], [stim_start]
     curr_trace_target['stim_end'], curr_trace_data['stim_end'] = [stim_end], [stim_end]
     traces = [curr_trace_target, curr_trace_data]
+
     traces_results = efel.getFeatureValues(traces, [feature_name], raise_warnings=False)
     diff_feature = diff_lists(traces_results[0][feature_name], traces_results[1][feature_name])
     return diff_feature

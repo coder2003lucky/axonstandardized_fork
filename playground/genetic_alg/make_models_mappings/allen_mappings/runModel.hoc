@@ -13,7 +13,7 @@ calc_eca = 1
 
    stLoc = 0.41 
    //stLoc = 0.01
-base = "/global/cscratch1/sd/zladd/axonstandardized/playground/genetic_alg/make_models_mappings/bbp19_mappings/NeuroGPU/NeuroGPU_Base" 
+base = "/global/cscratch1/sd/dylan_m/axonstandardized/playground/genetic_alg/make_models_mappings/bbp19_mappings/NeuroGPU/NeuroGPU_Base" 
 paramsFile = "./params/params.csv" 
 stimFile = "./Stims/Stim_raw0.csv" 
 modelFile = "./mosinit.hoc" 

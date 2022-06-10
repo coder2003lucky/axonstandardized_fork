@@ -1,0 +1,16 @@
+Param name,Base value,Lower bound,Upper bound,Unit,Unit type,Const,Base variation estimation,Description,index in vector,
+g_pas_all,0,0,0,,Uniform,Open,2,n/a,1,0
+e_pas_all,0,0,0,,Uniform,Open,3,n/a,2,0
+gNaTa_tbar_NaTa_t_axonal,0,0,0,,Uniform,Open,2,n/a,3,0
+gK_Tstbar_K_Tst_axonal,0,0,0,,Uniform,Open,3,n/a,4,0
+gNap_Et2bar_Nap_Et2_axonal,0,0,0,,Uniform,Open,3,n/a,5,0
+gK_Pstbar_K_Pst_axonal,0,0,0,,Uniform,Open,3,n/a,6,0
+gSKv3_1bar_SKv3_1_axonal,0,0,0,,Uniform,Open,3,n/a,7,0
+gCa_LVAstbar_Ca_LVAst_axonal,0,0,0,,Uniform,Open,3,n/a,8,0
+gCa_HVAbar_Ca_HVA_axonal,0,0,0,,Uniform,Open,3,n/a,9,0
+gSKv3_1bar_SKv3_1_somatic,0,0,0,,Uniform,Open,3,n/a,10,0
+gCa_HVAbar_Ca_HVA_somatic,0,0,0,,Uniform,Open,3,n/a,11,0
+gNaTs2_tbar_NaTs2_t_somatic,0,0,0,,Uniform,Open,3,n/a,12,0
+gCa_LVAstbar_Ca_LVAst_somatic,0,0,0,,Uniform,Open,3,n/a,13,0
+gIh_dend,0,0,0,,Uniform,Open,3,n/a,14,0
+cm, 0,0,0

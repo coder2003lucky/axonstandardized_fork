@@ -1,0 +1,45 @@
+#!/bin/bash
+
+#SBATCH --qos=regular
+#SBATCH --time=10:00:00
+#SBATCH --nodes=32
+#SBATCH --constraint=haswell
+#SBATCH --mail-user=zladd@berkeley.edu
+#SBATCH --mail-type=ALL
+#SBATCH --account=m3513
+
+ulimit -Sn unlimited 
+
+export OMP_NUM_THREADS=1
+export IPYTHONDIR=${PWD}/.ipython
+export IPYTHON_PROFILE=benchmark.${SLURM_JOBID}
+
+ipcontroller --init --ip='*' --sqlitedb --ping=30000 --profile=${IPYTHON_PROFILE} &
+sleep 800
+srun -n 3800 ipengine --timeout=3000 --profile=${IPYTHON_PROFILE} &
+sleep 800
+CHECKPOINTS_DIR="checkpoints"
+mkdir -p ${CHECKPOINTS_DIR}
+python optimize_parameters_genetic_alg.py \
+    -vv                                \
+    --compile                          \
+    --offspring_size=8000  \
+    --max_ngen=100             \
+    --seed=1178                     \
+    --ipyparallel                      \
+    --start > test_hoc.txt
+ 
+exit
+
+# If job finishes in time analyze result
+#mv ${CHECKPOINTS_DIR}/seed${seed}.pkl checkpoints_final/
+# check if the job with 4th seed is finished
+
+# if [[ $seed = 4 ]]; then
+#   sbatch analyse_stage2.slurm
+# else
+#   seed_new=$(($seed+1))
+#   sed -i -e "s/seed in $seed/seed in $seed_new/g" start_haswell.sh
+#   sed -i -e "s/seed in $seed/seed in $seed_new/g" restart_haswell.sh
+#   sbatch start_batchjob_stage2.slurm
+# fi

@@ -8,7 +8,7 @@ gNaTa_tbar_NaTa_t,3.137968,0.3137968,31.37968,,Uniform,Open,3,n/a,6,0
 gK_Tstbar_K_Tst,0.089259,0.0089259,0.89259,,Uniform,Open,3,n/a,7,0
 gamma_CaDynamics_E2,0.00291,0.000291,0.0291,,Uniform,Open,3,n/a,8,0
 gNap_Et2bar_Nap_Et2,0.006827,0.0006827,0.06827,,Uniform,Open,3,n/a,9,0
-gSK_E2bar_SK_E2,0.007104,0.0007104,0.07104,,Uniform,Open,3,n/a,10,0
+gSK_E2bar_SK_E2,0.007104,0.0007104,,,Uniform,Open,3,n/a,10,0
 gCa_HVAbar_Ca_HVA,0.00099,0.000099,0.0099,,Uniform,Open,3,n/a,11,0
 gK_Pstbar_K_Pst,0.973538,0.0973538,9.73538,,Uniform,Open,3,n/a,12,0
 gSKv3_1bar_SKv3_1,1.021945,0.1021945,10.21945,,Uniform,Open,3,n/a,13,0

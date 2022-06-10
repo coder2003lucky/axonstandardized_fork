@@ -15,7 +15,7 @@ def main():
     num_nodes = int(sys.argv[2])
     len_of_trials = len(str(num_trials))
     volt_sandbox = "./volts_sandbox_setup/sbatch_run.slr"
-    score_sandbox = "./scores_sandbox_setup/sbatch_run.slr"
+    score_sandbox = "./score_volts_efficent_sandbox/sbatch_score.slr"
 
     textToSearch = '#SBATCH --array 1-'
     if num_trials != 0:

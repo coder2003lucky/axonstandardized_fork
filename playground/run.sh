@@ -9,7 +9,7 @@ do
     data="${inputs[1]}"
 done < "$input"
 
-true=True
+true=True # bash script pro lol
 
 
 
@@ -24,7 +24,6 @@ if [ ${makeParams} == ${true} ]
     echo "Params made"
   fi
   
-
 
 
 #making directory for the run
@@ -83,7 +82,7 @@ mv slurm* runs/${model}_${peeling}_${runDate}${custom}/'slurm'
 
 if [ ${makeScores} == ${true} ]
   then
-    sbatch scores_sandbox_setup/sbatch_run.slr
+    sbatch score_volts_efficent_sandbox/sbatch_run.slr
   fi
 
 
@@ -141,7 +140,7 @@ if [ ${makeObj} == ${true} ]
 # echo finished creating objectives file
 # shopt -u nullglob
 
-wrkDir=runs/${model}_${peeling}_${runDate}${custom}/genetic_alg
+wrkDir=runs/${model}_${peeling}_${runDate}$_{custom}/genetic_alg
 cp -r stims $wrkDir/
 cp -r params $wrkDir/
 cp param_stim_generator/params_reference/* $wrkDir/params/
