@@ -23,13 +23,13 @@ custom = args.custom
 
 
 if custom is not None:
-    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + custom
+    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + '_' + custom
 else:
     wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
 score_path =  wrkDir + '/scores/'
 optimization_results_path = wrkDir + '/genetic_alg/optimization_results/'
 if not os.path.isdir(optimization_results_path):
-    os.mkdir(optimization_results_path)
+    os.makedirs(optimization_results_path, exist_ok=True)
 params_file_path = 'params/params_' + model + '_' + peeling + '.hdf5'
 
 def split(container, count):
@@ -84,6 +84,7 @@ def construct_objective(score_mat):
 
 def optimize(stim_name_list, pin_score_dict):
     score_mat = np.concatenate(tuple([pin_score_dict[n] for n in stim_name_list]), axis=0)
+    
     optimizer_len = np.shape(score_mat)[0]
     bound = [[0, 100] for _ in range(optimizer_len)]
     initial_guess = np.array([np.random.random_sample()*100 for _ in range(optimizer_len)])

@@ -1,21 +1,54 @@
 import numpy as np
 import math
 import efel
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 import time as timer
+import os
+import copy
+import logging
+import pickle 
+import utils
 # These are here for efficiency. In order to avoid redundant computation, we cache the results for
 # comp_width_helper, comp_height_helper and traj_score_helper. The name of stim and index as a string
 # need to be passed in to do this.
+import sys
+from concurrent.futures import ProcessPoolExecutor as Pool
+from multiprocessing import Pool as Pool2
+from mpi4py import MPI
+# hack to remove eventually...imagine doing a getattr when you have the function
+# and can just do an eval :O
+thismodule = sys.modules[__name__]
+
 comp_width_dict = {}
 comp_height_dict = {}
 traj_score_dict = {}
 threshold = -10
-from concurrent.futures import ProcessPoolExecutor as Pool
 
+#set environ
+comm = MPI.COMM_WORLD
+global_rank = comm.Get_rank()
+size = comm.Get_size()
+
+#if size == 1:
+SLURM_CPUS = int(os.environ['SLURM_JOB_CPUS_PER_NODE'][:1])
+# else:
+#     SLURM_CPUS = int(os.environ['SLURM_JOB_CPUS_PER_NODE'][:1])
+nCpus =  SLURM_CPUS#multiprocessing.cpu_count()
 # These constants exist for efel features
 time_stamps =  10000
 starting_time_stamp = 1000
 ending_time_stamp = 7000
+
+custom_score_functions = [
+                    'chi_square_normal',\
+                    'traj_score_1',\
+                    'traj_score_2',\
+                    'traj_score_3',\
+                    'isi',\
+                    'rev_dot_product',\
+                    'KL_divergence']
+
+
 
 ########################################################################
 # These functions are util functions.
@@ -455,6 +488,102 @@ def DTWDistance(target, data, dt=0.02, stims = None, index = None):
            DTW[i][j] = cost + min(DTW[i-1][j], DTW[i][j-1], DTW[i-1][j-1])
    return DTW[len(target)-1,len(data)-1]/len(target)
 
+def testMAP(i):
+    print("launched pid ", os.getpid())
+    timer.sleep(.8)
+        
+def eval_function(target, data, function, dt):
+    """
+    function that sends target and simulated volts to scorefunctions.py so they
+    can be evaluated, then adds Kyung AP penalty function at the end
+
+    Parameters
+    -------------------------------------------------------------
+    target: target volt for this stim
+    data: set of volts with shape (nindvs, ntimsteps)
+    function: string containing score function to use
+    dt: dt of the stim as it is a parameter for some sfs
+    i: index of the stim
+
+    Returns
+    ------------------------------------------------------------
+    score: scores for each individual in an array corresponding to this score function
+    with shape (nindv, 1)
+    """
+    scorestart = timer.time()
+    num_indvs = data.shape[0]
+    if function in custom_score_functions:
+        score = [getattr(thismodule, function)(target, data[indv,:], dt) for indv in range(num_indvs)]
+    else:
+        score = eval_efel(function, target, data, dt)
+
+    return score# here is I am adding penalty
+
+def normalize_scores(curr_scores, transformation):
+    '''changed from hoc eval so that it returns normalized score for list of indvs, not just one
+    TODO: not sure what transformation[6] does but I changed return statement to fit our 
+    dimensions'''
+    # transformation contains: [bottomFraction, numStds, newMean, std, newMax, addFactor, divideFactor]
+    # indices for reference:   [      0       ,    1   ,    2   ,  3 ,    4  ,     5    ,      6      ]
+    for i in range(len(curr_scores)):
+        if curr_scores[i] > transformation[4]:
+            curr_scores[i] = transformation[4]        # Cap newValue to newMax if it is too large
+    normalized_single_score = (curr_scores + transformation[5])/transformation[6]  # Normalize the new score
+    if transformation[6] == 0:
+        return np.ones(len(self.nindv)) 
+    return normalized_single_score
+
+
+
+
+def eval_stim_sf_pair(args):
+    """ 
+    function that evaluates a stim and score function pair on line 252. Sets i as the actual 
+    index and and mod_i as it's adjusted index (should get 15th target volt but that will 
+    be 7th in the data_volts_list). transform then normalize and then multiply by weight
+    and then SENT BACK to MAPPER. uses self. for weights, data_volts, and target volts because
+    it is easy information transfer instead of passing arguments into map.
+
+    Arguments
+    --------------------------------------------------------------------
+    perm: pair of ints where first is the stim and second is the score function label index
+    to run
+
+    Returns
+    ---------------------------------------------------------------------
+    scores: normalized+weighted scores with the shape (nindv, 1), and sends them back to map
+    to be stacked then summed.
+
+    """
+    i = args["i"]
+    j = args["j"]
+    if size == 1:
+        curr_data_volt = args["data volt"]
+    else:
+        vs_fn = "/tmp/Data/VHotP"
+        curr_data_volt = utils.getVolts(vs_fn,i)
+    curr_target_volt = args["target"]
+    curr_sf = args["curr_sf"]
+    curr_weight = args["weight"]
+    transformation = args["transformation"]
+    dt = args["dt"]
+    
+    if curr_weight == 0:
+        curr_scores = np.zeros(self.nindv)
+    else:
+        curr_scores = eval_function(curr_target_volt, curr_data_volt, curr_sf, dt)
+    norm_scores = normalize_scores(curr_scores, transformation)
+    for k in range(len(norm_scores)):
+        if np.isnan(norm_scores[k]):
+            norm_scores[k] = 1
+    return norm_scores * curr_weight 
+
+def callPara(args):
+    # using either nCpus  or 20 
+    with Pool(min(nCpus,60)) as p: # parallel mapping
+        res = p.map(eval_stim_sf_pair,args)
+    return res
+
 def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     def diff_lists(lis1, lis2):
         if lis1 is None and lis2 is None:
@@ -484,10 +613,7 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     if len(nan_inds) > 0:
         print(nan_inds, "nan inds")
     data = np.delete(data,nan_inds,axis=1)
-    #print(np.isnan(data[0,0:10]))
-    #print(data[0,0:10])
-
-
+    
     for i in range(len(data)):
         curr_trace_data = {}
         curr_trace_data['T'] = time
@@ -508,4 +634,40 @@ def eval_efel(feature_name, target, data, dt=0.02, stims=None, index=None):
     for i in range(len(data)): #testing
         diff_features.append(diff_lists(traces_results[0][feature_name], traces_results[i+1][feature_name]))
     return diff_features
+
+
+#     allTraces = []
+#     chunksize = 5#len(data) // 10
+#     for chunk in range(0, len(data), chunksize):
+#         curr_traces = copy.deepcopy(traces)
+#         for i in range(chunk,chunk+chunksize):
+#             if i >= len(data):
+#                 break
+#             curr_trace_data = {}
+#             curr_trace_data['T'] = time
+#             curr_trace_data['V'] = data[i,:]
+#             assert len(data[i,:]) == 10000, "timesteps don't match with simulated data"
+#             curr_trace_data['stim_start'] = [stim_start]
+#             curr_trace_data['stim_end'] = [stim_end]
+#             curr_traces.append(curr_trace_data)
+#         allTraces.append(curr_traces)
+#     args = [(trace, [feature_name]) for trace in allTraces]
+  
+#     p = Pool2(max(1, nCpus - 20)) # using either nCpus - 20 or just 1 cuz we have used them all
+#     start = timer.time()
+
+#     map_res = p.starmap(efel.getFeatureValues, args)
+#     traces_results = [map_res[0][0]]
+#     for traces_result in map_res:
+#         for i in range(1,len(traces_result)):
+#             traces_results.append(traces_result[i])
+# #     traces_results = [traces_results[0][0]] + [traces_result[] for traces_result in traces_results]
+#     end = timer.time()
+#     print("process efel took: ", end -start, "for feature: ", feature_name)
+
+#     diff_features = []
+#     print(len(traces_results), len(data))
+#     for i in range(len(data)): #testing
+#         diff_features.append(diff_lists(traces_results[0][feature_name], traces_results[i+1][feature_name]))
+#     return np.array(diff_features)
 

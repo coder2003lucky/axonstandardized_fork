@@ -1,0 +1,17 @@
+Param name,Base value,Lower bound,Upper bound,Unit,Unit type,Const,Base variation estimation,Description,index in vector,,Peeling Step
+g_pas_all, 1.689e-06 , 1.689e-07, 1.689e-05,,Uniform,Open,2,n/a,1,0,passive
+e_pas_all,99.356786709 ,9.38797287e+01,1.20819593e+02,,Uniform,Open,3,n/a,2,0,passive
+gNaTa_tbar_NaTa_t_axonal,3.1379680000,0.3137968000,31.3796800000,,Uniform,Open,2,n/a,3,0,full
+gK_Tstbar_K_Tst_axonal,0.0892590000,0.0089259000,0.8925900000,,Uniform,Open,3,n/a,4,0,full
+gNap_Et2bar_Nap_Et2_axonal,0.0068270000,0.0006827000,0.0682700000,,Uniform,Open,3,n/a,5,0,full
+gK_Pstbar_K_Pst_axonal,0.9735380000,0.0973538000,9.7353800000,,Uniform,Open,3,n/a,6,0,full
+gSKv3_1bar_SKv3_1_axonal,5.845434248,.23183991723932165,23.183991723932165,,Uniform,Open,3,n/a,7,0,full
+gCa_LVAstbar_Ca_LVAst_axonal,0.0087520000,0.0008752000,0.0875200000,,Uniform,Open,3,n/a,8,0,full
+gCa_HVAbar_Ca_HVA_axonal,0.0009900000,0.0000990000,0.0099000000,,Uniform,Open,3,n/a,9,0,full
+gSKv3_1bar_SKv3_1_somatic,0.01942412,0.001459883500302655,1.459883500302655,,Uniform,Open,3,n/a,10,0,full
+gCa_HVAbar_Ca_HVA_somatic,0.0009940000,0.0000994000,0.0099400000,,Uniform,Open,3,n/a,11,0,full
+gNaTs2_tbar_NaTs2_t_somatic,0.9839550000,0.0983955000,9.8395500000,,Uniform,Open,3,n/a,12,0,full
+gCa_LVAstbar_Ca_LVAst_somatic,0.0003330000,0.0000333000,0.0033300000,,Uniform,Open,3,n/a,13,0,full
+gIh_dend,0.000111103,0.0000111103,0.00111103,,Uniform,Open,3,n/a,14,0,passive
+cm_all, 2.369385175,2.35240483e+00,3.52860724e+00,,Uniform,Open, 3,n/a,15,0,passive
+cm_apical_basal,0.625367841,4.30786390e-01,1.16179585,,Uniform,Open, 3,n/a,16,0,passive

@@ -323,8 +323,10 @@ for k in range(len(volts_name_list)):
             #curr_volts_data = volts[pdx_volts_name][volts_ind]
         if volts_ind % 1000 == 0:
             print('Working on', prefix, curr_stim_name, get_name(curr_function), str(volts_ind)+'/'+str(n))
-
+        curr_volts_data = np.clip(curr_volts_data,-100,100) # clip non biophysical responses so they don't destroy SFs.
         score = eval_function(orig_volts_data, curr_volts_data, curr_function, dt)
+        assert score < 1000000
+        assert np.isfinite(score)
         results[(prefix, function_ind, volts_ind)] = score
 
     results = MPI.COMM_WORLD.gather(results, root=0)

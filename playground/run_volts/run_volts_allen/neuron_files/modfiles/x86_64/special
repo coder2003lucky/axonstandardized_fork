@@ -1,0 +1,17 @@
+#!/bin/sh
+if test "x${NRNHOME}" = "x" ; then
+    NRNHOME="/global/cscratch1/sd/zladd/conda/dot_envv2/lib/python3.9/site-packages/neuron/.data"
+fi
+if test "${NEURONHOME}" = "" ; then
+    NEURONHOME=${NRNHOME}/share/nrn
+    export NEURONHOME
+fi
+if test "x${NRNBIN}" = "x" ; then
+    NRNBIN="/global/cscratch1/sd/zladd/conda/dot_envv2/bin"
+fi
+if test "" = "yes" ; then
+    NRNIV="${NRNBIN}/nrniv.app/Contents/MacOS/nrniv"
+else
+    NRNIV="${NRNBIN}/nrniv"
+fi
+"${NRNIV}" -dll "/global/cscratch1/sd/zladd/axonstandardized/playground/run_volts/run_volts_allen/neuron_files/modfiles/x86_64/.libs/libnrnmech.so" "$@"

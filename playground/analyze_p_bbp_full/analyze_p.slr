@@ -25,13 +25,16 @@ echo running analyze p parallel
 export OMP_NUM_THREADS=1
 srcDir=`pwd`
 
-wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}${custom}
+wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}
 mkdir ${wrkDir}/'genetic_alg'
-wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}${custom}/
+wrkDir=${srcDir}/'runs'/${model}_${peeling}_${runDate}_${custom}/
 echo 'my wrkDir='${wrkDir}
 
 dirToRun="genetic_alg"
-cp -rp ${dirToRun} ${wrkDir}
+mkdir ${wrkDir}/${dirToRun}
+mkdir ${wrkDir}/${dirToRun}/objectives
+mkdir ${wrkDir}/${dirToRun}/optimization_results
+#cp -rp ${dirToRun} ${wrkDir}
 #sleep 200
 
 
@@ -40,5 +43,7 @@ if [ ${makeOpt} == ${true} ]
   then
     srun --mpi=pmi2 -n 64 python analyze_p_bbp_full/analyze_p_parallel.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}
   fi
+  
+
 
 

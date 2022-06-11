@@ -1,7 +1,7 @@
 import numpy as np
 import h5py
 import bluepyopt as bpop
-import nrnUtils
+import utils
 import score_functions as sf
 import efel
 import pandas as pd
@@ -99,11 +99,11 @@ def check_ap_at_zero(stim_ind, volts):
         if first_zero_ind:
             if np.mean(stim[first_zero_ind:]) == 0:
                 first_ind_to_check = first_zero_ind + 1000
-                APs = [True if v > 0 else False for v in volt[first_ind_to_check:]]
+                APs = [True if v > -50 else False for v in volt[first_ind_to_check:]]
                 if True in APs:
                     #return 400 # threshold parameter that I am still tuning
-                    print("indv:",i, "stim ind: ", stim_ind)
-                    checks[i] = 250
+                    #print("indv:",i, "stim ind: ", stim_ind)
+                    checks[i] = 400
     return checks    
 
 def stim_swap(idx, i):
@@ -123,12 +123,12 @@ def stim_swap(idx, i):
 class hoc_evaluator(bpop.evaluators.Evaluator):
     def __init__(self):
         """Constructor"""
-        data = nrnUtils.readParamsCSV(paramsCSV)
+        data = utils.readParamsCSV(paramsCSV)
         super(hoc_evaluator, self).__init__()
         self.orig_params = orig_params
         self.opt_ind = np.array(params_opt_ind)
         data = np.array([data[i] for i in self.opt_ind])
-        realData = nrnUtils.readParamsCSV("../../params/params_bbp_peeling_description.csv")
+        realData = utils.readParamsCSV(templateCSV)
         realOrig = np.array((np.array(realData)[:,1]), dtype=np.float64)
         self.orig_params = orig_params
         self.pmin = np.array((data[:,2]), dtype=np.float64)
@@ -167,7 +167,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         
     def make_target_volts(self, orig_params, opt_stim_list):
         self.dts = []
-        self.convert_allen_data()
+        utils.convert_allen_data(opt_stim_name_list, stim_file, self.dts)
         print(orig_params)
         params = orig_params.reshape(-1,1).T
         #params = np.repeat(params, 5 ,axis=0)
@@ -180,7 +180,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
                     break
                 if stimset != 0:
                     print("Swapping ", gpuId, gpuId + stimset)
-                    stim_swap(gpuId, gpuId + stimset)
+                    utils.stim_swap(gpuId, gpuId + stimset)
                 p_objects.append(self.run_model(gpuId, []))
             for gpuId in range(nGpus):
                 if  (gpuId + stimset) >= len(opt_stim_list):
@@ -222,7 +222,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             sf_len = len(score_function_ordered_list)
             curr_weights = self.weights[sf_len*i: sf_len*i + sf_len] #get range of sfs for this stim
             #top_inds = sorted(range(len(curr_weights)), key=lambda i: curr_weights[i], reverse=True)[:10] #finds top ten biggest weight indices
-            top_inds = np.where(curr_weights > 50)[0] # weights bigger than 50 #TODO: maybe this can help glitch
+            top_inds = np.where(curr_weights > 30)[0] # weights bigger than 50 #TODO: maybe this can help glitch
             pairs = list(zip(np.repeat(i,len(top_inds)), [ind for ind in top_inds])) #zips up indices with corresponding stim # to make sure it is refrencing a relevant stim
             all_pairs.append(pairs)
         flat_pairs = [pair for pairs in all_pairs for pair in pairs] #flatten the list of tuples
@@ -274,62 +274,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             writer = csv.writer(open("../Data/Stim_raw{}.csv".format(i), 'w'))
             writer.writerow(stim_file[stim][:])
     
-    def normalize_scores(self,curr_scores, transformation,i):
-        '''changed from hoc eval so that it returns normalized score for list of indvs, not just one
-        TODO: not sure what transformation[6] does but I changed return statement to fit our 
-        dimensions'''
-        # transformation contains: [bottomFraction, numStds, newMean, std, newMax, addFactor, divideFactor]
-        # indices for reference:   [      0       ,    1   ,    2   ,  3 ,    4  ,     5    ,      6      ]
-        for i in range(len(curr_scores)):
-            if curr_scores[i] > transformation[4]:
-                curr_scores[i] = transformation[4]        # Cap newValue to newMax if it is too large
-        normalized_single_score = (curr_scores + transformation[5])/transformation[6]  # Normalize the new score
-        if transformation[6] == 0:
-            #return 1
-            return np.ones(len(self.nindv)) #verify w/ Kyung
-        return normalized_single_score
 
-    def eval_stim_sf_pair(self,perm):
-        """ 
-        function that evaluates a stim and score function pair on line 252. Sets i as stim # and sets j as 
-        score function #. Evaluates volts for that score function in efel or custom. Normalize scores
-         then SENT BACK to MAPPER.
-        
-        Arguments
-        --------------------------------------------------------------------
-        perm: pair of ints where first is the stim and second is the score function label index
-        to run
-        
-        Returns
-        ---------------------------------------------------------------------
-        scores: normalized+weighted scores with the shape (nindv, 1), and sends them back to map
-        to be stacked then summed.
-        
-        """
-        i = perm[0]
-        j = perm[1]
-        counter = 0
-        curr_data_volt = self.getVolts(i)#[:,:] 
-        curr_target_volt = self.target_volts_list[i]
-        curr_sf = score_function_ordered_list[j].decode('ascii')
-        curr_weight = self.weights[len(score_function_ordered_list)*i + j]
-        transformation = h5py.File(scores_path+self.opt_stim_list[i]+'_scores.hdf5', 'r')['transformation_const_'+curr_sf][:]
-        if curr_weight == 0:
-            print("BAD WEIGHTS")
-            curr_scores = np.zeros(self.nindv)
-        else:
-            num_indvs = curr_data_volt.shape[0]
-            if curr_sf in custom_score_functions:
-                score = [getattr(sf, curr_sf)(curr_target_volt, curr_data_volt[indv,:], self.dts[i]) for indv in range(num_indvs)]
-            else:
-                score = sf.eval_efel(curr_sf, curr_target_volt, curr_data_volt, self.dts[i])
-            curr_scores =  score 
-        norm_scores = self.normalize_scores(curr_scores, transformation, i)
-        for k in range(len(norm_scores)):
-            if np.isnan(norm_scores[k]):
-                norm_scores[k] = 1
-        return norm_scores * curr_weight
-    
     
     def map_par(self):
         ''' 
@@ -342,16 +287,28 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         2d list of scalar scores for each parameter set w/ shape (nindv,nstims)
         '''
         comm.Barrier() # so all workers do mapping at the same time
-        fxnsNStims = self.top_SFs() # 52 stim-sf combinations (stim#,sf#)        
-        ##OPTIONS FOR PARALLELISM FOR NOW
-        #MPI Version
-        #executor = MPIPoolExecutor()
-        #res = executor.map(self.eval_stim_sf_pair, fxnsNStims)
-        #joblib
-        #res = Parallel(n_jobs=nCpus, prefer="threads")(delayed(self.eval_stim_sf_pair)(FnS) for FnS in fxnsNStims)
+        fxnsNStims = utils.top_SFs(global_rank, score_function_ordered_list, self.weights, nGpus) # 52 stim-sf combinations (stim#,sf#)        
+
         #multiproc / concurrent future
-        with Pool(nCpus) as p:
-            res = p.map(self.eval_stim_sf_pair, fxnsNStims)
+#         with Pool(nCpus) as p:
+#             res = p.map(self.eval_stim_sf_pair, fxnsNStims)
+        args = []
+        for fxnNStim in fxnsNStims:
+            i = fxnNStim[0]
+            j = fxnNStim[1]
+            argDict = {   "i": i,
+                "j": j,
+                "target": self.target_volts_list[i], # 10k
+                "curr_sf": score_function_ordered_list[j].decode('ascii'),
+                "weight": self.weights[len(score_function_ordered_list)*i + j],
+                "transformation": h5py.File(scores_path+self.opt_stim_list[i]+'_scores.hdf5', 'r')['transformation_const_'+score_function_ordered_list[j].decode('ascii')][:],
+                "dt": self.dts[i]
+            }
+            args.append(argDict)
+        exs = []
+        counter = 0
+        res = sf.callPara(args)
+        
         res = np.array(list(res)) ########## important: map returns results with shape (# of sf stim pairs, nindv)
         res = res[:,:] 
         prev_sf_idx = 0 
@@ -362,7 +319,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
             num_curr_sfs = sum([1 for pair in fxnsNStims if pair[0]==i]) #find how many sf indices for this stim
             #print([pair for pair in fxnsNStims if pair[0]==i], "PAIRS for stim :" , i, "from:  ", global_rank)
 
-            AP_penalty = check_ap_at_zero(i, self.getVolts(i))
+            AP_penalty = utils.check_ap_at_zero(i, utils.getVolts(vs_fn,i), opt_stim_name_list, stim_file ) # NOT USING
             # sum over score functions for a particular stim
             if i == first_stim:
                 weighted_sums = np.reshape(np.sum(res[prev_sf_idx:prev_sf_idx+num_curr_sfs, :], axis=0) + AP_penalty ,(-1,1))
@@ -403,7 +360,7 @@ class hoc_evaluator(bpop.evaluators.Evaluator):
         if global_rank == 0:
             ##### TODO: write a function to check for missing data?
             self.dts = []
-            self.convert_allen_data() # reintialize allen stuff for clean run
+            utils.convert_allen_data(opt_stim_name_list, stim_file, self.dts) # reintialize allen stuff for clean run
             # insert negative param value back in to each set
             #full_params = np.insert(np.array(param_values), 1, orig_params[1], axis = 1)
             for reinsert_idx in self.fixed.keys():

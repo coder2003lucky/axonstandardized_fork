@@ -1,8 +1,8 @@
 #!/bin/bash
 
 #SBATCH --qos=regular
-#SBATCH --time=03:00:00
-#SBATCH --nodes=10
+#SBATCH --time=20:00:00
+#SBATCH --nodes=40
 #SBATCH --constraint=haswell
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
@@ -24,21 +24,30 @@ export IPYTHON_PROFILE=benchmark.${SLURM_JOBID}
 cd neuron_files/${model}/
 nrnivmodl
 cd ../../
+ulimit -Sn unlimited 
 ipcontroller --init --ip='*' --sqlitedb --ping=30000 --profile=${IPYTHON_PROFILE} &
-sleep 600
-srun -n 640 ipengine --timeout=3000 --profile=${IPYTHON_PROFILE} &
-sleep 600
+sleep 800
+srun -n 4000 ipengine --timeout=3000 --profile=${IPYTHON_PROFILE} &
+sleep 800
 CHECKPOINTS_DIR="checkpoints"
 mkdir -p ${CHECKPOINTS_DIR}
 python optimize_parameters_genetic_alg.py \
     -vv                                \
     --compile                          \
-    --offspring_size=${OFFSPRING_SIZE} \
-    --max_ngen=${MAX_NGEN}             \
+    --offspring_size=5000              \
+    --max_ngen=3000                    \
     --seed=${seed}                     \
+    --checkpoint balance               \
     --ipyparallel                      \
-    --start
+    --start > GA_out.log
+    
+
+exit
+
 # If job finishes in time analyze result
+#--checkpoint balance               \
+#--continu                          \
+
 #mv ${CHECKPOINTS_DIR}/seed${seed}.pkl checkpoints_final/
 # check if the job with 4th seed is finished
 
@@ -50,3 +59,6 @@ python optimize_parameters_genetic_alg.py \
 #   sed -i -e "s/seed in $seed/seed in $seed_new/g" restart_haswell.sh
 #   sbatch start_batchjob_stage2.slurm
 # fi
+
+
+

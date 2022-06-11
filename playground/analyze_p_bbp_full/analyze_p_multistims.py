@@ -31,7 +31,7 @@ custom = args.custom
 
 # Data Files
 if custom is not None:
-    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + custom
+    wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate + '_' + custom
 else:
     wrkDir = 'runs/' + model + '_' + peeling + '_' + currentdate
 opt_path = wrkDir + '/genetic_alg/optimization_results/opt_result_single_stim_' + model + '_' + peeling + '_full.hdf5'
@@ -55,6 +55,7 @@ proportionToTrain = 0.7
 # If k = 1, then use the top stim only.
 #TODO: change k back to 20
 k = 20
+print("K IS : ", k)
 # random seed to use for train/validation on optimization
 seed = 500
 # Weights for optimization.
@@ -195,14 +196,14 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
         print('Training Weights:\n', train_result.reshape([min(k, len(stim_name)), len(score_function_list)]))
         print('Ground Truth Weights:\n', test_result.reshape([min(k, len(stim_name)), len(score_function_list)]))
         print()
-
+        
         # Print spearman scores for the three sets of sampled data.
         print('Training Spearman:', round(stat.spearmanr(np.asarray(training), train_result @ train_score_mat)[0], 5))
         print('Testing Spearman:', round(stat.spearmanr(np.arange(N), train_result @ test_score_mat)[0], 5))
         print('Ground Truth Spearman:', round(stat.spearmanr(np.arange(N), test_result @ test_score_mat)[0], 5))
 
         plt.legend()
-        #plt.savefig('./trainset_and_groundtruth_potassium.eps', format='eps', dpi=1000)
+        plt.savefig('./trainset_and_groundtruth_potassium.eps', format='eps', dpi=1000)
         plt.show()
 
 #     if showHeatMap:
@@ -222,6 +223,8 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
     return np.array(test_result.reshape([1, test_result.shape[0]])), np.array(stims_optimal_order)
 
 stimsInOrder = [e.decode('ascii') for e in opt_file['stims_optimal_order'][:]]
+
+
 weight_list, stim_list = trainAndValidateScoreOptimization(stimsInOrder[:k], True, seed=seed, saveToFile=True)
 opt_result_hdf5 = h5py.File(save_path +'/multi_stim_without_sensitivity_' + model \
 + '_' + peeling +'_'+ currentdate + '_stims.hdf5', 'w')

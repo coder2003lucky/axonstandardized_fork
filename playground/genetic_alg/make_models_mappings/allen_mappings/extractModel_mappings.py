@@ -7,6 +7,7 @@ import time
 from extractModel import run_extract
 import importlib
 import os
+import math
 
 # DEFINE
 data_dir =          '../Data'                                          # data directory (folder)
@@ -16,6 +17,7 @@ params_file =       f'./{params_dir}/params_map.csv'                    # 12 par
 #params_file =       f'./{params_dir}/params.csv'                    # 12 parameters
 param_map =         f'./{data_dir}/ParamMappings.txt'               # mappings from new created in add_param_to_hoc_for_opt
 template =          f'./{data_dir}/ParamTemplate.csv'  
+distances_file =    f'./{data_dir}/Distances.txt'
 model_data =        '../Data/64MDL.csv'                                     # the model data to be extracted and placed into allparams
 corrections =       f'./{data_dir}/correction_mappings.json'        # corrections made after initial model runs
 reference =         f'./{data_dir}/AllParams_reference.csv'          # reference .csv file to compare results with
@@ -131,39 +133,14 @@ def check_allparams(allparams_file, reference_file):
         print("wrong: ", wrong)
     return error_mapping
 
-'''
-parse_model(model_file)
---------------------------------------------------
-description:
-    - open 64MDL.csv and extract mappings
-input[1]:
-    - 'model_file' = '64MDL.csv'
-output[1]:
-    - model_mappings
-'''
-def parse_model(model_file):
-    with open(model_file, 'r') as mdl:
-        model_raw = [m[0] for m in list(reader(mdl))]
-        # initialize dictionary
-        model_mappings = dict()
-        current_key = None
-        for s in model_raw:
-            if '#' in s:
-                current_key = s.replace('#', '')
-            else:
-                kv_pair = [c.replace(' ', '') for c in s.split(' = ')]
-                key, value = kv_pair[0], float(kv_pair[1])
-                if current_key not in model_mappings:
-                    model_mappings[current_key] = {
-                        key: value
-                    }
-                else:
-                    model_mappings[current_key][key] = value
-    return model_mappings
-
-
-def my_assemble_allparams(param_to_allparam,allparams_file,params,param_mappings):
+def my_assemble_allparams(param_to_allparam,allparams_file,params,param_mappings,allparams_template,distances):
     global reversed_mappings
+    param_mappings_flat = flatten_dict(param_mappings.copy())
+    reversed_mappings = {int(v): k for k, v in param_mappings_flat.items()}
+    reversed_template = {x:i for i,x in enumerate(allparams_template) if x > 0}
+    
+    t_ref = []
+    
     with open(allparams_file, 'r') as af:
         allparams_matrix = list(reader(af))
     ref_params = allparams_matrix[1][:-1]
@@ -172,84 +149,16 @@ def my_assemble_allparams(param_to_allparam,allparams_file,params,param_mappings
         for k, v in list(param_to_allparam.items()):
             for j in v:
                 my_template[i][j] = params[i][int(k)]
-    param_mappings_flat = flatten_dict(param_mappings)
-    reversed_mappings = {int(v): k for k, v in param_mappings_flat.items()}
+        for k,j in reversed_template.items():
+            name = reversed_mappings[k]
+            if "apic" in name and "gIhbar_Ih" in name:
+                secname = name.split('.')[0]+'.'+name.split('.')[1]
+                distance = distances[secname]
+                my_template[i][j] = (4*2.087000*math.exp((distance-0.000000)*(0.003100))*(0.000080))
+                t_ref.append((distance, ref_params[j]))
     return my_template
         
-        
-
-'''
-assemble_allparams(allparams_template, params, param_to_allparam, param_mappings, model_mappings)
---------------------------------------------------
-description:
-    - uses templates, mappings, and values to generate new .csv file that *should* match with allparams.csv
-input[5]:
-    - 'allparams_template'  = ParamTemplate.csv
-    - 'params'              = params.csv
-    - 'param_to_allparam'   = params_to_allparams_bbp.json
-    - 'param_mappings'      = paramMappings.txt
-    - 'model_mappings'      = mappings from '64MDL.csv' from 'parse_model' output
-output[1]:
-    - 'template' file that used our mappings and template to generate new models (what we want)
-'''
-def assemble_allparams(allparams_template, params, param_to_allparam, param_mappings, model_mappings):
-    # create a map of indices to values in the model
-    global reversed_mappings
-    model_mappings_flat = flatten_dict(model_mappings)
-    param_mappings_flat = flatten_dict(param_mappings)
-    reversed_mappings = {int(v): k for k, v in param_mappings_flat.items()}
-       # create the template to fill with values
-    my_template = [allparams_template[:] for _ in range(len(params))]
-    index_map = dict()
-
-    unused_keys = list()
-
-    #-----------------------------------------------------------------------------------------------------
-    # experimental
-    # with open(f'{data_dir}/biophysics_mapping.json', 'r') as bph:
-    #     bphm = load(bph)
-    #-----------------------------------------------------------------------------------------------------
-
-    # iterate over param mappings generated in 'proc_add_param_to_hoc_for_opt.py'
-    for p in param_mappings_flat:
-        # iterate over parameters in model (?)
-        if p in model_mappings_flat:
-            index_map[ param_mappings_flat[p] ] = model_mappings_flat[p]
-        else:
-            print(f'{p} is not in param_mappings_flat!!!!!!!!!!!!!!!!!!!!!') # shouldn't we take it from allparams.csv
-            # new_p = p.split('.')[-1]
-            # new_key = f'{categorize_key(p)}.{new_p}'
-            # if new_key in bphm:
-            #     index_map[ param_mappings_flat[p] ] = bphm[new_key]
-
- 
-
-    # use index map to fill template initially
-    for row in my_template:
-        for i in range(len(row)):
-            if row[i] in index_map:
-                row[i] = index_map[row[i]]
-
-
-    # apply params
-    for i in range(len(params)):
-        for k, v in list(param_to_allparam.items()):
-            for j in v:
-                my_template[i][j] = params[i][int(k)]
     
-    # correct incorrect values
-    fl = f'{data_dir}/correction_mappings.json'
-    if exists(fl):
-        with open(fl) as jf:
-            '''
-            dct:
-                index |-> value
-            '''
-            dct = load(jf)
-            for i in range(len(params)):
-                for k, v in dct.items():
-                    my_template[i][int(k)] = v
-    return my_template
 '''
 create_params_to_all_params()
 --------------------------------------------------
@@ -293,6 +202,9 @@ def allparams_from_mapping(params_input=None):
     with open(template, 'r') as ap:
         allparams_template = list(map(lambda x: int(float(x)), list(reader(ap))[1][:-1]))
         
+    with open(distances_file, 'r') as df:
+        distances = load(df)
+        
     # get parameters
     if params_input is None:
         with open(params_file, 'r') as p:
@@ -308,9 +220,7 @@ def allparams_from_mapping(params_input=None):
     #    param_to_allparam = load(tm)
     param_to_allparam = create_params_to_all_params(psize)
 
-    model_mappings = parse_model(model_data)
-
-    allparams = my_assemble_allparams(param_to_allparam,reference,params,param_mappings)
+    allparams = my_assemble_allparams(param_to_allparam,reference,params,param_mappings,allparams_template,distances)
 
 
     # collect allparams using function above
@@ -360,6 +270,7 @@ def query_neuron_2(lst, model_file): # MOCKUP
             values.append(-1.0)
     return values
 
+
 '''
 generate_mapping_file()
 --------------------------------------------------
@@ -370,20 +281,18 @@ input[0]:
 output[1]:
     - 'allparams', the output from 'assemble_allparams'
 '''
-
-    
-    
 def main():
     os.system('cp ' + reference + ' ' + all_params_fn)
     time.sleep(5)
     allparams = allparams_from_mapping()
-    run_extract(True) # create params template and allparamsreference
+    # run_extract(True) # create params template and allparamsreference
     # check allparams 
     # get reference for correct output
     error_mapping = check_allparams(all_params_fn,reference)
     # get real values from neuron
     if len(error_mapping) > 0:
         lst = list(error_mapping.keys())
+    
         # ===============================================================================================
         # neuron query, change to query_neuron, query_neuron_2, or query_neuron_3
         values = query_neuron_2(lst, run_model_file)
@@ -399,7 +308,6 @@ def main():
         allparams = allparams_from_mapping()
         # NO NEED TO CHECK AFTER IN REAL ONE
         check_allparams(all_params_fn, reference)
-    # need to fill this in, need to go but will fill in later -Matthew
 
 
 #first run this:

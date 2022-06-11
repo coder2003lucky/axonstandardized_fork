@@ -171,7 +171,7 @@ extern void _cvode_abstol( Symbol**, double*, int);
 	int _vectorized = 0;
   _initlists();
  	hoc_register_var(hoc_scdoub, hoc_vdoub, hoc_intfunc);
- 	ivoc_help("help ?1 branching /global/cscratch1/sd/zladd/axonstandardized/playground/neuroGPU_tuned/neuron_files/x86_64/branching.mod\n");
+ 	ivoc_help("help ?1 branching /global/cscratch1/sd/dylan_m/axonstandardized/playground/genetic_alg/make_models_mappings/allen_mappings/x86_64/branching.mod\n");
  }
 static int _reset;
 static char *modelname = "";

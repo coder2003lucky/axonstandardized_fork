@@ -1,0 +1,17 @@
+Param name,Base value,Lower bound,Upper bound,Unit,Unit type,Const,Base variation estimation,Description,index in vector,Unnamed: 10,Peeling Step
+gbar_Im_soma,0.0012383893612445851,0.000000001,0.1,,Uniform,Open,2,,1,0,passive
+gbar_Ih_soma,0.0006338765849686779,0.000000001,0.1,,Uniform,Open,3,,2,0,passive
+gbar_NaTs_soma,0.500453361737873,0.000000001,15.0,,Uniform,Open,2,,3,0,passive
+gbar_Nap_soma,1.758571027409006e-05,0.000000001,0.1,,Uniform,Open,3,,4,0,passive
+gbar_K_P_soma,0.0006796868759747499,0.000000001,1.0,,Uniform,Open,3,,5,0,passive
+gbar_K_T_soma,1.559856737237686e-05,0.000000001,1.0,,Uniform,Open,3,,6,0,passive
+gbar_SK_soma,0.0005304617338248371,0.000000001,1.0,,Uniform,Open,3,,7,0,passive
+gbar_Kv3_1_soma,0.14322461216868007,0.000000001,3.0,,Uniform,Open,3,,8,0,passive
+gbar_Ca_HVA_soma,0.0001483591621125165,0.000000001,0.001,,Uniform,Open,3,,9,0,passive
+gbar_Ca_LVA_soma,0.009600187388548958,0.000000001,0.01,,Uniform,Open,3,,10,0,passive
+gamma_CaDynamics_soma,0.0012383893612445851,0.000000001,0.05,,Uniform,Open,2,,1,0,passive
+decay_CaDynamics_soma,0.0006338765849686779,20.000000001,1000.000000001,,Uniform,Open,3,,2,0,passive
+g_pas__soma,0.500453361737873,1e-07,0.001,,Uniform,Open,2,,3,0,passive
+g_pas__axon,1.758571027409006e-05,1e-07,0.001,,Uniform,Open,3,,4,0,passive
+g_pas__dend,0.0006796868759747499,1e-07,0.001,,Uniform,Open,3,,5,0,passive
+g_pas__apic,1.559856737237686e-05,1e-07,0.001,,Uniform,Open,3,,6,0,passive

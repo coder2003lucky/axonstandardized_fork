@@ -1,6 +1,7 @@
 import numpy as np
 import math
 import efel
+import config 
 
 # These are here for efficiency. In order to avoid redundant computation, we cache the results for 
 # comp_width_helper, comp_height_helper and traj_score_helper. The name of stim and index as a string
@@ -11,9 +12,9 @@ traj_score_dict = {}
 threshold = -10
 
 # These constants exist for efel features
-time_stamps = 10000
-starting_time_stamp = 1000
-ending_time_stamp = 7000
+time_stamps = config.ntimestep
+starting_time_stamp = 1000 * (config.ntimestep / 10000) # multiplies by 3
+ending_time_stamp = 7000 * (config.ntimestep / 10000)
 
 ########################################################################
 # These functions are util functions.

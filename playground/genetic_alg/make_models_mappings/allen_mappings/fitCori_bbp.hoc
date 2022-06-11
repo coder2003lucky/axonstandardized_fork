@@ -2,6 +2,34 @@ objref transvec, stim, stimtime
 
 transvec = new Vector()
 
+proc distribute2(){local x localobj sl, strobj
+
+        strdef stmp,distfunc,mech,stmp2
+        sl = $o1
+        mech = $s2
+        distfunc = $s3
+        val_override = $4
+        
+        sprint(distfunc, "%s %f", distfunc, val_override)
+        sprint(distfunc,"%%s %s(%%f) = %s", mech, distfunc)
+        
+        strobj = new StringFunctions()
+        exp_index = strobj.substr(distfunc,"exp")
+
+        forsec sl for(x) {
+            secname()
+            sprint (stmp,distfunc,secname(),x,distance(x))
+            sprint (stmp2,distfunc,secname(),x,distance(x))
+            if (exp_index != -1) {
+                equals_index = strobj.substr(stmp2, "=")+1
+                strobj.right(stmp2,equals_index)
+                sprint(stmp2,"print %s",stmp2)
+                //execute(stmp2)
+                //print stmp
+            }
+            execute(stmp)
+        }
+    }
 
 proc tfunc(){
 
@@ -36,8 +64,6 @@ proc tfunc(){
         gIhbar_Ih = transvec.x(13)
     }
     
-    forsec cell.apical{
-        gIhbar_Ih = transvec.x(13)
-    }
+    distribute2(cell.apical,"gIhbar_Ih","(-0.869600 + 2.087000*exp((%g-0.000000)*0.003100))*", transvec.x(13))
     
 }
