@@ -27,9 +27,9 @@ wrkDir=${coreN}-${arrIdx}
 echo 'my wrkDir='${wrkDir}
 mkdir -p ${wrkDir}
 
-dirToRun="run_volts/run_volts_${model}"
+dirToRun="run_volts/run_volts_${model}${run_volts_extension}"
 cp -rp ${dirToRun} ${wrkDir}/
-cd ${wrkDir}/"run_volts_${model}"
+cd ${wrkDir}/"run_volts_${model}${run_volts_extension}"
 nrnivmodl
 
 echo inventore at start
