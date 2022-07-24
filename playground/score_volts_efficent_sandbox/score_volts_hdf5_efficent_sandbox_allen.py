@@ -10,6 +10,7 @@ import efel
 import h5py
 import re
 import math
+from sklearn.preprocessing import MinMaxScaler
 
 def split(container, count):
     return [container[_i::count] for _i in range(count)]
@@ -93,9 +94,9 @@ custom_score_functions = [
                     sf.traj_score_1,\
                     sf.traj_score_2,\
                     sf.traj_score_3,\
-                    sf.isi,\
-                    sf.rev_dot_product,\
-                    sf.KL_divergence]
+                    sf.isi] #,
+                    # sf.rev_dot_product,\
+                    # sf.KL_divergence]
 
 
 if stim_file == "neg_stims":
@@ -167,12 +168,12 @@ elif stim_file == "both_stims":
                         'AP_rise_time',\
                         'AP_fall_time',\
                         'AP_rise_rate',\
-                        'AP_fall_rate',\
+                        # 'AP_fall_rate',\
                         'fast_AHP',\
                         'AP_amplitude_change',\
                         'AP_duration_change',\
                         'AP_rise_rate_change',\
-                        'AP_fall_rate_change',\
+                        # 'AP_fall_rate_change',\
                         'fast_AHP_change',\
                         'AP_duration_half_width_change',\
                         'amp_drop_first_second',\
@@ -243,12 +244,12 @@ else:
                         'AP_rise_time',\
                         'AP_fall_time',\
                         'AP_rise_rate',\
-                        'AP_fall_rate',\
+                        # 'AP_fall_rate',\
                         'fast_AHP',\
                         'AP_amplitude_change',\
                         'AP_duration_change',\
                         'AP_rise_rate_change',\
-                        'AP_fall_rate_change',\
+                        # 'AP_fall_rate_change',\
                         'fast_AHP_change',\
                         'AP_duration_half_width_change',\
                         'amp_drop_first_second',\
@@ -337,6 +338,9 @@ for k in range(len(volts_name_list)):
         orig_volts_data = volts[orig_volts_name][:]
         if prefix == 'pin':
             curr_volts_data = volts[pin_volts_name][volts_ind]
+            
+            curr_volts_data = np.clip(curr_volts_data,-100,100) # clip non biophysical responses so they don't destroy SFs.
+
         #elif prefix == 'pdx':
             #curr_volts_data = volts[pdx_volts_name][volts_ind]
         if volts_ind % 1000 == 0:
@@ -344,6 +348,9 @@ for k in range(len(volts_name_list)):
         
         dt = stim_file[volt_num+'_dt'][:][0]
         score = eval_function(orig_volts_data, curr_volts_data, curr_function, dt)
+        
+        assert np.isfinite(score), f' {prefix} {curr_stim_name} {get_name(curr_function)}  {str(volts_ind)} /  {str(n)} is nan'
+
         results[(prefix, function_ind, volts_ind)] = score
 
     results = MPI.COMM_WORLD.gather(results, root=0)
@@ -373,12 +380,14 @@ for k in range(len(volts_name_list)):
             sampled_pin_scores = np.array([pin_scores[p_ind] for p_ind in params_sample_pin_ind])
             sampled_pin_repeat = np.repeat(sampled_pin_scores, free_params_size, axis=0)
             #sensitivity_mat = abs(pdx_scores - sampled_pin_repeat)/params_dx
-            norm_pin_scores, transformation = sn.normalize(pin_scores)
+            norm_pin_scores = MinMaxScaler().fit_transform(pin_scores)
+            assert np.max(norm_pin_scores) < 1.01
+            assert np.isfinite(norm_pin_scores).all()
             scores_hdf5.create_dataset('raw_pin_scores_'+curr_function_name, data=pin_scores)
             #scores_hdf5.create_dataset('raw_pdx_scores_'+curr_function_name, data=pdx_scores)
             scores_hdf5.create_dataset('norm_pin_scores_'+curr_function_name, data=norm_pin_scores)
             #scores_hdf5.create_dataset('sensitivity_mat_'+curr_function_name, data=sensitivity_mat)
-            scores_hdf5.create_dataset('transformation_const_'+curr_function_name, data=transformation)
+            # scores_hdf5.create_dataset('transformation_const_'+curr_function_name, data=transformation)
         scores_hdf5.create_dataset('score_function_names', data=score_function_names)
         scores_hdf5.create_dataset('stim_name', data=np.array([np.string_(curr_stim_name)]))
         scores_hdf5.close()

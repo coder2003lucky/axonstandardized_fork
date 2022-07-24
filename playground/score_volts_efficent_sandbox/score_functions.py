@@ -29,7 +29,7 @@ def zero_pad(list1, list2):
 def safe_mean(lis):
     if np.size(lis) == 0:
         return 0
-    return np.mean(lis)
+    return np.nanmean(lis)
 
 def find_positive_inds(lis):
     return [i for i in range(0, len(lis)) if lis[i] > 0]
