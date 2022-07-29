@@ -30,11 +30,11 @@ mkdir -p ${wrkDir}
 dirToRun="run_volts/run_volts_${model}${run_volts_extension}"
 cp -rp ${dirToRun} ${wrkDir}/
 cd ${wrkDir}/"run_volts_${model}${run_volts_extension}"
-nrnivmodl
+# nrnivmodl
 
-echo inventore at start
-pwd
-ls -l *
+# echo inventore at start
+# pwd
+# ls -l *
 
 export OMP_NUM_THREADS=1
 

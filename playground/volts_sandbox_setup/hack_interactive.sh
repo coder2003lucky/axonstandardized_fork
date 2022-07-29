@@ -4,18 +4,13 @@
 
 source ./input.txt
 
-for i in {1..25}; do
-    sh volts_sandbox_setup/launch.sh $i &
-done
-wait
-
-for i in {25..50}; do
+for i in {1..38}; do
     sh volts_sandbox_setup/launch.sh $i &
 done
 wait
 
 
-for i in {50..75}; do
+for i in {38..75}; do
     sh volts_sandbox_setup/launch.sh $i &
 done
 wait

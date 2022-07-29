@@ -48,7 +48,7 @@ params_file_path = '../../../../../params/params_' + model + '_' + peeling+ '.hd
 stims_file_path = '../../../../../stims/' + stim_file + '.hdf5'
 
 
-args = {'manifest_file': '/global/cscratch1/sd/zladd/axonstandardized/playground/runs/allen_full_1_25_222_487664663/genetic_alg/neuron_genetic_alg/manifest.json','axon_type': 'truncated'}
+args = {'manifest_file': './manifest.json','axon_type': 'truncated'}
 
 # Number of timesteps for the output volt.
 # ntimestep = 10000

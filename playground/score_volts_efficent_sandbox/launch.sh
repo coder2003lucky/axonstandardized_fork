@@ -31,9 +31,9 @@ cp -rp params ${wrkDir}/${dirToRun}/
 cp input.txt ${wrkDir}/${dirToRun}/
 cd ${wrkDir}/${dirToRun}
 
-echo inventore at start
-pwd
-ls -l *
+# echo inventore at start
+# pwd
+# ls -l *
 export OMP_NUM_THREADS=1
 
 

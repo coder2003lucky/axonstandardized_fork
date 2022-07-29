@@ -21,3 +21,7 @@ playground/runs/*
 **.h5
 **__pycache__**
 **/x86_64/**
+*pkl
+*.hdf5
+**/*.hdf5
+**/*.pkl
