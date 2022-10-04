@@ -4,16 +4,36 @@
 
 source ./input.txt
 
-for i in {1..35}; do
+# for i in {1..25}; do
+#     sh score_volts_efficent_sandbox/launch.sh $i &
+# done
+# wait
+
+
+# for i in {25..50}; do
+#     sh score_volts_efficent_sandbox/launch.sh $i &
+# done
+# # wait
+# for i in {1..50}; do
+#     sh score_volts_efficent_sandbox/launch.sh $i &
+# done
+# wait
+
+
+
+# for i in {50..75}; do
+#     sh score_volts_efficent_sandbox/launch.sh $i &
+# done
+# wait
+
+for i in {1..38}; do
     sh score_volts_efficent_sandbox/launch.sh $i &
 done
 wait
 
-
-for i in {35..70}; do
+for i in {38..75}; do
     sh score_volts_efficent_sandbox/launch.sh $i &
 done
-wait
 
 
 # for i in {1..30}; do
@@ -40,12 +60,25 @@ wait
 
 
 
+for i in {1..19}; do
+    sh score_volts_efficent_sandbox/launch.sh  $i &
+done
+wait
 
 
+for i in {19..38}; do
+    sh score_volts_efficent_sandbox/launch.sh  $i &
+done
+wait
+
+for i in {38..57}; do
+    sh score_volts_efficent_sandbox/launch.sh  $i &
+done
+wait
 
 
-
-
-
+for i in {57..76}; do
+    sh score_volts_efficent_sandbox/launch.sh  $i &
+done
 
 

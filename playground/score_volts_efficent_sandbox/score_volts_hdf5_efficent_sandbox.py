@@ -9,6 +9,7 @@ import score_normalizer as sn
 import efel
 import h5py
 import math
+from sklearn.preprocessing import MinMaxScaler
 
 def split(container, count):
     return [container[_i::count] for _i in range(count)]
@@ -82,9 +83,9 @@ custom_score_functions = [
                     sf.traj_score_1,\
                     sf.traj_score_2,\
                     sf.traj_score_3,\
-                    sf.isi,\
-                    sf.rev_dot_product,\
-                    sf.KL_divergence]
+                    sf.isi]
+                    # sf.rev_dot_product,\
+                    # sf.KL_divergence]
 
 
 if stim_file == "neg_stims":
@@ -281,6 +282,7 @@ print("USING : ", score_functions)
 
 COMM = MPI.COMM_WORLD
 print(COMM.size, "COM SIZE")
+score_functions = score_functions[:3]
 for k in range(len(volts_name_list)):
     curr_volts_name = volts_name_list[k]
     curr_stim_name = curr_volts_name.replace('_volts.hdf5', '')
@@ -325,7 +327,7 @@ for k in range(len(volts_name_list)):
             print('Working on', prefix, curr_stim_name, get_name(curr_function), str(volts_ind)+'/'+str(n))
         curr_volts_data = np.clip(curr_volts_data,-100,100) # clip non biophysical responses so they don't destroy SFs.
         score = eval_function(orig_volts_data, curr_volts_data, curr_function, dt)
-        assert score < 1000000
+        # assert score < 1000000
         assert np.isfinite(score)
         results[(prefix, function_ind, volts_ind)] = score
 
@@ -356,12 +358,15 @@ for k in range(len(volts_name_list)):
             sampled_pin_scores = np.array([pin_scores[p_ind] for p_ind in params_sample_pin_ind])
             sampled_pin_repeat = np.repeat(sampled_pin_scores, free_params_size, axis=0)
             #sensitivity_mat = abs(pdx_scores - sampled_pin_repeat)/params_dx
-            norm_pin_scores, transformation = sn.normalize(pin_scores)
+            # norm_pin_scores, transformation = sn.normalize(pin_scores)
+            norm_pin_scores = MinMaxScaler().fit_transform(pin_scores)
+            assert np.max(norm_pin_scores) < 1.01
+            assert np.isfinite(norm_pin_scores).all()
             scores_hdf5.create_dataset('raw_pin_scores_'+curr_function_name, data=pin_scores)
             #scores_hdf5.create_dataset('raw_pdx_scores_'+curr_function_name, data=pdx_scores)
             scores_hdf5.create_dataset('norm_pin_scores_'+curr_function_name, data=norm_pin_scores)
             #scores_hdf5.create_dataset('sensitivity_mat_'+curr_function_name, data=sensitivity_mat)
-            scores_hdf5.create_dataset('transformation_const_'+curr_function_name, data=transformation)
+            # scores_hdf5.create_dataset('transformation_const_'+curr_function_name, data=transformation)
         scores_hdf5.create_dataset('score_function_names', data=score_function_names)
         scores_hdf5.create_dataset('stim_name', data=np.array([np.string_(curr_stim_name)]))
         scores_hdf5.close()

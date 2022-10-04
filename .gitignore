@@ -1,4 +1,4 @@
-runs/*
+*/runs/*
 playground/runs/*
 ipcontroller.pid
 ipcontroller_config.py
@@ -14,4 +14,14 @@ tasks.db
 pipeline_extraction*
 !*py
 playground/runs/*
-*.nwb
+**.nwb
+**.pkl
+**.csv
+**.hdf5
+**.h5
+**__pycache__**
+**/x86_64/**
+*pkl
+*.hdf5
+**/*.hdf5
+**/*.pkl

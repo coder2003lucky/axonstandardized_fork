@@ -55,6 +55,7 @@ proportionToTrain = 0.7
 # If k = 1, then use the top stim only.
 #TODO: change k back to 20
 k = 20
+k = 10
 print("K IS : ", k)
 # random seed to use for train/validation on optimization
 seed = 500
@@ -144,7 +145,7 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
     np.random.seed(seed)
 
     if verbosity:
-        plt.figure(figsize=(15,7))
+        plt.figure(figsize=(7,7))
         plt.title('Optimal weighted scores for ' + '\n & '.join(stim_name))
         plt.xlabel('Parameter Set Rank')
         plt.ylabel('Optimization value')
