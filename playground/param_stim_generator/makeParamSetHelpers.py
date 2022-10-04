@@ -1,71 +1,7 @@
 import csv
 import numpy as np
 #import seaborn as sns
-import matplotlib.pyplot as plt
-
-
-
-
-"""
-non pmatx sampling procedure
-
-"""
-
-
-def test(param_df, nSubZones, nPerSubZone, sample_params, norm, seed):
-    params = get_random_params(param_df, seed, n=nSubZones*nPerSubZone)
-    # import pdb; pdb.set_trace()
-    return params
-
-def test_plot_sample(data, ext):
-    fig = plt.figure()
-    plt.scatter(np.arange(len(data)), data)
-    plt.savefig(f'sample_{ext}.png')
-    
-    
-def _rangeify_exponential(data, _range):
-    if tuple(_range) == (0, 0):
-        return 0
-    
-    return np.exp(
-        data * (np.log(_range[1]) - np.log(_range[0])) + np.log(_range[0])
-    )
-
-def get_random_params(param_df, seed, n=100):
-    ranges = list(zip(param_df['Lower bound'].values, param_df['Upper bound'].values))
-    ndim = len(ranges)
-    # set seed for sampler
-    np.random.seed(seed)
-    # sample random
-    rand = np.random.rand(n, ndim)
-    phys_rand = np.zeros(shape=rand.shape)
-    for i, _range in enumerate(ranges):
-        phys_rand[:, i] = _rangeify_exponential(rand[:, i], _range)
-    return phys_rand
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#import matplotlib.pyplot as plt
 
 # Uniform function for sampling
 def uniform(normDiff, currbase, lower_bound, upper_bound, numRows):
@@ -272,5 +208,3 @@ def plot_pMatx(pMatx):
         plt.title('Param ' + str(i + 1) + ' Distribution After Applying Uniform')
         sns.distplot(pMatx[:,i])
         plt.show()
-
-        

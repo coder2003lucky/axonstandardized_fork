@@ -11,6 +11,7 @@ import h5py
 import re
 import math
 from sklearn.preprocessing import MinMaxScaler
+import pickle
 
 def split(container, count):
     return [container[_i::count] for _i in range(count)]
@@ -349,7 +350,7 @@ for k in range(len(volts_name_list)):
         dt = stim_file[volt_num+'_dt'][:][0]
         score = eval_function(orig_volts_data, curr_volts_data, curr_function, dt)
         
-        assert np.isfinite(score), f' {prefix} {curr_stim_name} {get_name(curr_function)}  {str(volts_ind)} /  {str(n)} is nan'
+        # assert np.isfinite(score), f' {prefix} {curr_stim_name} {get_name(curr_function)}  {str(volts_ind)} /  {str(n)} is nan'
 
         results[(prefix, function_ind, volts_ind)] = score
 
@@ -364,23 +365,37 @@ for k in range(len(volts_name_list)):
 
         scores_hdf5 = h5py.File(output_path+curr_stim_name+'_scores.hdf5', 'w')
         score_function_names = []
+        normalizers = {}
         for i in range(len(score_functions)):
             curr_function_name = get_name(score_functions[i])
             score_function_names.append(np.string_(curr_function_name))
             pin_scores = np.empty((pin_size, 1))
             #pdx_scores = np.empty((pdx_size, 1))
-            params_sample_pin_ind = params['sample_ind'][:]
-            params_dx = params['dx'][0]
-            free_params_size = params['param_num'][0]
+            # params_sample_pin_ind = params['sample_ind'][:]
+            # params_dx = params['dx'][0]
+            # free_params_size = params['param_num'][0]
             for j in range(pin_size):
                 pin_scores[j] = flattened_dict[('pin', i, j)]
             #for j in range(pdx_size):
                 #pdx_scores[j] = flattened_dict[('pdx', i, j)]
             print('Saving', curr_function_name)
-            sampled_pin_scores = np.array([pin_scores[p_ind] for p_ind in params_sample_pin_ind])
-            sampled_pin_repeat = np.repeat(sampled_pin_scores, free_params_size, axis=0)
+            
+            # DONT USE PIN
+            # sampled_pin_scores = np.array([pin_scores[p_ind] for p_ind in params_sample_pin_ind])
+            # sampled_pin_repeat = np.repeat(sampled_pin_scores, free_params_size, axis=0)
             #sensitivity_mat = abs(pdx_scores - sampled_pin_repeat)/params_dx
-            norm_pin_scores = MinMaxScaler().fit_transform(pin_scores)
+            
+            # if not finite (nan or inf) replace with finite max
+            pin_scores = np.where(~np.isfinite(pin_scores), np.nanmax(pin_scores[np.isfinite(pin_scores)]), pin_scores)
+            mm_scaler = MinMaxScaler()
+            
+            #norm
+            norm_pin_scores = mm_scaler.fit_transform(pin_scores)
+            
+            # if not finite (nan or inf) replace with finite max
+            norm_pin_scores = np.where(~np.isfinite(norm_pin_scores), np.nanmax(norm_pin_scores[np.isfinite(norm_pin_scores)]), norm_pin_scores)
+            normalizers[curr_function_name] = mm_scaler
+            
             assert np.max(norm_pin_scores) < 1.01
             assert np.isfinite(norm_pin_scores).all()
             scores_hdf5.create_dataset('raw_pin_scores_'+curr_function_name, data=pin_scores)
@@ -391,3 +406,11 @@ for k in range(len(volts_name_list)):
         scores_hdf5.create_dataset('score_function_names', data=score_function_names)
         scores_hdf5.create_dataset('stim_name', data=np.array([np.string_(curr_stim_name)]))
         scores_hdf5.close()
+        
+        norm_dir = os.path.join(output_path, 'normalizers')
+        norm_path = os.path.join(norm_dir, f"{curr_stim_name}_normalizers.pkl")
+        os.makedirs(norm_dir, exist_ok=True)
+        with open(norm_path, 'wb') as f:
+            pickle.dump(normalizers,f)
+            
+        
