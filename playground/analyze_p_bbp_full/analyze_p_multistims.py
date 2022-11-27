@@ -55,7 +55,7 @@ proportionToTrain = 0.7
 # If k = 1, then use the top stim only.
 #TODO: change k back to 20
 k = 20
-k = 10
+# k = 10
 print("K IS : ", k)
 # random seed to use for train/validation on optimization
 seed = 500
@@ -120,6 +120,7 @@ def plot_heat_map(mat, stim='', sf=''):
     plt.ylabel('Parameter set', fontsize=18)
     plt.xlabel('Parameter name', fontsize=18)
     plt.colorbar()
+    
     #plt.savefig('./heat_map_potassium.eps', format='eps', dpi=1000)
     plt.show()
 
@@ -149,7 +150,11 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
         plt.title('Optimal weighted scores for ' + '\n & '.join(stim_name))
         plt.xlabel('Parameter Set Rank')
         plt.ylabel('Optimization value')
-
+    
+    # pin_name = [key for key in params_file.keys() if 'pin' in key][0]
+    # N = params_file[pin_name].shape[0]
+    
+    # Xander change to use params instead of pin scores to set N
     if isinstance(stim_name, str):
         N = len(pin_score_dict[stim_name][0])
     else:
@@ -194,6 +199,7 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
 
         # Print weights
         print('Each row belongs to a single stim.')
+        
         print('Training Weights:\n', train_result.reshape([min(k, len(stim_name)), len(score_function_list)]))
         print('Ground Truth Weights:\n', test_result.reshape([min(k, len(stim_name)), len(score_function_list)]))
         print()

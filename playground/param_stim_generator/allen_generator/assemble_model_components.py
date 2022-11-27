@@ -258,6 +258,7 @@ def select_stims(all_target_volts, all_stims, num_stims=0, passive=False):
     if num_stims == 0:
         num_stims = len(list(all_target_volts.keys()))
     for key in all_target_volts.keys():
+        if "stim_types" in key: continue
         curr_stim = all_stims[key]
         curr_targV = all_target_volts[key]
         if "dt" not in key and 'sweep' not in key and '63' not in key:
@@ -271,7 +272,7 @@ def select_stims(all_target_volts, all_stims, num_stims=0, passive=False):
                 continue
             else:
                 all_viable.append(key)
-    all_viable =np.unique(all_viable)
+    all_viable = np.unique(all_viable)
     choices = np.random.choice(all_viable, min(len(all_viable),num_stims), replace=False)
     choices = np.unique(choices)
     return choices
@@ -300,12 +301,15 @@ def save_stims(model_number, passive, timesteps, show=False, pdf=None, force=Fal
     volt_f = h5py.File(volt_path, "w")
     new_obj_f = h5py.File(obj_path, "w")
     opt_stim_name_list = []
+    stim_types = []
     # TODO: move filter to be right before choosing and only here
     # you should filter passive here as well
     stim_names = select_stims(all_target_volts, all_stims, num_stims=0, passive=passive)
     for key in stim_names:
         print("processing :", key)
         curr_stim = all_stims[key]
+        stim_idx = np.where(stim_names == key)[0][0]
+        stim_type = all_target_volts['stim_types'][stim_idx]
         curr_targV = all_target_volts[key]
         curr_dt = all_stims[key+'_dt'][0]
         prev_len = len(curr_stim)
@@ -330,6 +334,7 @@ def save_stims(model_number, passive, timesteps, show=False, pdf=None, force=Fal
         curr_stim = curr_stim[cutoff:]
         # dt doesn't give us exact cut off, this is regrettable
         print(f'stim: {key}, start dt: {curr_dt}, end dt: {dt}, prev len: {prev_len}, curr len: {len(curr_stim)}"')
+        stim_types.append(stim_type)
         stim_f.create_dataset(key, data=curr_stim)
         stim_f.create_dataset(key+"_dt", data=[dt])
         volt_f.create_dataset(key, data=curr_targV)
@@ -372,6 +377,7 @@ def save_stims(model_number, passive, timesteps, show=False, pdf=None, force=Fal
 
     new_obj_f.close()
     volt_f.close()
+    stim_f.create_dataset('stim_types', data=stim_types)
     stim_f.close()
     
     print(len(opt_stim_name_list), "stims")

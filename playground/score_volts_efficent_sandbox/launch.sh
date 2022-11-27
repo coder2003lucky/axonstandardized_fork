@@ -42,6 +42,8 @@ echo $arrIdx ${model} ${peeling}
 
 if [[ ${model} = 'allen' ]]; then
     srun --mpi=pmi2 -n 64 -N 1 python score_volts_hdf5_efficent_sandbox_allen.py $arrIdx ${model}  ${peeling} > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
+elif [[ ${model} = 'compare_allen' ]]; then
+    srun --mpi=pmi2 -n 64 -N 1 python score_volts_hdf5_efficent_sandbox_allen.py $arrIdx ${model}  ${peeling} > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
 else 
     srun --mpi=pmi2 -n 64 -N 1 python score_volts_hdf5_efficent_sandbox.py $arrIdx ${model} ${peeling} > SLURM${SLURM_ARRAY_JOB_ID}_$SLURM_ARRAY_TASK_ID.out
 fi

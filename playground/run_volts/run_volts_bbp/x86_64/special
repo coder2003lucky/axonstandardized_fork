@@ -1,13 +1,17 @@
 #!/bin/sh
 if test "x${NRNHOME}" = "x" ; then
-	NRNHOME="/global/homes/z/zladd/nrn-7.6/bin"
+    NRNHOME="/global/cscratch1/sd/zladd/conda/dot_envv2/lib/python3.9/site-packages/neuron/.data"
+fi
+if test "${NEURONHOME}" = "" ; then
+    NEURONHOME=${NRNHOME}/share/nrn
+    export NEURONHOME
 fi
 if test "x${NRNBIN}" = "x" ; then
-	NRNBIN="/global/homes/z/zladd/nrn-7.6/bin/x86_64/bin/"
+    NRNBIN="/global/cscratch1/sd/zladd/conda/dot_envv2/bin"
 fi
 if test "" = "yes" ; then
-	NRNIV="${NRNBIN}nrniv.app/Contents/MacOS/nrniv"
+    NRNIV="${NRNBIN}/nrniv.app/Contents/MacOS/nrniv"
 else
-	NRNIV="${NRNBIN}nrniv"
+    NRNIV="${NRNBIN}/nrniv"
 fi
-"${NRNIV}" -dll "/global/cscratch1/sd/zladd/axonstandardized/playground/runs/bbp_passive_01_30_2021base2/volts_sand/38511539-1/run_volts_bbp/x86_64/.libs/libnrnmech.so" "$@"
+"${NRNIV}" -dll "/global/cscratch1/sd/zladd/axonstandardized/playground/run_volts/run_volts_bbp/x86_64/.libs/libnrnmech.so" "$@"

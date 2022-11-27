@@ -32,6 +32,7 @@ stims_file_path = '../../../../../stims/' + stim_file + '.hdf5'
 # Number of timesteps for the output volt.
 ntimestep = 10000
 
+
 # Value of dt in miliseconds
 dt = 0.02
 
@@ -65,7 +66,6 @@ print("stim name list", curr_stim_name_list)
 
 pin_set_size = None
 pdx_set_size = None
-
 ##########################
 # Utility Functions      #
 ##########################
@@ -111,11 +111,6 @@ for stim_ind in range(len(curr_stim_name_list)):
                 pin_set_size = n
                 for param_ind in range(n):
                     jobs.append([params_name, param_ind, stim_ind, n])
-            elif 'pdx' in params_name:
-                n = params_hdf5[params_name].shape[0]
-                pdx_set_size = n
-                for param_ind in range(n):
-                    jobs.append([params_name, param_ind, stim_ind, n])
             else:
                 continue
         # Split into however many cores are available.
@@ -146,7 +141,7 @@ for stim_ind in range(len(curr_stim_name_list)):
             k = d.keys()
             for key in k:
                 flattened_dict[key] = d[key]
-
+                
         curr_stim_name = curr_stim_name_list[stim_ind]
         volts_hdf5 = h5py.File(volts_path+curr_stim_name+'_volts.hdf5', 'w')
         for params_name in params_name_list:
@@ -162,11 +157,5 @@ for stim_ind in range(len(curr_stim_name_list)):
                     volts[param_ind] = flattened_dict[(params_name, param_ind, stim_ind)]
                     print("Processing ", name_to_write, str(param_ind+1)+"/"+str(pin_set_size))
                 volts_hdf5.create_dataset(name_to_write, data=volts)
-            elif 'pdx' in params_name:
-                volts = np.empty((pdx_set_size, ntimestep))
-                name_to_write = 'pdx' + '_' + curr_stim_name
-                for param_ind in range(pdx_set_size):
-                    volts[param_ind] = flattened_dict[(params_name, param_ind, stim_ind)]
-                    print("Processing ", name_to_write, str(param_ind+1)+"/"+str(pdx_set_size))
-                volts_hdf5.create_dataset(name_to_write, data=volts)
         volts_hdf5.close()
+

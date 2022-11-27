@@ -6,7 +6,7 @@
 #SBATCH --mail-user=zladd@berkeley.edu
 #SBATCH --mail-type=ALL
 #SBATCH --account=m2043
-#SBATCH --array 1-75%40
+#SBATCH --array 70-300%40
 
 # change array 1-n, where n is the number of stims
 

@@ -1,0 +1,18 @@
+first, cd into ./make_param_set and run
+python make_param_set.py
+
+then, cd into ./run_volts_bbp and run 
+run.slr
+
+then, cd into ./score_volts and run
+run.slr
+
+then, cd into ./analyze_p and run 
+run.slr
+
+then, run
+python analyze_p_multistims.py
+
+then, cd into ./genetic_alg and run
+running_GA_full.sh
+

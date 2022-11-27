@@ -39,7 +39,10 @@ mkdir ${wrkDir}/${dirToRun}/optimization_results
 
 
 
-if [ ${makeOpt} == ${true} ]
+if [ ${allenOpt} == ${true} ]
+  then
+    python analyze_p_bbp_full/stim_selector.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}  
+elif [ ${makeOpt} == ${true} ]
   then
     srun --mpi=pmi2 -n 64 python analyze_p_bbp_full/analyze_p_parallel.py --model ${model} --peeling ${peeling} --CURRENTDATE ${runDate} --custom ${custom}
   fi

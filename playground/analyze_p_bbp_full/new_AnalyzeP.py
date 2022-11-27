@@ -70,8 +70,9 @@ def optimize(stim_name_list, subset_list=None, min_bound = 0, max_bound = 100):
 
     score_mat = np.concatenate(tuple([pin_score_dict[n] for n in stim_name_list]), axis=0)
     
-    print("SCORE MAT NAN PATCH")
-    score_mat = np.where(np.isnan(score_mat), np.ma.array(score_mat, mask=np.isnan(score_mat)).max(axis=0), score_mat)  
+    # print("SCORE MAT NAN PATCH")
+    # score_mat = np.where(np.isnan(score_mat), np.ma.array(score_mat, mask=np.isnan(score_mat)).max(axis=0), score_mat)  
+    # score_mat = np.where(np.isnan(score_mat), 0, score_mat)  
     
     # print("SCORE MAT CLIP")
     # score_mat = np.clip(score_mat,0, 100)

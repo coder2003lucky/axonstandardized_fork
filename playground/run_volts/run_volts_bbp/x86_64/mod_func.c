@@ -21,19 +21,19 @@ void modl_reg(){
   if (!nrn_nobanner_) if (nrnmpi_myid < 1) {
     fprintf(stderr, "Additional mechanisms from files\n");
 
-    fprintf(stderr," CaDynamics_E2.mod");
-    fprintf(stderr," Ca_HVA.mod");
-    fprintf(stderr," Ca_LVAst.mod");
-    fprintf(stderr," Ih.mod");
-    fprintf(stderr," Im.mod");
-    fprintf(stderr," K_Pst.mod");
-    fprintf(stderr," K_Tst.mod");
-    fprintf(stderr," NaTa_t.mod");
-    fprintf(stderr," NaTs2_t.mod");
-    fprintf(stderr," Nap_Et2.mod");
-    fprintf(stderr," SK_E2.mod");
-    fprintf(stderr," SKv3_1.mod");
-    fprintf(stderr," branching.mod");
+    fprintf(stderr," \"./CaDynamics_E2.mod\"");
+    fprintf(stderr," \"./Ca_HVA.mod\"");
+    fprintf(stderr," \"./Ca_LVAst.mod\"");
+    fprintf(stderr," \"./Ih.mod\"");
+    fprintf(stderr," \"./Im.mod\"");
+    fprintf(stderr," \"./K_Pst.mod\"");
+    fprintf(stderr," \"./K_Tst.mod\"");
+    fprintf(stderr," \"./NaTa_t.mod\"");
+    fprintf(stderr," \"./NaTs2_t.mod\"");
+    fprintf(stderr," \"./Nap_Et2.mod\"");
+    fprintf(stderr," \"./SK_E2.mod\"");
+    fprintf(stderr," \"./SKv3_1.mod\"");
+    fprintf(stderr," \"./branching.mod\"");
     fprintf(stderr, "\n");
   }
   _CaDynamics_E2_reg();

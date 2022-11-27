@@ -70,6 +70,11 @@ elif num_nodes > 1 and num_volts == 0:
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
 else:
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
+    
+for volts in volts_name_list:
+    if os.path.isfile(os.path.join(output_path,volts.replace('volts','scores'))):
+        volts_name_list.remove(volts)
+        
 print("looking at volts: ",volts_name_list)
 
 custom_score_functions = [
@@ -278,11 +283,8 @@ else:
                         'AP_amplitude_from_voltagebase',\
                         'min_voltage_between_spikes'])
 score_functions = custom_score_functions + efel_score_functions
-print("USING : ", score_functions)
-
 COMM = MPI.COMM_WORLD
 print(COMM.size, "COM SIZE")
-score_functions = score_functions[:3]
 for k in range(len(volts_name_list)):
     curr_volts_name = volts_name_list[k]
     curr_stim_name = curr_volts_name.replace('_volts.hdf5', '')
@@ -327,8 +329,12 @@ for k in range(len(volts_name_list)):
             print('Working on', prefix, curr_stim_name, get_name(curr_function), str(volts_ind)+'/'+str(n))
         curr_volts_data = np.clip(curr_volts_data,-100,100) # clip non biophysical responses so they don't destroy SFs.
         score = eval_function(orig_volts_data, curr_volts_data, curr_function, dt)
+        if np.isnan(score):
+            score = max_score
         # assert score < 1000000
-        assert np.isfinite(score)
+        
+        #add
+        # assert np.isfinite(score)
         results[(prefix, function_ind, volts_ind)] = score
 
     results = MPI.COMM_WORLD.gather(results, root=0)
@@ -347,8 +353,8 @@ for k in range(len(volts_name_list)):
             score_function_names.append(np.string_(curr_function_name))
             pin_scores = np.empty((pin_size, 1))
             #pdx_scores = np.empty((pdx_size, 1))
-            params_sample_pin_ind = params['sample_ind'][:]
-            params_dx = params['dx'][0]
+            params_sample_pin_ind = np.arange(10000) #params['sample_ind'][:]
+            # params_dx = params['dx'][0]
             free_params_size = params['param_num'][0]
             for j in range(pin_size):
                 pin_scores[j] = flattened_dict[('pin', i, j)]
@@ -357,16 +363,17 @@ for k in range(len(volts_name_list)):
             print('Saving', curr_function_name)
             sampled_pin_scores = np.array([pin_scores[p_ind] for p_ind in params_sample_pin_ind])
             sampled_pin_repeat = np.repeat(sampled_pin_scores, free_params_size, axis=0)
-            #sensitivity_mat = abs(pdx_scores - sampled_pin_repeat)/params_dx
-            # norm_pin_scores, transformation = sn.normalize(pin_scores)
-            norm_pin_scores = MinMaxScaler().fit_transform(pin_scores)
-            assert np.max(norm_pin_scores) < 1.01
-            assert np.isfinite(norm_pin_scores).all()
+            # sensitivity_mat = abs(pdx_scores - sampled_pin_repeat)/params_dx
+            norm_pin_scores, transformation = sn.normalize(pin_scores)
+            # add
+            # norm_pin_scores_v2 = MinMaxScaler().fit_transform(pin_scores)
+            # assert np.max(norm_pin_scores) < 1.01
+            # assert np.isfinite(norm_pin_scores).all()
             scores_hdf5.create_dataset('raw_pin_scores_'+curr_function_name, data=pin_scores)
             #scores_hdf5.create_dataset('raw_pdx_scores_'+curr_function_name, data=pdx_scores)
             scores_hdf5.create_dataset('norm_pin_scores_'+curr_function_name, data=norm_pin_scores)
             #scores_hdf5.create_dataset('sensitivity_mat_'+curr_function_name, data=sensitivity_mat)
-            # scores_hdf5.create_dataset('transformation_const_'+curr_function_name, data=transformation)
+            scores_hdf5.create_dataset('transformation_const_'+curr_function_name, data=transformation)
         scores_hdf5.create_dataset('score_function_names', data=score_function_names)
         scores_hdf5.create_dataset('stim_name', data=np.array([np.string_(curr_stim_name)]))
         scores_hdf5.close()
