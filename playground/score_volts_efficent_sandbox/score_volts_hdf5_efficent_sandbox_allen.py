@@ -12,6 +12,7 @@ import re
 import math
 from sklearn.preprocessing import MinMaxScaler
 import pickle
+import re
 
 def split(container, count):
     return [container[_i::count] for _i in range(count)]
@@ -83,6 +84,12 @@ elif num_nodes > 1 and num_volts == 0:
 else:
     volts_name_list = volts_name_list[(i-1)*num_volts_to_run:(i)*num_volts_to_run]
 print("looking at volts: ",volts_name_list)
+
+	    	
+for volts in volts_name_list:	
+    if os.path.isfile(os.path.join(output_path,volts.replace('volts','scores'))):	
+        volts_name_list.remove(volts)	
+        
 
 custom_score_functions = [
                     sf.chi_square_normal,\

@@ -55,7 +55,7 @@ proportionToTrain = 0.7
 # If k = 1, then use the top stim only.
 #TODO: change k back to 20
 k = 20
-# k = 10
+k = 10
 print("K IS : ", k)
 # random seed to use for train/validation on optimization
 seed = 500
@@ -208,6 +208,12 @@ def trainAndValidateScoreOptimization(stim_name, showHeatMap=False, seed=500, ve
         print('Training Spearman:', round(stat.spearmanr(np.asarray(training), train_result @ train_score_mat)[0], 5))
         print('Testing Spearman:', round(stat.spearmanr(np.arange(N), train_result @ test_score_mat)[0], 5))
         print('Ground Truth Spearman:', round(stat.spearmanr(np.arange(N), test_result @ test_score_mat)[0], 5))
+        
+        with open('spearman.txt','w') as f:
+            f.write(f"Testing Spearman: {round(stat.spearmanr(np.arange(N), train_result @ test_score_mat)[0], 5)}")
+            f.write(f"Ground Truth Spearman: {round(stat.spearmanr(np.arange(N), test_result @ test_score_mat)[0], 5)}")
+            f.write(f"Training Spearman: {round(stat.spearmanr(np.asarray(training), train_result @ train_score_mat)[0], 5)}")
+
 
         plt.legend()
         plt.savefig('./trainset_and_groundtruth_potassium.eps', format='eps', dpi=1000)
@@ -240,3 +246,5 @@ opt_result_hdf5.create_dataset('ordered_score_function_list', data=ordered_score
 opt_result_hdf5.create_dataset('opt_stim_name_list', data=stim_list)
 opt_result_hdf5.create_dataset('opt_weight_list', data=weight_list[0])
 opt_result_hdf5.close()
+
+

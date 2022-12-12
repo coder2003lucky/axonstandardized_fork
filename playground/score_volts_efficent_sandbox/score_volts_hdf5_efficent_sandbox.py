@@ -11,6 +11,7 @@ import h5py
 import math
 from sklearn.preprocessing import MinMaxScaler
 import pickle
+import re
 
 def split(container, count):
     return [container[_i::count] for _i in range(count)]
