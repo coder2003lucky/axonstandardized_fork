@@ -59,7 +59,7 @@ if "2" in param_opt_inds:
     neg_index = 1
 
 stims_name_list = sorted(list(stims_hdf5.keys()))
-stims_name_list = [elem for elem in stims_name_list if "dt" not in elem]
+stims_name_list = [elem for elem in stims_name_list if "dt" not in elem and not "stim_types" in elem]
 
 num_stims_to_run = 1
 i=int(sys.argv[1])
