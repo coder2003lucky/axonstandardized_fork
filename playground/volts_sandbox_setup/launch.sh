@@ -29,12 +29,6 @@ mkdir -p ${wrkDir}
 
 dirToRun="run_volts/run_volts_${model}${run_volts_extension}"
 cp -rp ${dirToRun} ${wrkDir}/
-
-cp -p ${dirToRun}/run_stim_hdf5.py /${wrkDir}/run_volts_${model}
-cp -p run_volts/config.py /${wrkDir}/run_volts_${model}
-mkdir ${wrkDir}/run_volts_${model}/neuron_files/${model}_modfiles
-cp -r run_volts/neuron_files/. /${wrkDir}/run_volts_${model}/neuron_files
-
 cd ${wrkDir}/"run_volts_${model}${run_volts_extension}"
 # nrnivmodl
 
